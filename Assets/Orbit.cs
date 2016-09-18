@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using OrbitalTools;
@@ -9,9 +10,11 @@ public class Orbit : MonoBehaviour {
     public float semiMajor = 1;
     public float semiMinor = .5f;
     LineRenderer line;
+    public GameObject display;
+    private Text textRef;
     public GameObject test;
     public Vector3 parentPos;
-    public Vector3 accel;
+    public Vector3 accelVector;
 
     //This is just a test, not actually used for anything
     void drawEllipse()
@@ -58,21 +61,33 @@ public class Orbit : MonoBehaviour {
     void Start()
     {
         line = GetComponent<LineRenderer>();
+
+        textRef = display.GetComponent<Text>();
+        accelVector = Vector3.zero;
     }
     // Update is called once per frame
     void Update ()
     {
         DrawOrbit();
     }
+
     static double r = 4;
     static double m = 7e10;
     static double G = 6.673e-11;
     static double parentGM = m * G;
     public static class Global
     {
-        public static double[] vel = new double[] { .1d, .8d, Math.Sqrt(parentGM / r) };
-        public static double[] pos = new double[] { r, -.2d, .1d};
+        public static double[] vel = new double[] { .1d, 0, Math.Sqrt(parentGM / r) };
+        public static double[] pos = new double[] { r+.2d, 0, .1d};
     }
+
+    public static Vector3 getGlobalVel()
+    {
+        Vector3 v = new Vector3((float)Global.vel[0], (float)Global.vel[1], (float)Global.vel[2]);
+        return v;
+    }
+
+
     Vector3 RotateAround(Vector3 center, Vector3 axis, float angle)
     {
         var pos = transform.position;
@@ -92,18 +107,29 @@ public class Orbit : MonoBehaviour {
         VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
         var oe = Util.rv2oe(parentGM, rv);
 
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.Append("Orbital Vector\n");
+        //sb.AppendFormat("{0}={1:G2}", COLUMN_ATTRIBUTE_ORDER, AttributeOrder)
+        sb.Append("aop: " + oe.aop.ToString("#.00") + "\n");
+        sb.Append("inc: " + oe.inc.ToString("#.00") + "\n");
+        sb.Append("lan: " + oe.lan.ToString("#.00") + "\n");
+        textRef.text = sb.ToString();
             //build rotation
-            var aop = Quaternion.AngleAxis((float)oe.aop, Vector3.up);
-            var inc = Quaternion.AngleAxis((float)oe.inc, Vector3.right);
-            var lan = Quaternion.AngleAxis((float)oe.lan, Vector3.up);
+            var aop = Quaternion.AngleAxis((float)oe.aop*Mathf.Rad2Deg, Vector3.up);
+            var inc = Quaternion.AngleAxis((float)oe.lan*Mathf.Rad2Deg, Vector3.left);
+            var lan = Quaternion.AngleAxis((float)oe.inc*Mathf.Rad2Deg, Vector3.up);
             var rotq = lan * inc * aop;
+
         drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
         //drawEllipse();
 
         //calculate next pos/vel
         //params is parent pos, gm, and inject acceleration!
         double[] parentPos = new double[3];
-        double[] accel = new double[3];
+        double[] accel =  new double[3];
+        accel[0] = accelVector.x;
+        accel[1] = accelVector.y;
+        accel[2] = accelVector.z;
         VectorD params_ = Util.convertToParams(parentPos, parentGM, accel);
         params_.Print("params: ");
         rv = Util.rungeKutta4(0, Time.deltaTime, rv, params_);
