@@ -205,6 +205,7 @@ velocity.
          */
         public static OrbitalElements rv2oe(double grav_param, VectorD rv)
         {
+
             OrbitalElements oe = new OrbitalElements();
 
             // Semi-major Axis : Vis-viva Equation
@@ -265,6 +266,8 @@ velocity.
             VectorD params_ = new VectorD();
             params_.Resize(6);
             Debug.Assert(params_.Count == 6);
+            //2013 Orbital Vector was written with z being up
+            //unity y is up, so must swap axis
             params_[0] = pos[0];
             params_[1] = pos[1];
             params_[2] = pos[2];

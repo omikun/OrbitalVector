@@ -1,18 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using OrbitalTools;
 
 public class simpleOrbit : MonoBehaviour {
 
     public Color color;
     LineRenderer myLine;
 
+    bool _threadRunning;
+
 	// Use this for initialization
 	void Start () {
         myLine = GetComponent<LineRenderer>();
         var start = transform.position;
         color = Color.green;
+        for (int i=0; i<lengthOfLineRenderer; i++)
+        {
+            myLine.SetPosition(i, transform.position);
+        }
+
+
+        //_thread = new Thread(rk4);
+        //_thread.Start();
+        _threadRunning = true;
     }
-    public static int lengthOfLineRenderer = 40;
+    public static int lengthOfLineRenderer = 360;
 
     Vector3 RotateAround(Vector3 center, Vector3 axis, float angle)
     {
@@ -44,16 +56,17 @@ public class simpleOrbit : MonoBehaviour {
             i++;
         }
 #endif
+        myLine.SetColors(Color.green, Color.red);
         myLine.SetPosition(0, transform.position + Orbit.getGlobalVel());
         myLine.SetPosition(1, transform.position);
         //ever 30 frames
-        if (frameCount++ > 200)
+        if (frameCount++ > 20)
         {
             updatePath();
             frameCount = 0;
         }
     }
-    void updatePath() { 
+    void updatePath() {
         //shift elements front to back, push current position to first element
         int i = lengthOfLineRenderer - 1;
         while (i > 1)
@@ -62,22 +75,12 @@ public class simpleOrbit : MonoBehaviour {
             i--;
         }
         tempLine[1] = transform.position;
+        rk4();
         //copy over
         for (i=2; i<tempLine.Length; i++)
         {
             myLine.SetPosition(i, tempLine[i]);
         }
-        /*
-        //myLine.transform.position = transform.position;
-        //lr.SetColors(color, color);
-        myLine.SetWidth(0.1f, 0.1f);
-        var tempPos = transform.position;
-        for (int i=0; i < 10; i++)
         {
-            transform2.RotateAround(Vector3.zero, Vector3.up, i);
-            myLine.SetPosition(i, transform2.position);
         }
-        transform.position = tempPos;
-        */
-	}
 }
