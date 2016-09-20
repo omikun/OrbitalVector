@@ -106,9 +106,9 @@ public class simpleOrbit : MonoBehaviour {
             VectorD rvtemp = rv;
             //just to update Orbit.cs for OE path
             rvtemp = Util.rungeKutta4(0, .001d, rvtemp, params_);
-            Orbit.Global.pos[0] = rvtemp[0];
-            Orbit.Global.pos[1] = rvtemp[1];
-            Orbit.Global.pos[2] = rvtemp[2];
+            //Orbit.Global.pos[0] = rvtemp[0];
+            //Orbit.Global.pos[1] = rvtemp[1];
+            //Orbit.Global.pos[2] = rvtemp[2];
             Orbit.Global.vel[0] = rvtemp[3];
             Orbit.Global.vel[1] = rvtemp[4];
             Orbit.Global.vel[2] = rvtemp[5];
@@ -125,6 +125,7 @@ public class simpleOrbit : MonoBehaviour {
                 velocity.y = (float)rv[4];
                 velocity.z = (float)rv[5];
                 tempLine[i] = position;
+                params_ = Util.convertToParams(new double[3], Orbit.parentGM, new double[3]);
             }
             /*
             //myLine.transform.position = transform.position;

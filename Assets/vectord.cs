@@ -5,7 +5,7 @@ public class VectorD : List<double>
 {
     public void Print(string desc)
     {
-        return;
+        //return;
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.Append(desc);
         this.ForEach(x => sb.Append(x+" "));

@@ -104,7 +104,8 @@ public class Orbit : MonoBehaviour {
         Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
         Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
 #endif
-        VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
+        //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
+        VectorD rv = calcNextStep();
         bool swap = false;
 #if swap
         //swap
@@ -129,7 +130,7 @@ public class Orbit : MonoBehaviour {
 
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         //to correct Y axis is stop, instead of Z as assumed by rv2oe()
-        oe.inc -= Math.PI / 2;
+        oe.inc += Math.PI / 2;
         //oe.aop += Math.PI;
         sb.Append("Orbital Vector\n");
         //sb.AppendFormat("{0}={1:G2}", COLUMN_ATTRIBUTE_ORDER, AttributeOrder)
@@ -138,37 +139,45 @@ public class Orbit : MonoBehaviour {
         sb.Append("lan: " + oe.lan.ToString("#.00") + "\n");
         textRef.text = sb.ToString();
 
-            //build rotation
-            var aop = Quaternion.AngleAxis((float)oe.aop*Mathf.Rad2Deg, Vector3.up);
-            var inc = Quaternion.AngleAxis((float)oe.inc*Mathf.Rad2Deg, Vector3.right);
-            var lan = Quaternion.AngleAxis((float)oe.lan*Mathf.Rad2Deg, Vector3.up);
-            var rotq = lan * inc * aop;
+        //build rotation
+        var aop = Quaternion.AngleAxis((float)oe.aop * Mathf.Rad2Deg, Vector3.up);
+        var inc = Quaternion.AngleAxis((float)oe.inc * Mathf.Rad2Deg, Vector3.left);
+        var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
+        var rotq = lan * inc * aop;
 
         drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
         //drawEllipse();
 
         //FIXME
-        return;
-
+        //return;
+    }
+    int count = 0;
+    VectorD calcNextStep() { 
+        VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
         //calculate next pos/vel
         //params is parent pos, gm, and inject acceleration!
         double[] parentPos = new double[3];
         double[] accel =  new double[3];
-        accel[0] = accelVector.x;
-        accel[1] = accelVector.y;
-        accel[2] = accelVector.z;
+        var tempaccel = accelVector * 10;
+        accel[0] = tempaccel.x;
+        accel[1] = tempaccel.y;
+        accel[2] = tempaccel.z;
         VectorD params_ = Util.convertToParams(parentPos, parentGM, accel);
-        params_.Print("params: ");
         rv = Util.rungeKutta4(0, Time.deltaTime, rv, params_);
-        Global.pos[0] = rv[0];
-        Global.pos[1] = rv[1];
-        Global.pos[2] = rv[2];
-        Global.vel[0] = rv[3];
-        Global.vel[1] = rv[4];
-        Global.vel[2] = rv[5];
-        params_.Print("params: ");
-        test.transform.position = new Vector3((float)Global.pos[0],
-           (float)Global.pos[1],(float)Global.pos[2]);
+        //Global.pos[0] = rv[0];
+        //Global.pos[1] = rv[1];
+        //Global.pos[2] = rv[2];
+        //Global.vel[0] = rv[3];
+        //Global.vel[1] = rv[4];
+        //Global.vel[2] = rv[5];
+        //test.transform.position = new Vector3((float)Global.pos[0],
+        // (float)Global.pos[1],(float)Global.pos[2]);
+        if(count++ > 45)
+        {
+            rv.Print("rv: ");
+            count = 0;
+        }
+        return rv;
     }
     
 }
