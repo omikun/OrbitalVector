@@ -149,6 +149,7 @@ public class Orbit : MonoBehaviour {
 
         //FIXME
         return;
+
         //calculate next pos/vel
         //params is parent pos, gm, and inject acceleration!
         double[] parentPos = new double[3];

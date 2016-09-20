@@ -71,7 +71,7 @@ public class simpleOrbit : MonoBehaviour {
     void updatePath() {
         //shift elements front to back, push current position to first element
         int i = lengthOfLineRenderer - 1;
-#if true
+#if false
         while (i > 1)
         {
             tempLine[i] = tempLine[i - 1];
@@ -103,14 +103,15 @@ public class simpleOrbit : MonoBehaviour {
             accel[2] = Orbit.accelVector.z;
             VectorD params_ = Util.convertToParams(new double[3], Orbit.parentGM, accel);
 
+            VectorD rvtemp = rv;
             //just to update Orbit.cs for OE path
-            rv = Util.rungeKutta4(0, .0001d, rv, params_);
-            Orbit.Global.pos[0] = rv[0];
-            Orbit.Global.pos[1] = rv[1];
-            Orbit.Global.pos[2] = rv[2];
-            Orbit.Global.vel[0] = rv[3];
-            Orbit.Global.vel[1] = rv[4];
-            Orbit.Global.vel[2] = rv[5];
+            rvtemp = Util.rungeKutta4(0, .001d, rvtemp, params_);
+            Orbit.Global.pos[0] = rvtemp[0];
+            Orbit.Global.pos[1] = rvtemp[1];
+            Orbit.Global.pos[2] = rvtemp[2];
+            Orbit.Global.vel[0] = rvtemp[3];
+            Orbit.Global.vel[1] = rvtemp[4];
+            Orbit.Global.vel[2] = rvtemp[5];
             //now calculate the rk4 path
             Vector3 position, velocity;
 

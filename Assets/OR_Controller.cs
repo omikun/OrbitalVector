@@ -29,7 +29,7 @@ public class OR_Controller : MonoBehaviour {
         DebugLogger(e.controllerIndex, "TRIGGER", "released", e);
         mov_origin.SetActive(false);
         line.enabled = false;
-        Orbit.accelVector = Vector3.zero;
+        //FIXME Orbit.accelVector = Vector3.zero;
     }
 
 	// Use this for initialization
