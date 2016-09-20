@@ -14,7 +14,7 @@ public class Orbit : MonoBehaviour {
     private Text textRef;
     public GameObject test;
     public Vector3 parentPos;
-    public Vector3 accelVector;
+    public static Vector3 accelVector;
 
     //This is just a test, not actually used for anything
     void drawEllipse()
@@ -54,7 +54,7 @@ public class Orbit : MonoBehaviour {
             line.SetPosition(i, rot*pos);
         }
         line.SetPosition(++i, Vector3.zero);
-        line.SetPosition(++i, Vector3.up);
+        line.SetPosition(++i, rot*Vector3.up);
 
 	}
 
@@ -74,7 +74,7 @@ public class Orbit : MonoBehaviour {
     static double r = 4;
     static double m = 7e10;
     static double G = 6.673e-11;
-    static double parentGM = m * G;
+    public static double parentGM = m * G;
     public static class Global
     {
         public static double[] vel = new double[] { .1d, 0, Math.Sqrt(parentGM / r) };
@@ -105,24 +105,50 @@ public class Orbit : MonoBehaviour {
         Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
 #endif
         VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
+        bool swap = false;
+#if swap
+        //swap
+        var temp = rv[1];
+        rv[1] = rv[2];
+        rv[2] = temp;
+        temp = rv[4];
+        rv[4] = rv[5];
+        rv[5] = temp;
+#endif
+
         var oe = Util.rv2oe(parentGM, rv);
+#if swap
+        //undo swap
+        temp = rv[1];
+        rv[1] = rv[2];
+        rv[2] = temp;
+        temp = rv[4];
+        rv[4] = rv[5];
+        rv[5] = temp;
+#endif
 
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        //to correct Y axis is stop, instead of Z as assumed by rv2oe()
+        oe.inc -= Math.PI / 2;
+        //oe.aop += Math.PI;
         sb.Append("Orbital Vector\n");
         //sb.AppendFormat("{0}={1:G2}", COLUMN_ATTRIBUTE_ORDER, AttributeOrder)
         sb.Append("aop: " + oe.aop.ToString("#.00") + "\n");
         sb.Append("inc: " + oe.inc.ToString("#.00") + "\n");
         sb.Append("lan: " + oe.lan.ToString("#.00") + "\n");
         textRef.text = sb.ToString();
+
             //build rotation
             var aop = Quaternion.AngleAxis((float)oe.aop*Mathf.Rad2Deg, Vector3.up);
-            var inc = Quaternion.AngleAxis((float)oe.lan*Mathf.Rad2Deg, Vector3.left);
-            var lan = Quaternion.AngleAxis((float)oe.inc*Mathf.Rad2Deg, Vector3.up);
+            var inc = Quaternion.AngleAxis((float)oe.inc*Mathf.Rad2Deg, Vector3.right);
+            var lan = Quaternion.AngleAxis((float)oe.lan*Mathf.Rad2Deg, Vector3.up);
             var rotq = lan * inc * aop;
 
         drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
         //drawEllipse();
 
+        //FIXME
+        return;
         //calculate next pos/vel
         //params is parent pos, gm, and inject acceleration!
         double[] parentPos = new double[3];
