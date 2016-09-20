@@ -141,15 +141,12 @@ public class Orbit : MonoBehaviour {
 
         //build rotation
         var aop = Quaternion.AngleAxis((float)oe.aop * Mathf.Rad2Deg, Vector3.up);
-        var inc = Quaternion.AngleAxis((float)oe.inc * Mathf.Rad2Deg, Vector3.left);
+        var inc = Quaternion.AngleAxis((float)oe.inc * Mathf.Rad2Deg, Vector3.right);
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
         var rotq = lan * inc * aop;
 
         drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
-        //drawEllipse();
 
-        //FIXME
-        //return;
     }
     int count = 0;
     VectorD calcNextStep() { 
