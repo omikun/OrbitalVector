@@ -7,8 +7,6 @@ using System;
 
 public class Orbit : MonoBehaviour {
     public int segments = 360;
-    public float semiMajor = 1;
-    public float semiMinor = .5f;
     LineRenderer line;
     public GameObject display;
     private Text textRef;
@@ -19,7 +17,8 @@ public class Orbit : MonoBehaviour {
     //This is just a test, not actually used for anything
     void drawEllipse()
     {
-
+        float semiMajor = 1;
+        float semiMinor = .5f;
         Vector3 pos;
         for (int i = 0; i < segments; i++)
         {
@@ -34,7 +33,6 @@ public class Orbit : MonoBehaviour {
     void drawOrbitalPath(float tra, float a, float e, Quaternion rot)
     {
         //clear path?
-        //assert path of certain size
         //inputs
         tra = (tra >= Mathf.PI) ? tra - 2 * Mathf.PI : tra;
         float theta = (a > 0) ? -Mathf.PI : tra;
@@ -107,26 +105,8 @@ public class Orbit : MonoBehaviour {
         //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
         VectorD rv = calcNextStep();
         bool swap = false;
-#if swap
-        //swap
-        var temp = rv[1];
-        rv[1] = rv[2];
-        rv[2] = temp;
-        temp = rv[4];
-        rv[4] = rv[5];
-        rv[5] = temp;
-#endif
 
         var oe = Util.rv2oe(parentGM, rv);
-#if swap
-        //undo swap
-        temp = rv[1];
-        rv[1] = rv[2];
-        rv[2] = temp;
-        temp = rv[4];
-        rv[4] = rv[5];
-        rv[5] = temp;
-#endif
 
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         //to correct Y axis is stop, instead of Z as assumed by rv2oe()
