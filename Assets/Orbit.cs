@@ -91,9 +91,9 @@ void DrawOrbit(ref VectorD rv) {
 #if true
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.Append("Orbital Vector\n");
-        sb.Append("aop: " + oe.aop.ToString("#.00") + "\n");
-        sb.Append("inc: " + oe.inc.ToString("#.00") + "\n");
-        sb.Append("lan: " + oe.lan.ToString("#.00") + "\n");
+        sb.Append("aop: " + (oe.aop*Mathf.Rad2Deg).ToString("#.0") + "\n");
+        sb.Append("inc: " + (oe.inc*Mathf.Rad2Deg).ToString("#.0") + "\n");
+        sb.Append("lan: " + (oe.lan*Mathf.Rad2Deg).ToString("#.0") + "\n");
         textRef.text = sb.ToString();
 #endif
 
