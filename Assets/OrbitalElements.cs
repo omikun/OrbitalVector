@@ -236,6 +236,8 @@ velocity.
 
             // Inclination
             oe.inc = Math.Acos(h[2] / Math.Sqrt(h[0] * h[0] + h[1] * h[1] + h[2] * h[2]));
+            //to correct Y axis is stop, instead of Z as assumed by rv2oe()
+            oe.inc += Math.PI / 2;
 
             // Ascending Node Direction (In x-y plane)
             //std::vector<double> n(2);

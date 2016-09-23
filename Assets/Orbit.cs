@@ -7,10 +7,10 @@ using System;
 
 public class Orbit : MonoBehaviour {
     public int segments = 360;
+    public static float timeScale = 1;
     LineRenderer line;
     public GameObject display;
     private Text textRef;
-    public GameObject test;
     public Vector3 parentPos;
     public static Vector3 accelVector;
 
@@ -66,24 +66,47 @@ public class Orbit : MonoBehaviour {
     // Update is called once per frame
     void Update ()
     {
-        DrawOrbit();
+        {
+
+            var odata = GetComponent<OrbitData>();
+
+            //calculate next step
+            odata.rv = Util.rungeKutta4(0, timeScale * Time.deltaTime, odata.rv, odata.params_);
+            odata.params_[4] = 0;
+            odata.params_[5] = 0;
+            odata.params_[6] = 0;
+            DrawOrbit(ref odata.rv);
+        }
     }
 
-    static double r = 4;
-    static double m = 7e10;
-    static double G = 6.673e-11;
-    public static double parentGM = m * G;
-    public static class Global
-    {
-        public static double[] vel = new double[] { .1d, 0, Math.Sqrt(parentGM / r) };
-        public static double[] pos = new double[] { r+.2d, 0, .1d};
-    }
+void DrawOrbit(ref VectorD rv) {
+#if false
+        Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
+        Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
+#endif
+        //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
+        //VectorD rv = calcNextStep(rv, params_);
 
-    public static Vector3 getGlobalVel()
-    {
-        Vector3 v = new Vector3((float)Global.vel[0], (float)Global.vel[1], (float)Global.vel[2]);
-        return v;
+        var oe = Util.rv2oe(OrbitData.parentGM, rv);
+#if true
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.Append("Orbital Vector\n");
+        sb.Append("aop: " + oe.aop.ToString("#.00") + "\n");
+        sb.Append("inc: " + oe.inc.ToString("#.00") + "\n");
+        sb.Append("lan: " + oe.lan.ToString("#.00") + "\n");
+        textRef.text = sb.ToString();
+#endif
+
+        //build rotation
+        var aop = Quaternion.AngleAxis((float)oe.aop * Mathf.Rad2Deg, Vector3.up);
+        var inc = Quaternion.AngleAxis((float)oe.inc * Mathf.Rad2Deg, Vector3.right);
+        var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
+        var rotq = lan * inc * aop;
+
+        drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
     }
+ 
+
 
 
     Vector3 RotateAround(Vector3 center, Vector3 axis, float angle)
@@ -97,64 +120,5 @@ public class Orbit : MonoBehaviour {
         //        var myRot = transform.rotation;
         //       transform.rotation *= Quaternion.Inverse(myRot) * rot * myRot;
     }
-    void DrawOrbit() {
-#if false
-        Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
-        Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
-#endif
-        //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
-        VectorD rv = calcNextStep();
-        bool swap = false;
-
-        var oe = Util.rv2oe(parentGM, rv);
-
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        //to correct Y axis is stop, instead of Z as assumed by rv2oe()
-        oe.inc += Math.PI / 2;
-        //oe.aop += Math.PI;
-        sb.Append("Orbital Vector\n");
-        //sb.AppendFormat("{0}={1:G2}", COLUMN_ATTRIBUTE_ORDER, AttributeOrder)
-        sb.Append("aop: " + oe.aop.ToString("#.00") + "\n");
-        sb.Append("inc: " + oe.inc.ToString("#.00") + "\n");
-        sb.Append("lan: " + oe.lan.ToString("#.00") + "\n");
-        textRef.text = sb.ToString();
-
-        //build rotation
-        var aop = Quaternion.AngleAxis((float)oe.aop * Mathf.Rad2Deg, Vector3.up);
-        var inc = Quaternion.AngleAxis((float)oe.inc * Mathf.Rad2Deg, Vector3.right);
-        var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
-        var rotq = lan * inc * aop;
-
-        drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
-
-    }
-    int count = 0;
-    VectorD calcNextStep() { 
-        VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
-        //calculate next pos/vel
-        //params is parent pos, gm, and inject acceleration!
-        double[] parentPos = new double[3];
-        double[] accel =  new double[3];
-        var tempaccel = accelVector * 10;
-        accel[0] = tempaccel.x;
-        accel[1] = tempaccel.y;
-        accel[2] = tempaccel.z;
-        VectorD params_ = Util.convertToParams(parentPos, parentGM, accel);
-        rv = Util.rungeKutta4(0, Time.deltaTime, rv, params_);
-        //Global.pos[0] = rv[0];
-        //Global.pos[1] = rv[1];
-        //Global.pos[2] = rv[2];
-        //Global.vel[0] = rv[3];
-        //Global.vel[1] = rv[4];
-        //Global.vel[2] = rv[5];
-        //test.transform.position = new Vector3((float)Global.pos[0],
-        // (float)Global.pos[1],(float)Global.pos[2]);
-        if(count++ > 45)
-        {
-            rv.Print("rv: ");
-            count = 0;
-        }
-        return rv;
-    }
-    
+      
 }

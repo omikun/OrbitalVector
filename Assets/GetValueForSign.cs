@@ -3,7 +3,6 @@ using System.Collections;
 
 public class GetValueForSign : MonoBehaviour {//: VRTK.VRTK_ObjectTooltip {
     public GameObject camera;
-    public GameObject target;
     public string prependText;
     VRTK.VRTK_ObjectTooltip link;
 
@@ -15,11 +14,11 @@ public class GetValueForSign : MonoBehaviour {//: VRTK.VRTK_ObjectTooltip {
 	
 	// Update is called once per frame
 	void Update () {
-        var value = Orbit.Global.vel;
-        Vector3 speed = new Vector3();
-        speed.x = (float)value[0];
-        speed.y = (float)value[1];
-        speed.z = (float)value[2];
+        if (DataStore.userSelection == null)
+        {
+            return;
+        }
+        var speed = DataStore.userSelection.GetComponent<OrbitData>().getVel();
         link.displayText = prependText + speed.magnitude.ToString();
         link.Reset();
         //transform.LookAt(camera.transform, Vector3.up);

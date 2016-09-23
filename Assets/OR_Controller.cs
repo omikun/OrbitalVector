@@ -6,7 +6,7 @@ public class OR_Controller : MonoBehaviour {
     public GameObject mov_origin;
     Vector3 originPos;
     LineRenderer line;
-    Orbit orbit;
+    OrbitData odata;
     Vector3 accelVector;
 
     private void DebugLogger(uint index, string button, string action, ControllerInteractionEventArgs e)
@@ -22,6 +22,10 @@ public class OR_Controller : MonoBehaviour {
         originPos = transform.position;
         mov_origin.SetActive(true);
         line.enabled = true;
+
+        Orbit.timeScale = 0.1f;
+
+        odata = DataStore.userSelection.GetComponent<OrbitData>();
     }
 
     private void DoTriggerReleased(object sender, ControllerInteractionEventArgs e)
@@ -30,6 +34,9 @@ public class OR_Controller : MonoBehaviour {
         mov_origin.SetActive(false);
         line.enabled = false;
         Orbit.accelVector = Vector3.zero;
+
+        Orbit.timeScale = 1;
+        odata = null;
     }
 
 	// Use this for initialization
@@ -47,18 +54,20 @@ public class OR_Controller : MonoBehaviour {
         mov_origin.SetActive(false);
         line = GetComponent<LineRenderer>();
         line.enabled = false;
-        orbit = GameObject.Find("Orbit").GetComponent<Orbit>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        if (line.enabled)
+        if (line.enabled && odata != null)
         {
             line.SetPosition(0, originPos);
             line.SetPosition(1, transform.position);
 
             Vector3 velVector = transform.position - originPos;
-            Orbit.accelVector = velVector * 3f;
+            velVector *= 3f;
+            odata.params_[4] = (double)velVector.x;
+            odata.params_[5] = (double)velVector.y;
+            odata.params_[6] = (double)velVector.z;
         }
     }
 }

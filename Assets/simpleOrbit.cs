@@ -59,7 +59,7 @@ public class simpleOrbit : MonoBehaviour {
         }
 #endif
         myLine.SetColors(Color.green, Color.red);
-        myLine.SetPosition(0, transform.position + Orbit.getGlobalVel());
+        myLine.SetPosition(0, transform.position);// + Orbit.getGlobalVel());
         myLine.SetPosition(1, transform.position);
         //ever 30 frames
         if (frameCount++ > 20)
@@ -94,6 +94,7 @@ public class simpleOrbit : MonoBehaviour {
         //_thread.Join();
     }
     void rk4() {
+#if false
         //while(_threadRunning)
         {
             VectorD rv = Util.convertToRv(ref Orbit.Global.pos, ref Orbit.Global.vel);
@@ -140,5 +141,6 @@ public class simpleOrbit : MonoBehaviour {
             transform.position = tempPos;
             */
         }
+#endif
     }
 }

@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class DataStore : ScriptableObject {
+public static class DataStore { 
 
-    public GameObject userSelection; //TODO: make this an array or linked list
+    public static GameObject userSelection; //TODO: make this an array or linked list
 
     
 }
