@@ -27,7 +27,7 @@
         public Transform touchpad;
         public Transform appMenu;
 
-        private bool triggerInitialised = false;
+        public bool triggerInitialised = false;
         private bool gripInitialised = false;
         private bool touchpadInitialised = false;
         private bool appMenuInitialised = false;
@@ -148,6 +148,7 @@
         {
             if (!TipsInitialised())
             {
+                Debug.Log("trigger not initialized");
                 InitialiseTips();
             }
         }
