@@ -9,6 +9,7 @@ public class InteractableShip : VRTK_InteractableObject {
     float duration = 0.5f;
     public GameObject controller;
     VRTK_ControllerTooltips debugToolTip;
+    public GameObject triggerObj;
 
     public override void StartUsing(GameObject currentUsingObject)
     {
@@ -20,6 +21,7 @@ public class InteractableShip : VRTK_InteractableObject {
         debugToolTip.triggerText = "selected!";
                 debugToolTip.triggerInitialised = false;
         DataStore.userSelection = gameObject;
+        triggerObj.SetActive(true);
     }
 
     public override void StopUsing(GameObject previousUsingObject)
@@ -27,6 +29,7 @@ public class InteractableShip : VRTK_InteractableObject {
         base.StopUsing(previousUsingObject);
         debugToolTip.triggerText = "cleared!";
                 debugToolTip.triggerInitialised = false;
+        triggerObj.SetActive(false);
     }
     // Use this for initialization
     void Start () {
@@ -50,6 +53,7 @@ public class InteractableShip : VRTK_InteractableObject {
             if (debugToolTip == null)
                 Debug.Log("not found again??");
         }
+        triggerObj.SetActive(false);
     }
 	
 	// Update is called once per frame

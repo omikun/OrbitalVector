@@ -8,11 +8,12 @@ using System;
 public class Orbit : MonoBehaviour {
     public int segments = 360;
     public static float timeScale = 1;
-    LineRenderer line;
+    List<LineRenderer> lines = new List<LineRenderer>();
     public GameObject display;
     private Text textRef;
     public Vector3 parentPos;
     public static Vector3 accelVector;
+    public GameObject OrbitRenderer;
 
     //This is just a test, not actually used for anything
     void drawEllipse()
@@ -26,11 +27,11 @@ public class Orbit : MonoBehaviour {
             pos.x = (Mathf.Cos(rad) * semiMajor);
             pos.z = (Mathf.Sin(rad) * semiMinor);
             pos.y = (0);
-            line.SetPosition(i, pos);
+            lines[0].SetPosition(i, pos);
         }
     }
 
-    void drawOrbitalPath(float tra, float a, float e, Quaternion rot)
+    void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
     {
         //clear path?
         //inputs
@@ -51,36 +52,63 @@ public class Orbit : MonoBehaviour {
             pos.z = r * Mathf.Sin(theta);
             line.SetPosition(i, rot*pos);
         }
-        line.SetPosition(++i, Vector3.zero);
-        line.SetPosition(++i, rot*Vector3.up);
+        line.SetPosition(i++, Vector3.zero);
+        //line.SetPosition(i++, rot*Vector3.up);
 
 	}
 
     void Start()
     {
-        line = GetComponent<LineRenderer>();
-
         textRef = display.GetComponent<Text>();
         accelVector = Vector3.zero;
+
+        foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
+        {
+            AddOrbitRenderer(ship);
+        }
+    }
+    void AddOrbitRenderer(GameObject ship)
+    {
+        var newObj = Instantiate(OrbitRenderer);
+        newObj.transform.parent = transform;
+        var newLineRenderer = newObj.GetComponent<LineRenderer>();
+        newLineRenderer.SetVertexCount(segments + 2);
+        lines.Add(newLineRenderer);
     }
     // Update is called once per frame
     void Update ()
     {
+        int count = 0;
+        foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
         {
+            if (count >= lines.Count)
+            {
+                Debug.Log("More ships than there are orbit renderers!");
+                AddOrbitRenderer(ship);
+            }
+            if (ship == null)
+            {
+                Debug.Log("ship is null!");
+            }
+            var odata = ship.GetComponent<OrbitData>();
 
-            var odata = GetComponent<OrbitData>();
-
+            if (odata == null)
+            {
+                Debug.Log("no orbital data from ship!!");
+            }
             //calculate next step
             odata.rv = Util.rungeKutta4(0, timeScale * Time.deltaTime, odata.rv, odata.params_);
             odata.params_[4] = 0;
             odata.params_[5] = 0;
             odata.params_[6] = 0;
-            DrawOrbit(ref odata.rv);
+            DrawOrbit(lines[count], ref odata.rv);
+
+            count++;
         }
     }
 
-void DrawOrbit(ref VectorD rv) {
-#if false
+void DrawOrbit(LineRenderer line, ref VectorD rv) {
+#if false   
         Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
         Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
 #endif
@@ -103,7 +131,7 @@ void DrawOrbit(ref VectorD rv) {
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
         var rotq = lan * inc * aop;
 
-        drawOrbitalPath((float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
+        drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
     }
  
 

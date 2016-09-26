@@ -148,7 +148,6 @@
         {
             if (!TipsInitialised())
             {
-                Debug.Log("trigger not initialized");
                 InitialiseTips();
             }
         }
