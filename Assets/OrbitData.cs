@@ -8,6 +8,7 @@ public class OrbitData : MonoBehaviour {
     public VectorD params_;
     OrbitalTools.OrbitalElements oe;
 
+    public static float scale = 1;
     static double r = 4;
     static double m = 7e10;
     static double G = 6.673e-11;
@@ -53,7 +54,7 @@ public class OrbitData : MonoBehaviour {
 
     void Update()
     {
-        transform.position = new Vector3((float)rv[0], 
+        transform.position = scale * new Vector3((float)rv[0], 
                                          (float)rv[1], (float)rv[2]);
     }
 }

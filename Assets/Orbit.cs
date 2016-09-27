@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using OrbitalTools;
 using System;
 
-public class Orbit : MonoBehaviour {
+public class Orbit : MonoBehaviour
+{
     public int segments = 360;
     public static float timeScale = 1;
     List<LineRenderer> lines = new List<LineRenderer>();
@@ -40,7 +41,7 @@ public class Orbit : MonoBehaviour {
         Vector3 pos = Vector3.zero;
         //pos.0 = -.2f;
         int i = 0;
-        for (; theta < Mathf.PI; theta += Mathf.PI*2/segments, i++)
+        for (; theta < Mathf.PI; theta += Mathf.PI * 2 / segments, i++)
         {
             float denominator = (1.0f + e * Mathf.Cos(theta));
             if (denominator < 0)
@@ -50,12 +51,12 @@ public class Orbit : MonoBehaviour {
             float r = a * (1.0f - e * e) / denominator;
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
-            line.SetPosition(i, rot*pos);
+            line.SetPosition(i, rot * pos);
         }
         line.SetPosition(i++, Vector3.zero);
         //line.SetPosition(i++, rot*Vector3.up);
 
-	}
+    }
 
     void Start()
     {
@@ -76,7 +77,7 @@ public class Orbit : MonoBehaviour {
         lines.Add(newLineRenderer);
     }
     // Update is called once per frame
-    void Update ()
+    void Update()
     {
         int count = 0;
         foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
@@ -107,7 +108,8 @@ public class Orbit : MonoBehaviour {
         }
     }
 
-void DrawOrbit(LineRenderer line, ref VectorD rv) {
+    void DrawOrbit(LineRenderer line, ref VectorD rv)
+    {
 #if false   
         Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
         Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
@@ -119,21 +121,22 @@ void DrawOrbit(LineRenderer line, ref VectorD rv) {
 #if true
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.Append("Orbital Vector\n");
-        sb.Append("aop: " + (oe.aop*Mathf.Rad2Deg).ToString("#.0") + "\n");
-        sb.Append("inc: " + (oe.inc*Mathf.Rad2Deg).ToString("#.0") + "\n");
-        sb.Append("lan: " + (oe.lan*Mathf.Rad2Deg).ToString("#.0") + "\n");
+        sb.Append("aop: " + (oe.aop * Mathf.Rad2Deg).ToString("#.0") + "\n");
+        sb.Append("inc: " + (oe.inc * Mathf.Rad2Deg).ToString("#.0") + "\n");
+        sb.Append("lan: " + (oe.lan * Mathf.Rad2Deg).ToString("#.0") + "\n");
         textRef.text = sb.ToString();
 #endif
 
         //build rotation
         var aop = Quaternion.AngleAxis((float)oe.aop * Mathf.Rad2Deg, Vector3.up);
         var inc = Quaternion.AngleAxis((float)oe.inc * Mathf.Rad2Deg, Vector3.right);
+        var incOffset = Quaternion.AngleAxis(90f, Vector3.right);
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
-        var rotq = lan * inc * aop;
+        var rotq = incOffset * lan * inc * aop;
 
         drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
     }
- 
+
 
 
 
@@ -148,5 +151,5 @@ void DrawOrbit(LineRenderer line, ref VectorD rv) {
         //        var myRot = transform.rotation;
         //       transform.rotation *= Quaternion.Inverse(myRot) * rot * myRot;
     }
-      
+
 }

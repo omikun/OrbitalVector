@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using VRTK;
 
-public class OR_Controller : MonoBehaviour {
+public class OR_Controller : MonoBehaviour
+{
     public GameObject mov_origin; //obj when trigger first pressed
     Vector3 originPos;
     LineRenderer line;
@@ -19,6 +20,8 @@ public class OR_Controller : MonoBehaviour {
 
     List<GameObject> worldObjects = new List<GameObject>();
     List<Vector3> worldObjectScales = new List<Vector3>();
+    List<Vector3> worldObjectPositions = new List<Vector3>();
+    List<Quaternion> worldObjectRotations = new List<Quaternion>();
 
 
     private void DebugLogger(uint index, string button, string action, ControllerInteractionEventArgs e)
@@ -49,16 +52,12 @@ public class OR_Controller : MonoBehaviour {
         Orbit.timeScale = 1;
         odata = null;
     }
-    
+
     private void DoGripPressed(object sender, ControllerInteractionEventArgs e)
     {
         DebugLogger(e.controllerIndex, "GRIP", "pressed", e);
         //OR_Controller.gripsPressed++;
         gripsPressed++;
-
-        Orbit.timeScale = 0.1f;
-        if (DataStore.userSelection != null)
-            odata = DataStore.userSelection.GetComponent<OrbitData>();
     }
 
     private void DoGripReleased(object sender, ControllerInteractionEventArgs e)
@@ -68,8 +67,9 @@ public class OR_Controller : MonoBehaviour {
         afterGrabs = false;
     }
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         if (GetComponent<VRTK_ControllerEvents>() == null)
         {
             Debug.LogError("VRTK_ControllerEvents_ListenerExample is required to be attached to a SteamVR Controller that has the VRTK_ControllerEvents script attached to it");
@@ -110,22 +110,31 @@ public class OR_Controller : MonoBehaviour {
             }
 
             //resize worldObjectScales to match with worldObjects
+            int i = 0;
             foreach (var obj in worldObjects)
             {
-                worldObjectScales.Add(Vector3.zero);
+                //worldObjectScales.Add(Vector3.zero);
+                //worldObjectPositions.Add(Vector3.zero);
+                worldObjectScales.Add(obj.transform.localScale);
+                worldObjectPositions.Add(obj.transform.position);
+                worldObjectRotations.Add(obj.transform.rotation);
+                i++;
             }
         }
     }
 
+    public static float scale = 1;
+    float baseScale;
     // Update is called once per frame
-    void Update () {
+    void Update()
+    {
         if (line.enabled && odata != null)
         {
             line.SetPosition(0, originPos);
 
             //FIXME using newpos with locked y to get around wonky inc/lan in rv2oe()
             var newpos = transform.position;
-            newpos.y = originPos.y;
+            //newpos.y = originPos.y;
             line.SetPosition(1, newpos);
 
             Vector3 velVector = newpos - originPos;
@@ -143,27 +152,46 @@ public class OR_Controller : MonoBehaviour {
                 Debug.Log("controllers found: " + controllers.Count);
                 //baselineVector = controllers[0].transform.position - controllers[1].transform.position;
                 baselineVector = transform.position - leftController.transform.position;
-                currentScale = GameObject.Find("Earth").transform.localScale;
-                for (int i=0; i < worldObjects.Count; i++)
+                for (int i = 0; i < worldObjects.Count; i++)
                 {
                     worldObjectScales[i] = worldObjects[i].transform.localScale;
+                    worldObjectPositions[i] = worldObjects[i].transform.position;
+                    worldObjectRotations[i] = worldObjects[i].transform.rotation;
                 }
+                baseScale = OrbitData.scale;
             }
-            else {
+            else
+            {
                 //Vector3 newVector = controllers[0].transform.position - controllers[1].transform.position;
                 Vector3 newVector = transform.position - leftController.transform.position;
-            //calculate initial vector, magnitude as baseline
-                float scale = newVector.magnitude / baselineVector.magnitude;
-
+                //calculate initial vector, magnitude as baseline
+                scale = newVector.magnitude / baselineVector.magnitude;
+                //var currentScale = scale * newVector.magnitude / baselineVector.magnitude;
+                //Quaternion rot = Quaternion.LookRotation(newVector-baselineVector);
+                float costheta = Vector3.Dot(newVector, baselineVector);
+                float angle = Mathf.Acos(costheta);
+                Quaternion rot = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, Vector3.up);
                 //subseqpent vector/magnitudes are rotation/scales,
                 //center of two controllers control translation
                 //iterate over all 
-                for (int i=0; i < worldObjects.Count; i++)
+                for (int i = 0; i < worldObjects.Count; i++)
                 {
                     worldObjects[i].transform.localScale = scale * worldObjectScales[i];// new Vector3(.05f, .05f, .05f);
+                    worldObjects[i].transform.rotation = rot * worldObjectRotations[i];
+                    //worldObjects[i].transform.position = scale * worldObjectPositions[i];// new Vector3(.05f, .05f, .05f);
                 }
+                OrbitData.scale = baseScale * scale;
+
+            }
+        }
+        if (false)//else
+        {
+            for (int i = 0; i < worldObjects.Count; i++)
+            {
+                //scale doesn't change, so no need to keep updating those
+                //worldObjects[i].transform.localScale = scale * worldObjectScales[i];// new Vector3(.05f, .05f, .05f);
+                worldObjects[i].transform.position = scale * worldObjectPositions[i];// new Vector3(.05f, .05f, .05f);
             }
         }
     }
-    Vector3 currentScale;
 }
