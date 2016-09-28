@@ -122,9 +122,19 @@ public class OR_Controller : MonoBehaviour
             }
         }
     }
-
+    public static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
+    {
+        return Mathf.Atan2(
+            Vector3.Dot(n, Vector3.Cross(v1, v2)),
+            Vector3.Dot(v1, v2)) * Mathf.Rad2Deg;
+    }
     public static float scale = 1;
+    public static float totalAngle = 0;
+    public static float totalMoveY = 0;
     float baseScale;
+    float lastAngle = 0;
+    float lastMoveY = 0;
+    float lastY = 0;
     // Update is called once per frame
     void Update()
     {
@@ -159,29 +169,37 @@ public class OR_Controller : MonoBehaviour
                     worldObjectRotations[i] = worldObjects[i].transform.rotation;
                 }
                 baseScale = OrbitData.scale;
+                lastMoveY = 0;
+                lastAngle = 0;
             }
             else
             {
-                //Vector3 newVector = controllers[0].transform.position - controllers[1].transform.position;
                 Vector3 newVector = transform.position - leftController.transform.position;
-                //calculate initial vector, magnitude as baseline
                 scale = newVector.magnitude / baselineVector.magnitude;
-                //var currentScale = scale * newVector.magnitude / baselineVector.magnitude;
-                //Quaternion rot = Quaternion.LookRotation(newVector-baselineVector);
-                float costheta = Vector3.Dot(newVector, baselineVector);
-                float angle = Mathf.Acos(costheta);
-                Quaternion rot = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, Vector3.up);
+
+                var diff = newVector - baselineVector;
+                var angle = Vector3.Angle(baselineVector, newVector);
+
+                angle = -AngleSigned(newVector, baselineVector, Vector3.up);
+                var tempAngle = angle;
+                angle -= lastAngle;
+                lastAngle = tempAngle;
+                totalAngle += angle;
+
+                var moveY = newVector.y - baselineVector.y;
+                var y = transform.position.y + leftController.transform.position.y;
+                moveY = (y - lastY)/2;
+                totalMoveY += moveY;
+                lastY = y;
                 //subseqpent vector/magnitudes are rotation/scales,
                 //center of two controllers control translation
-                //iterate over all 
                 for (int i = 0; i < worldObjects.Count; i++)
                 {
-                    worldObjects[i].transform.localScale = scale * worldObjectScales[i];// new Vector3(.05f, .05f, .05f);
-                    worldObjects[i].transform.rotation = rot * worldObjectRotations[i];
-                    //worldObjects[i].transform.position = scale * worldObjectPositions[i];// new Vector3(.05f, .05f, .05f);
+                    worldObjects[i].transform.localScale = scale * worldObjectScales[i];
+                    worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
+                    worldObjects[i].transform.Translate(Vector3.up * moveY, Space.World);
                 }
                 OrbitData.scale = baseScale * scale;
-
             }
         }
         if (false)//else

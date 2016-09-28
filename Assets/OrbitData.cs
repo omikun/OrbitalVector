@@ -54,7 +54,11 @@ public class OrbitData : MonoBehaviour {
 
     void Update()
     {
-        transform.position = scale * new Vector3((float)rv[0], 
+        var position = scale * new Vector3((float)rv[0], 
                                          (float)rv[1], (float)rv[2]);
+        //transform.Rotate(0, OR_Controller.totalAngle, 0, Space.World);
+        transform.position = Quaternion.AngleAxis(OR_Controller.totalAngle, Vector3.up) * position;
+        transform.Translate(Vector3.up * OR_Controller.totalMoveY, Space.World);
+
     }
 }
