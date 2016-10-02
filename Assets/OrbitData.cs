@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using OrbitalTools;
 
 public class OrbitData : MonoBehaviour {
 
     public VectorD rv;
     public VectorD params_;
-    OrbitalTools.OrbitalElements oe;
+    OrbitalElements oe = new OrbitalElements();
 
     public static float scale = 1;
     static double r = 4;
@@ -24,6 +25,22 @@ public class OrbitData : MonoBehaviour {
                            (float)rv[4], (float)rv[5]);
     }
 
+    public OrbitalElements getOE()
+    {
+        OrbitalElements ret = new OrbitalElements();
+        ret.sma = oe.sma;
+        ret.lan = oe.lan;
+        ret.inc = oe.inc;
+        ret.ecc = oe.ecc;
+        ret.tra = oe.tra;
+        ret.aop = oe.aop;
+        return ret;
+    }
+
+    public double getPeriod()
+    {
+        return 2 * Math.PI * Math.Sqrt(oe.sma / parentGM);
+    }
     void Start()
     {
         rv = new VectorD();

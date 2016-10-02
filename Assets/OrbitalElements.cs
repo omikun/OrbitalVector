@@ -23,6 +23,23 @@ namespace OrbitalTools
             Debug.Log("aop: " + aop);
             Debug.Log("tra: " + tra);
         }
+        public double getPeriod()
+        {
+            return 2 * Math.PI * Math.Sqrt(sma / OrbitData.parentGM);
+        }
+        public OrbitalElements copyOE()
+        {
+            OrbitalElements ret = new OrbitalElements();
+            ret.sma = sma;
+            ret.lan = lan;
+            ret.inc = inc;
+            ret.ecc = ecc;
+            ret.tra = tra;
+            ret.aop = aop;
+            return ret;
+        }
+
+
     }
     public class Program
     {
@@ -39,7 +56,7 @@ system.
         {
             return (Math.Log(1 + x) - Math.Log(1 - x)) / 2;
         }
-        double timeUntilAnomaly(double grav_param, OrbitalElements oe, double
+        public static double timeUntilAnomaly(double grav_param, OrbitalElements oe, double
         true_anomaly)
         {
             if (oe.sma > 0.0)
@@ -87,7 +104,7 @@ system.
     * @param       delta_time      The elapsed time.
     * @returns     The true anomaly at the final time.
 */
-        double anomalyAfterTime(double grav_param, OrbitalElements oe, double
+        public static double anomalyAfterTime(double grav_param, OrbitalElements oe, double
         delta_time)
         {
             if (oe.sma > 0.0)
@@ -139,7 +156,7 @@ system.
 
     }
     public class Util
-    { 
+    {
         /**
     * Converts orbital elements to position and velocity.
     * @param grav_param The gravitational parameter of the two-body system.
@@ -147,22 +164,22 @@ system.
     * @returns A vector corresponding to the concatenated position and
 velocity.
 */
-        public static VectorD oe2rv(double grav_param, OrbitalElements oe)
+        public static Vector3 oe2r(double grav_param, OrbitalElements oe)
         {
             // rotation matrix
             double R11 =
-    Math.Acos(oe.aop) * Math.Acos(oe.lan) - Math.Acos(oe.inc) * Math.Sin(oe.aop) * Math.Sin(oe.lan);
+    Math.Cos(oe.aop) * Math.Cos(oe.lan) - Math.Cos(oe.inc) * Math.Sin(oe.aop) * Math.Sin(oe.lan);
             double R12 =
-    -Math.Acos(oe.lan) * Math.Sin(oe.aop) - Math.Acos(oe.inc) * Math.Acos(oe.aop) * Math.Sin(oe.lan);
+    -Math.Cos(oe.lan) * Math.Sin(oe.aop) - Math.Cos(oe.inc) * Math.Cos(oe.aop) * Math.Sin(oe.lan);
             //double R13 = Math.Sin(oe.inc)*Math.Sin(oe.lan);
             double R21 =
-    Math.Acos(oe.inc) * Math.Acos(oe.lan) * Math.Sin(oe.aop) + Math.Acos(oe.aop) * Math.Sin(oe.lan);
+    Math.Cos(oe.inc) * Math.Cos(oe.lan) * Math.Sin(oe.aop) + Math.Cos(oe.aop) * Math.Sin(oe.lan);
             double R22 =
-    Math.Acos(oe.inc) * Math.Acos(oe.aop) * Math.Acos(oe.lan) - Math.Sin(oe.aop) * Math.Sin(oe.lan);
-            //double R23 = -Math.Acos(oe.lan)*Math.Sin(oe.inc);
+    Math.Cos(oe.inc) * Math.Cos(oe.aop) * Math.Cos(oe.lan) - Math.Sin(oe.aop) * Math.Sin(oe.lan);
+            //double R23 = -Math.Cos(oe.lan)*Math.Sin(oe.inc);
             double R31 = Math.Sin(oe.inc) * Math.Sin(oe.aop);
-            double R32 = Math.Acos(oe.aop) * Math.Sin(oe.inc);
-            //double R33 = Math.Acos(oe.inc);
+            double R32 = Math.Cos(oe.aop) * Math.Sin(oe.inc);
+            //double R33 = Math.Cos(oe.inc);
 
             // semi-latus rectum
             double p = oe.sma * (1 - oe.ecc * oe.ecc);
@@ -170,8 +187,8 @@ velocity.
             // position in the perifocal frame
             //std::vector<double> r_pf(3);
             double[] r_pf = new double[3];
-            double r_norm = p / (1 + oe.ecc * Math.Acos(oe.tra));
-            r_pf[0] = r_norm * Math.Acos(oe.tra);
+            double r_norm = p / (1 + oe.ecc * Math.Cos(oe.tra));
+            r_pf[0] = r_norm * Math.Cos(oe.tra);
             r_pf[1] = r_norm * Math.Sin(oe.tra);
             r_pf[2] = 0.0;
 
@@ -179,7 +196,53 @@ velocity.
             //std::vector<double> v_pf(3);
             double[] v_pf = new double[3];
             v_pf[0] = Math.Sqrt(grav_param / p) * -Math.Sin(oe.tra);
-            v_pf[1] = Math.Sqrt(grav_param / p) * (oe.ecc + Math.Acos(oe.tra));
+            v_pf[1] = Math.Sqrt(grav_param / p) * (oe.ecc + Math.Cos(oe.tra));
+            v_pf[2] = 0.0;
+
+            // rotate the position and velocity into the body-fixed inertial frame
+            //std::vector<double> rv(6);
+            VectorD r = new VectorD();
+            r.Resize(3);
+            r[0] = R11 * r_pf[0] + R12 * r_pf[1] /*+R13*r_pf[2]*/;
+            r[1] = R21 * r_pf[0] + R22 * r_pf[1] /*+R23*r_pf[2]*/;
+            r[2] = R31 * r_pf[0] + R32 * r_pf[1] /*+R33*r_pf[2]*/;
+
+            Vector3 pos = new Vector3((float)r[0], (float)r[1], (float)r[2]);
+            return pos;
+        }
+        public static VectorD oe2rv(double grav_param, OrbitalElements oe)
+        {
+            // rotation matrix
+            double R11 =
+    Math.Cos(oe.aop) * Math.Cos(oe.lan) - Math.Cos(oe.inc) * Math.Sin(oe.aop) * Math.Sin(oe.lan);
+            double R12 =
+    -Math.Cos(oe.lan) * Math.Sin(oe.aop) - Math.Cos(oe.inc) * Math.Cos(oe.aop) * Math.Sin(oe.lan);
+            //double R13 = Math.Sin(oe.inc)*Math.Sin(oe.lan);
+            double R21 =
+    Math.Cos(oe.inc) * Math.Cos(oe.lan) * Math.Sin(oe.aop) + Math.Cos(oe.aop) * Math.Sin(oe.lan);
+            double R22 =
+    Math.Cos(oe.inc) * Math.Cos(oe.aop) * Math.Cos(oe.lan) - Math.Sin(oe.aop) * Math.Sin(oe.lan);
+            //double R23 = -Math.Cos(oe.lan)*Math.Sin(oe.inc);
+            double R31 = Math.Sin(oe.inc) * Math.Sin(oe.aop);
+            double R32 = Math.Cos(oe.aop) * Math.Sin(oe.inc);
+            //double R33 = Math.Cos(oe.inc);
+
+            // semi-latus rectum
+            double p = oe.sma * (1 - oe.ecc * oe.ecc);
+
+            // position in the perifocal frame
+            //std::vector<double> r_pf(3);
+            double[] r_pf = new double[3];
+            double r_norm = p / (1 + oe.ecc * Math.Cos(oe.tra));
+            r_pf[0] = r_norm * Math.Cos(oe.tra);
+            r_pf[1] = r_norm * Math.Sin(oe.tra);
+            r_pf[2] = 0.0;
+
+            // velocity in the perifocal frame
+            //std::vector<double> v_pf(3);
+            double[] v_pf = new double[3];
+            v_pf[0] = Math.Sqrt(grav_param / p) * -Math.Sin(oe.tra);
+            v_pf[1] = Math.Sqrt(grav_param / p) * (oe.ecc + Math.Cos(oe.tra));
             v_pf[2] = 0.0;
 
             // rotate the position and velocity into the body-fixed inertial frame

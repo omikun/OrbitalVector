@@ -14,6 +14,7 @@ public class OR_Controller : MonoBehaviour
 
     public static int gripsPressed = 0;
     public static bool afterGrabs = false;
+    public static bool afterGrabs2 = false;
     Vector3 baselineVector;
     Vector3[] gripPositions = new Vector3[2];
     List<GameObject> controllers = new List<GameObject>();
@@ -40,6 +41,8 @@ public class OR_Controller : MonoBehaviour
         Orbit.timeScale = 0.1f;
         if (DataStore.userSelection != null)
             odata = DataStore.userSelection.GetComponent<OrbitData>();
+        else
+            Debug.Log("No selection made!");
     }
 
     private void DoTriggerReleased(object sender, ControllerInteractionEventArgs e)
@@ -65,6 +68,7 @@ public class OR_Controller : MonoBehaviour
         DebugLogger(e.controllerIndex, "GRIP", "released", e);
         gripsPressed--;
         afterGrabs = false;
+        afterGrabs2 = false;
     }
 
     // Use this for initialization
@@ -102,7 +106,6 @@ public class OR_Controller : MonoBehaviour
 #endif
             //populate all objects that will be affected
             worldObjects.Add(GameObject.Find("Earth"));
-            worldObjects.Add(GameObject.Find("Moon"));
             worldObjects.Add(GameObject.Find("OrbitManager"));
             foreach (var ship in GameObject.FindGameObjectsWithTag("ship"))
             {
@@ -135,24 +138,40 @@ public class OR_Controller : MonoBehaviour
     float lastAngle = 0;
     float lastMoveY = 0;
     float lastY = 0;
+    Vector3 lastPos;
     // Update is called once per frame
     void Update()
     {
         if (line.enabled && odata != null)
         {
             line.SetPosition(0, originPos);
+            line.SetPosition(1, transform.position);
 
-            //FIXME using newpos with locked y to get around wonky inc/lan in rv2oe()
-            var newpos = transform.position;
-            //newpos.y = originPos.y;
-            line.SetPosition(1, newpos);
-
-            Vector3 velVector = newpos - originPos;
+            Vector3 velVector = transform.position - originPos;
             velVector *= 3f;
             odata.params_[4] = (double)velVector.x;
             odata.params_[5] = (double)velVector.y;
             odata.params_[6] = (double)velVector.z;
         }
+        if (gripsPressed == 1 && leftController != null)
+        {
+            if (afterGrabs2 == false)
+            {
+                afterGrabs2 = true;
+                lastPos = transform.position;
+            }
+            //rotate
+            float angle = -AngleSigned(transform.position, lastPos, Vector3.up);
+            lastPos = transform.position;
+            angle *= 10;
+            //var tempAngle = angle;
+            //angle -= lastAngle;
+            //lastAngle = tempAngle;
+            totalAngle += angle;
+
+            for (int i = 0; i < worldObjects.Count; i++)
+                worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
+        } else 
         if (gripsPressed == 2 && leftController != null)
         {
             if (afterGrabs == false)
@@ -179,13 +198,13 @@ public class OR_Controller : MonoBehaviour
 
                 var diff = newVector - baselineVector;
                 var angle = Vector3.Angle(baselineVector, newVector);
-
+/*
                 angle = -AngleSigned(newVector, baselineVector, Vector3.up);
                 var tempAngle = angle;
                 angle -= lastAngle;
                 lastAngle = tempAngle;
                 totalAngle += angle;
-
+*/
                 var moveY = newVector.y - baselineVector.y;
                 var y = transform.position.y + leftController.transform.position.y;
                 moveY = (y - lastY)/2;
@@ -196,7 +215,6 @@ public class OR_Controller : MonoBehaviour
                 for (int i = 0; i < worldObjects.Count; i++)
                 {
                     worldObjects[i].transform.localScale = scale * worldObjectScales[i];
-                    worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
                     worldObjects[i].transform.Translate(Vector3.up * moveY, Space.World);
                 }
                 OrbitData.scale = baseScale * scale;
