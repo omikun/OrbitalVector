@@ -78,7 +78,7 @@ public class Orbit : MonoBehaviour
         var newObj = Instantiate(OrbitRenderer);
         newObj.transform.parent = transform;
         var newLineRenderer = newObj.GetComponent<LineRenderer>();
-        newLineRenderer.SetVertexCount(segments + 2);
+        newLineRenderer.SetVertexCount(segments+1);
         lines.Add(newLineRenderer);
     }
     static int FrameCount = 0;
