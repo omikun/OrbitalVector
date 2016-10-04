@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using OrbitalTools;
 using System;
+ using System.Text;
+ using System.IO;
 
 public class Orbit : MonoBehaviour
 {
@@ -16,6 +18,7 @@ public class Orbit : MonoBehaviour
     public static Vector3 accelVector;
     public GameObject OrbitRenderer;
 
+    List<String> output = new List<String>();
     //This is just a test, not actually used for anything
     void drawEllipse()
     {
@@ -53,7 +56,7 @@ public class Orbit : MonoBehaviour
             pos.z = r * Mathf.Sin(theta);
             line.SetPosition(i, rot * pos);
         }
-        line.SetPosition(i++, Vector3.zero);
+        //line.SetPosition(i++, Vector3.zero);
         //line.SetPosition(i++, rot*Vector3.up);
 
     }
@@ -68,7 +71,7 @@ public class Orbit : MonoBehaviour
             AddOrbitRenderer(ship);
         }
 
-        InvokeRepeating("prepFindIntercept", 15.0f, .1f);
+        InvokeRepeating("prepFindIntercept", 5.0f, 2f);
     }
     void AddOrbitRenderer(GameObject ship)
     {
@@ -162,36 +165,39 @@ public class Orbit : MonoBehaviour
         drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
     }
 
-
-
-
-    Vector3 RotateAround(Vector3 center, Vector3 axis, float angle)
-    {
-        var pos = transform.position;
-        var rot = Quaternion.AngleAxis(angle, axis); // get the desired rotation
-        var dir = pos - center; // find current direction relative to center
-        dir = rot * dir; // rotate the direction
-        return center + dir;
-        // rotate object to keep looking at the center:
-        //        var myRot = transform.rotation;
-        //       transform.rotation *= Quaternion.Inverse(myRot) * rot * myRot;
-    }
-
+    bool writeOnce = true;
     //find closest point
     public GameObject intMarker1, intMarker2;
-    int steps = 0;
-        double time = 0;
-        float prevDiff = float.MaxValue;
     public void findInterceptPoints(OrbitalElements oe1, OrbitalElements oe2)
     {
+        int steps = 0;
+        double time = 0;
+        float prevDiff = float.MaxValue;
+        double tra1, tra2;
+        bool first = true;
+        double timeStep = 0;
+        bool forwardMode = true;
+
+        if (steps >= 360)
+        {
+            if (writeOnce)
+                //Savecsv();
+            writeOnce = false;
+            return;
+        }
+
         double gm = OrbitData.parentGM;
-        double period = oe1.getPeriod();
-        double timeStep = period / 10;
-        double tra1 = oe1.tra, tra2 = oe2.tra;
-        //TODO consider repeating this loop to find second closest intercept
-#if true
+        double period = oe1.getPeriod();//use period of source ship Math.Max(oe1.getPeriod(), oe2.getPeriod());
+        if (first)
+        {
+            timeStep = period / 360;
+            tra1 = oe1.tra;
+            tra2 = oe2.tra;
+        }
         var debugLine = transform.Find("debug").GetComponent<LineRenderer>();
-        //while (timeStep >= .01d && time < period && steps < 400)
+        Vector3 minpos1 = new Vector3();
+        Vector3 minpos2 = new Vector3();
+        while (timeStep >= .01d && time < period && steps < 360)
         {
             tra1 = Program.anomalyAfterTime(OrbitData.parentGM, oe1, time);
             tra2 = Program.anomalyAfterTime(OrbitData.parentGM, oe2, time);
@@ -202,35 +208,43 @@ public class Orbit : MonoBehaviour
             var pos1 = Util.oe2r(OrbitData.parentGM, tempoe1);
             var pos2 = Util.oe2r(OrbitData.parentGM, tempoe2);
             float thisDiff = (pos1 - pos2).magnitude;
-            if (thisDiff < prevDiff)
+            //Debug.Log(thisDiff);
+            //output.Add("C," + tra1 + "," + tra2 + "," + thisDiff + "\n");
+            if (thisDiff < prevDiff && forwardMode)
             {
-            oe1.tra = tra1;
-            oe2.tra = tra2;
-                time += timeStep;
                 prevDiff = thisDiff;
-            } else {
+                minpos1 = pos1;
+                minpos2 = pos2;
+            }
+            time += timeStep;
+            //else {
+            if (false) {
+                forwardMode = false;
+                Debug.Log("time step halved!");
                 timeStep /= 2;
                 time -= timeStep;
             }
             steps++;
             debugLine.SetPosition(0, pos1);
             debugLine.SetPosition(1, pos2);
-        }
-#endif
-        {
-            VectorD rv = Util.oe2rv(OrbitData.parentGM, oe1);
-            Vector3 pos = new Vector3((float)rv[0],
-                                      (float)rv[1],
-                                      (float)rv[2]);
-            //Debug.Log("intercept tra: " + tra1 + " pos: " + pos);
-            pos = Util.oe2r(OrbitData.parentGM, oe2);
-            //Debug.Log("intercept tra: " + tra2 + " pos: " + pos);
-            intMarker1.transform.position = pos;
-            intMarker2.transform.position = Util.oe2r(OrbitData.parentGM, oe2);
+            intMarker1.transform.localPosition = minpos1;// Util.oe2r(OrbitData.parentGM, oe1);
+            intMarker2.transform.localPosition = minpos2;// Util.oe2r(OrbitData.parentGM, oe2);
         } 
     }
     //find point of inclination, periapsis, apoapsis, etc
     //AN/DN - whatever points that are at y=0! :D
     //periapsis: lan + aop = tra of peri, plug that in to oe2r to get r
     //apoapsis: periapsis + 180
+
+    void Savecsv()
+    {
+        string filePath = @"/temp/Saved_data.csv";
+
+        int length = output.Count;
+        StringBuilder sb = new StringBuilder();
+        for (int index = 0; index < length; index++)
+            sb.Append(output[index]);
+
+        File.WriteAllText(filePath, sb.ToString());
+    }
 }

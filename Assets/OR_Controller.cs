@@ -11,10 +11,10 @@ public class OR_Controller : MonoBehaviour
     OrbitData odata;
     Vector3 accelVector;
     public GameObject leftController;
+    Vector3 lastPos;
 
     public static int gripsPressed = 0;
     public static bool afterGrabs = false;
-    public static bool afterGrabs2 = false;
     Vector3 baselineVector;
     Vector3[] gripPositions = new Vector3[2];
     List<GameObject> controllers = new List<GameObject>();
@@ -61,6 +61,7 @@ public class OR_Controller : MonoBehaviour
         DebugLogger(e.controllerIndex, "GRIP", "pressed", e);
         //OR_Controller.gripsPressed++;
         gripsPressed++;
+            lastPos = transform.position;
     }
 
     private void DoGripReleased(object sender, ControllerInteractionEventArgs e)
@@ -68,7 +69,6 @@ public class OR_Controller : MonoBehaviour
         DebugLogger(e.controllerIndex, "GRIP", "released", e);
         gripsPressed--;
         afterGrabs = false;
-        afterGrabs2 = false;
     }
 
     // Use this for initialization
@@ -125,6 +125,7 @@ public class OR_Controller : MonoBehaviour
             }
         }
     }
+    //returns degrees
     public static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
     {
         return Mathf.Atan2(
@@ -138,8 +139,17 @@ public class OR_Controller : MonoBehaviour
     float lastAngle = 0;
     float lastMoveY = 0;
     float lastY = 0;
-    Vector3 lastPos;
     // Update is called once per frame
+    void rotateWorld()
+    {
+        float angle = -AngleSigned(transform.position, lastPos, Vector3.up);
+        lastPos = transform.position;
+        angle *= 10;
+        totalAngle += angle;
+
+        for (int i = 0; i < worldObjects.Count; i++)
+            worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
+    }
     void Update()
     {
         if (line.enabled && odata != null)
@@ -148,6 +158,10 @@ public class OR_Controller : MonoBehaviour
             line.SetPosition(1, transform.position);
 
             Vector3 velVector = transform.position - originPos;
+
+            //velVector is the apparent vector, but we want the real vector before world rotation, so we'll need to rotate back apparent vector to get real vector
+            var antiWorldRotation = Quaternion.AngleAxis(-totalAngle, Vector3.up);
+            velVector = antiWorldRotation * velVector;
             velVector *= 3f;
             odata.params_[4] = (double)velVector.x;
             odata.params_[5] = (double)velVector.y;
@@ -155,22 +169,7 @@ public class OR_Controller : MonoBehaviour
         }
         if (gripsPressed == 1 && leftController != null)
         {
-            if (afterGrabs2 == false)
-            {
-                afterGrabs2 = true;
-                lastPos = transform.position;
-            }
-            //rotate
-            float angle = -AngleSigned(transform.position, lastPos, Vector3.up);
-            lastPos = transform.position;
-            angle *= 10;
-            //var tempAngle = angle;
-            //angle -= lastAngle;
-            //lastAngle = tempAngle;
-            totalAngle += angle;
-
-            for (int i = 0; i < worldObjects.Count; i++)
-                worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
+            rotateWorld();
         } else 
         if (gripsPressed == 2 && leftController != null)
         {
@@ -218,15 +217,6 @@ public class OR_Controller : MonoBehaviour
                     worldObjects[i].transform.Translate(Vector3.up * moveY, Space.World);
                 }
                 OrbitData.scale = baseScale * scale;
-            }
-        }
-        if (false)//else
-        {
-            for (int i = 0; i < worldObjects.Count; i++)
-            {
-                //scale doesn't change, so no need to keep updating those
-                //worldObjects[i].transform.localScale = scale * worldObjectScales[i];// new Vector3(.05f, .05f, .05f);
-                worldObjects[i].transform.position = scale * worldObjectPositions[i];// new Vector3(.05f, .05f, .05f);
             }
         }
     }

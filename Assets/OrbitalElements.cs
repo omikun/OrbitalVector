@@ -25,7 +25,7 @@ namespace OrbitalTools
         }
         public double getPeriod()
         {
-            return 2 * Math.PI * Math.Sqrt(sma / OrbitData.parentGM);
+            return 2 * Math.PI * Math.Sqrt(Math.Pow(sma, 3) / OrbitData.parentGM);
         }
         public OrbitalElements copyOE()
         {
