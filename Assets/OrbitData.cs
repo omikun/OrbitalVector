@@ -24,6 +24,14 @@ public class OrbitData : MonoBehaviour {
         return new Vector3((float)rv[3], 
                            (float)rv[4], (float)rv[5]);
     }
+    public Vector3d getR()
+    {
+        return new Vector3d(rv[0], rv[1], rv[2]);
+    }
+    public Vector3d getV()
+    {
+        return new Vector3d(rv[3], rv[4], rv[5]);
+    }
 
     public OrbitalElements getOE()
     {

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using VRTK;
+using MuMech;
 
 public class OR_Controller : MonoBehaviour
 {
@@ -43,6 +44,20 @@ public class OR_Controller : MonoBehaviour
             odata = DataStore.userSelection.GetComponent<OrbitData>();
         else
             Debug.Log("No selection made!");
+
+        if (leftController == null)
+        {
+            Vector3d r1 = GameObject.Find("ship_test1").GetComponent<OrbitData>().getR();
+            Vector3d r2 = GameObject.Find("ship_test2").GetComponent<OrbitData>().getR();
+            Vector3d initVel, finalVel;
+            LambertSolver.Solve(r1, r2, 5, OrbitData.parentGM, true, out initVel, out finalVel);
+
+            Debug.Log("Computing lambert solver: " + initVel.x + ", " + initVel.y + ", " + initVel.z);
+            var thisodata = GameObject.Find("ship_test1").GetComponent<OrbitData>();
+            thisodata.params_[4] = initVel.x;
+            thisodata.params_[5] = initVel.y;
+            thisodata.params_[6] = initVel.z;
+        }
     }
 
     private void DoTriggerReleased(object sender, ControllerInteractionEventArgs e)
