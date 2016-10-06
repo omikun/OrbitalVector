@@ -166,6 +166,12 @@ velocity.
 */
         public static Vector3 oe2r(double grav_param, OrbitalElements oe)
         {
+            var v = oe2rd(grav_param, oe);
+            Vector3 pos = new Vector3((float)v.x, (float)v.y, (float)v.z);
+            return pos;
+        }
+        public static Vector3d oe2rd(double grav_param, OrbitalElements oe)
+        {
             // rotation matrix
             double R11 =
     Math.Cos(oe.aop) * Math.Cos(oe.lan) - Math.Cos(oe.inc) * Math.Sin(oe.aop) * Math.Sin(oe.lan);
@@ -207,7 +213,7 @@ velocity.
             r[1] = R21 * r_pf[0] + R22 * r_pf[1] /*+R23*r_pf[2]*/;
             r[2] = R31 * r_pf[0] + R32 * r_pf[1] /*+R33*r_pf[2]*/;
 
-            Vector3 pos = new Vector3((float)r[0], (float)r[1], (float)r[2]);
+            Vector3d pos = new Vector3d(r[0], r[1], r[2]);
             return pos;
         }
         public static VectorD oe2rv(double grav_param, OrbitalElements oe)

@@ -44,6 +44,10 @@ public class OrbitData : MonoBehaviour {
         ret.aop = oe.aop;
         return ret;
     }
+    public void setOE(OrbitalElements oe_)
+    {
+        oe = oe_;
+    }
 
     public double getPeriod()
     {
