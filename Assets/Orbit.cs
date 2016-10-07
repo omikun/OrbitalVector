@@ -104,11 +104,16 @@ public class Orbit : MonoBehaviour
                 Debug.Log("no orbital data from ship!!");
             }
             //calculate next step
+            if (odata.params_[4] != 0)
+                Debug.Log("acceleration detected!");
             odata.rv = Util.rungeKutta4(0, timeScale * Time.deltaTime, odata.rv, odata.params_);
             odata.params_[4] = 0;
             odata.params_[5] = 0;
             odata.params_[6] = 0;
-            DrawOrbit(lines[count], ref odata.rv);
+
+            odata.setOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
+            var oe = odata.getOE();
+            DrawOrbit(lines[count], ref oe);
 
             count++;
         }
@@ -134,7 +139,7 @@ public class Orbit : MonoBehaviour
 #endif
     }
 
-    void DrawOrbit(LineRenderer line, ref VectorD rv)
+    void DrawOrbit(LineRenderer line, ref OrbitalElements oe)
     {
 #if false
         Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
@@ -143,7 +148,6 @@ public class Orbit : MonoBehaviour
         //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
         //VectorD rv = calcNextStep(rv, params_);
 
-        var oe = Util.rv2oe(OrbitData.parentGM, rv);
 #if true
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.Append("Orbital Vector\n");

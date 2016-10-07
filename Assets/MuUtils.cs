@@ -15,6 +15,12 @@ public class Vector3d
         z = z_;
         magnitude = Math.Sqrt(x * x + y * y + z * z);
     }
+    public string ToString()
+    {
+        return x.ToString() + ", " +
+               y.ToString() + ", " +
+               z.ToString();
+    }
     public static double Dot(Vector3d a, Vector3d b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z;

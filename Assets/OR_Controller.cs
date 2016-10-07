@@ -47,16 +47,23 @@ public class OR_Controller : MonoBehaviour
 
         if (leftController == null)
         {
-            Vector3d r1 = GameObject.Find("ship_test1").GetComponent<OrbitData>().getR();
-            Vector3d r2 = GameObject.Find("ship_test2").GetComponent<OrbitData>().getR();
-            Vector3d initVel, finalVel;
-            LambertSolver.Solve(r1, r2, 5, OrbitData.parentGM, true, out initVel, out finalVel);
-
-            Debug.Log("Computing lambert solver: " + initVel.x + ", " + initVel.y + ", " + initVel.z);
+            PorkChopPlot.triggerPork = true;
+         
+            double time = 30d;
             var thisodata = GameObject.Find("ship_test1").GetComponent<OrbitData>();
-            thisodata.params_[4] = initVel.x;
-            thisodata.params_[5] = initVel.y;
-            thisodata.params_[6] = initVel.z;
+            Vector3d r1 = thisodata.getR();
+
+            var oe2 = GameObject.Find("ship_test2").GetComponent<OrbitData>().getOE();
+            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, time);
+            oe2.tra = tra2;
+            Vector3d r2 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe2);
+
+            Vector3d initVel, finalVel;
+            LambertSolver.Solve(r1, r2, time, OrbitData.parentGM, true, out initVel, out finalVel);
+
+            thisodata.rv[3] = initVel.x;
+            thisodata.rv[4] = initVel.y;
+            thisodata.rv[5] = initVel.z;
         }
     }
 
