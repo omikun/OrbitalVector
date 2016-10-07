@@ -37,38 +37,51 @@ public class PorkChopPlot : MonoBehaviour {
     void Update() {
 	    if (triggerPork)
         {
-            porkchop();
+            //porkchop();
+            StartCoroutine("porkchop");
         }
     }
-    bool porkchop() { 
-            //starting time
-            for (double startTime=0; startTime < imgWidth; startTime++)
+    IEnumerator porkchop() {
+        double multiplier = 10;
+        double multiplier2 = 40;
+        //starting time
+        for (double startTime = 0; startTime < imgWidth; startTime++)
+        {
+            //jounrey time, broken into multiple blocks for perf reasons
+            int maxBlock = 30;
+            for (double block = 0; block < maxBlock; block++)
             {
-                //jounrey time
-                double multiplier = 10;
-                double multiplier2 = 40;
-                for (double travelTime = 1; travelTime < imgHeight; travelTime++ )
+                double blockStart = block / maxBlock * imgHeight ;
+                blockStart = (blockStart == 0) ? 1 : blockStart;
+                double blockLimit = (block + 1) / maxBlock * imgHeight ;
+                for (double travelTime = blockStart; travelTime < blockLimit; travelTime++)
                 {
                     var oe1 = GameObject.Find("ship_test1").GetComponent<OrbitData>().getOE();
                     var oe2 = GameObject.Find("ship_test2").GetComponent<OrbitData>().getOE();
-                    var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime*multiplier);
-                    var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, travelTime*multiplier2);
+                    var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime * multiplier);
+                    var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, travelTime * multiplier2);
                     oe2.tra = tra2;
                     Vector3d r1 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe1);
                     Vector3d r2 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe2);
 
                     Vector3d initVel, finalVel;
-                    MuMech.LambertSolver.Solve(r1, r2, travelTime*multiplier2, OrbitData.parentGM, true, out initVel, out finalVel);
-                    Debug.Log("initVel " + initVel.magnitude);
+                    MuMech.LambertSolver.Solve(r1, r2, travelTime * multiplier2, OrbitData.parentGM, true, out initVel, out finalVel);
+                    //Debug.Log("initVel " + initVel.magnitude);
 
                     var i = (float)startTime;
                     var j = (float)travelTime;
                     int maxHue = 2;
                     texture.SetPixel((int)i, (int)j, MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (float)initVel.magnitude, 1f, 1.0f, 1f));
+                    if (j == 1)
+                    {
+                        j = 0;
+                        texture.SetPixel((int)i, (int)j, MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (float)initVel.magnitude, 1f, 1.0f, 1f));
+                    }
                 }
+                texture.Apply();
+                yield return true;
             }
-            triggerPork = false;
-                    texture.Apply();
-                    return true;
-	}
+        }
+        triggerPork = false;
+    }
 }
