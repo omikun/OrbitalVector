@@ -216,6 +216,12 @@ velocity.
             Vector3d pos = new Vector3d(r[0], r[1], r[2]);
             return pos;
         }
+        public static void oe2rv(double grav_param, OrbitalElements oe, out Vector3d r, out Vector3d v)
+        {
+            var rv = oe2rv(grav_param, oe);
+            r = new Vector3d(rv[0], rv[1], rv[2]);
+            v = new Vector3d(rv[3], rv[4], rv[5]);
+        }
         public static VectorD oe2rv(double grav_param, OrbitalElements oe)
         {
             // rotation matrix
