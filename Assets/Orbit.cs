@@ -18,7 +18,7 @@ public class Orbit : MonoBehaviour
     public static Vector3 accelVector;
     public GameObject OrbitRenderer;
 
-    List<String> output = new List<String>();
+    public static List<String> output = new List<String>();
     //This is just a test, not actually used for anything
     void drawEllipse()
     {
@@ -240,7 +240,7 @@ public class Orbit : MonoBehaviour
     //periapsis: lan + aop = tra of peri, plug that in to oe2r to get r
     //apoapsis: periapsis + 180
 
-    void Savecsv()
+    public static void Savecsv()
     {
         string filePath = @"/temp/Saved_data.csv";
 

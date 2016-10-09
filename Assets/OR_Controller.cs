@@ -172,7 +172,8 @@ public class OR_Controller : MonoBehaviour
         for (int i = 0; i < worldObjects.Count; i++)
             worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
     }
-    void Update()
+
+    void OAccelerate()
     {
         if (line.enabled && odata != null)
         {
@@ -189,6 +190,22 @@ public class OR_Controller : MonoBehaviour
             odata.params_[5] = (double)velVector.y;
             odata.params_[6] = (double)velVector.z;
         }
+    }
+    void simpleMove()
+    {
+        if (DataStore.simpleMovement && line.enabled)
+        {
+            //take userSelection and move to destination on trigger release
+            //draw line from userSelection.transform.position to transform.position
+            line.SetPosition(0, DataStore.userSelection.transform.position);
+            line.SetPosition(1, transform.position);
+        }
+    }
+    void Update()
+    {
+        OAccelerate();
+        simpleMove();
+        
         if (gripsPressed == 1 && leftController != null)
         {
             rotateWorld();

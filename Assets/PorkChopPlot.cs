@@ -75,47 +75,64 @@ public class PorkChopPlot : MonoBehaviour {
     }
     void porkchop()
     {
-        double multiplier = 1;
-        double multiplier2 = 1;
+        double multiplier = 1d;
+        double multiplier2 = 1d;
         while (_threadRunning)
         {
             if (_triggerPork)
             {
+                float maxHue = 1.0f;
+                float minHue = 360.0f;
                 //starting time
-                for (double startTime = 0; startTime < imgWidth; startTime++)
+                for (double x = 0; x < imgWidth; x++)
                 {
-                    //jounrey time, broken into multiple blocks for perf reasons
-                    for (double travelTime = 1; travelTime < imgHeight; travelTime++)
+                    //travel time
+                    for (double y = 1; y < imgHeight; y++)
                     {
-                        var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime * multiplier);
-                        var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, travelTime * multiplier2);
-                        oe2.tra = tra2;
+                        var startTime = x * multiplier;
+                        var travelTime = y * multiplier;
+                        var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime);
+                        var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, startTime + travelTime);
+                        var tempOe1 = oe1.copyOE();
+                        var tempOe2 = oe2.copyOE();
+                        tempOe2.tra = tra2;
+                        tempOe1.tra = tra1;
+
                         Vector3d r1, v1;
-                        OrbitalTools.Util.oe2rv(OrbitData.parentGM, oe1, out r1, out v1);
+                        OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe1, out r1, out v1);
+                        Vector3d r2, v2;
+                        OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe2, out r2, out v2);
                         //Vector3d r1 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe1);
-                        Vector3d r2 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe2);
+                        //Vector3d r2 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe2);
 
                         Vector3d initVel, finalVel;
-                        MuMech.LambertSolver.Solve(r1, r2, travelTime * multiplier2, OrbitData.parentGM, true, out initVel, out finalVel);
+                        MuMech.LambertSolver.Solve(r1, r2, y * multiplier2, OrbitData.parentGM, true, out initVel, out finalVel);
                         //Debug.Log("initVel " + initVel.magnitude);
 
-                        var i = (float)startTime;
-                        var j = (float)travelTime;
-                        int maxHue = 20;
-                        int index = (int)j * (int)imgWidth + (int)imgWidth - (int)i - 1;
-                        var diffMag = (float)(initVel - v1).magnitude;
+                        int index = (int)(y) * (int)imgWidth + (int)x ;
+                        var diffMag = (float)(initVel - v1).magnitude + (float)(finalVel - v2).magnitude;
+                        //diffMag = (float)initVel.magnitude;
+                        //Debug.Log("diffMag: " + diffMag);
                         //texture.SetPixel((int)i, (int)j, MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (float)initVel.magnitude, 1f, 1.0f, 1f));
-                        porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * diffMag, 1f, 1.0f, 1f);
-                        if (j == 1)
-                        {
-                            j = 0;
-                            index = (int)j * (int)imgWidth + (int)imgWidth - (int)i - 1;
-                            //texture.SetPixel((int)i, (int)j, MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (float)initVel.magnitude, 1f, 1.0f, 1f));
-                            porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * diffMag, 1f, 1.0f, 1f);
-                        }
+                        porkChopValues[index] = diffMag;
+                        maxHue = Mathf.Max(maxHue, diffMag);
+                        minHue = Mathf.Min(minHue, diffMag);
                     }//per row
                 }//per column
-                 //porkchop values computed
+                //porkchop values computed
+                //convert to colors
+                Debug.Log("Max hue: " + maxHue);
+                for (int index = 0; index < imgWidth*imgHeight; index++)
+                {
+                    var itIndex = (index < imgWidth) ? index + imgWidth : index;
+                    porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[itIndex]), 1f, 1.0f, 1f);
+                    //Orbit.output.Add(porkChopValues[itIndex].ToString() + ",");
+                    //if ((index+1) % (imgWidth) == 0)
+                    //{
+                    //    Orbit.output.Add("\n");
+                    //}
+                }
+                //Orbit.Savecsv();
                 _triggerPork = false;
                 porkDone = true;
             }
