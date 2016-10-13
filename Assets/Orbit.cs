@@ -123,14 +123,14 @@ public class Orbit : MonoBehaviour
     {
 #if true
         //show markers on closest approach
-        var od = GameObject.Find("ship_test1").GetComponent<OrbitData>();
+        var od = UXStateManager.GetSource().GetComponent<OrbitData>();
         if (od == null) Debug.Log("can't find ship1.OrbitData");
         //Debug.Log("printing OrbitData: " + od.oe);
         //OrbitalElements oe1 = od.getOE();
         var oe1 = Util.rv2oe(OrbitData.parentGM, od.rv);
         if (oe1 == null) Debug.Log("can't find ship1.OrbitData.oe");
 
-        var od2 = GameObject.Find("ship_test2").GetComponent<OrbitData>();
+        var od2 = UXStateManager.GetTarget().GetComponent<OrbitData>();
         var oe2 = Util.rv2oe(OrbitData.parentGM, od2.rv);
         if (oe2 == null) Debug.Log("can't find ship2.OrbitData.oe");
         //Debug.Log("calling findInterceptPoint");

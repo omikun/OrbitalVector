@@ -17,10 +17,10 @@ public class InteractableShip : VRTK_InteractableObject {
         onSelect = true;
         timeOnSelect = Time.time;
 
-        Debug.Log("ship selected!");
+        Debug.Log(name + "selected!");
         debugToolTip.triggerText = "selected!";
                 debugToolTip.triggerInitialised = false;
-        DataStore.userSelection = gameObject;
+        UXStateManager.SelectUnit(gameObject);
         triggerObj.SetActive(true);
     }
 

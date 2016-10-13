@@ -9,7 +9,6 @@ public class OR_Controller : MonoBehaviour
     public GameObject mov_origin; //obj when trigger first pressed
     Vector3 originPos;
     LineRenderer line;
-    OrbitData odata;
     Vector3 accelVector;
     public GameObject leftController;
     Vector3 lastPos;
@@ -40,20 +39,16 @@ public class OR_Controller : MonoBehaviour
         line.enabled = true;
 
         Orbit.timeScale = 0.1f;
-        if (DataStore.userSelection != null)
-            odata = DataStore.userSelection.GetComponent<OrbitData>();
-        else
-            Debug.Log("No selection made!");
 
         if (leftController == null)
         {
             PorkChopPlot.triggerPork = true;
          
             double time = 30d;
-            var thisodata = GameObject.Find("ship_test1").GetComponent<OrbitData>();
+            var thisodata = UXStateManager.GetSource().GetComponent<OrbitData>();
             Vector3d r1 = thisodata.getR();
 
-            var oe2 = GameObject.Find("ship_test2").GetComponent<OrbitData>().getOE();
+            var oe2 = UXStateManager.GetTarget().GetComponent<OrbitData>().getOE();
             var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, time);
             oe2.tra = tra2;
             Vector3d r2 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe2);
@@ -75,7 +70,6 @@ public class OR_Controller : MonoBehaviour
         Orbit.accelVector = Vector3.zero;
 
         Orbit.timeScale = 1;
-        odata = null;
     }
 
     private void DoGripPressed(object sender, ControllerInteractionEventArgs e)
@@ -175,7 +169,7 @@ public class OR_Controller : MonoBehaviour
 
     void OAccelerate()
     {
-        if (line.enabled && odata != null)
+        if (line.enabled && UXStateManager.GetSource() != null)
         {
             line.SetPosition(0, originPos);
             line.SetPosition(1, transform.position);
@@ -186,6 +180,7 @@ public class OR_Controller : MonoBehaviour
             var antiWorldRotation = Quaternion.AngleAxis(-totalAngle, Vector3.up);
             velVector = antiWorldRotation * velVector;
             velVector *= 3f;
+            var odata = UXStateManager.GetSource().GetComponent<OrbitData>();
             odata.params_[4] = (double)velVector.x;
             odata.params_[5] = (double)velVector.y;
             odata.params_[6] = (double)velVector.z;
@@ -197,7 +192,7 @@ public class OR_Controller : MonoBehaviour
         {
             //take userSelection and move to destination on trigger release
             //draw line from userSelection.transform.position to transform.position
-            line.SetPosition(0, DataStore.userSelection.transform.position);
+            line.SetPosition(0, UXStateManager.GetSource().transform.position);
             line.SetPosition(1, transform.position);
         }
     }

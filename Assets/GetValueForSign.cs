@@ -14,11 +14,10 @@ public class GetValueForSign : MonoBehaviour {//: VRTK.VRTK_ObjectTooltip {
 	
 	// Update is called once per frame
 	void Update () {
-        if (DataStore.userSelection == null)
-        {
-            return;
-        }
-        var speed = DataStore.userSelection.GetComponent<OrbitData>().getVel();
+        var userSelection = UXStateManager.GetSource();
+        if (userSelection == null) { return; }
+
+        var speed = userSelection.GetComponent<OrbitData>().getVel();
         link.displayText = prependText + speed.magnitude.ToString();
         link.Reset();
         //transform.LookAt(camera.transform, Vector3.up);
