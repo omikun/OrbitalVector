@@ -71,7 +71,7 @@ public class Orbit : MonoBehaviour
             AddOrbitRenderer(ship);
         }
 
-        InvokeRepeating("prepFindIntercept", 5.0f, 2f);
+        //InvokeRepeating("prepFindIntercept", 5.0f, 2f);
     }
     void AddOrbitRenderer(GameObject ship)
     {
@@ -119,24 +119,20 @@ public class Orbit : MonoBehaviour
         }
 
     }
-    void prepFindIntercept()
+    public void prepFindIntercept()
     {
-#if true
+        var src = UXStateManager.GetSource();
+        var tgt = UXStateManager.GetTarget();
+        if (src == null || tgt == null)
+            return;
         //show markers on closest approach
-        var od = UXStateManager.GetSource().GetComponent<OrbitData>();
-        if (od == null) Debug.Log("can't find ship1.OrbitData");
-        //Debug.Log("printing OrbitData: " + od.oe);
-        //OrbitalElements oe1 = od.getOE();
-        var oe1 = Util.rv2oe(OrbitData.parentGM, od.rv);
-        if (oe1 == null) Debug.Log("can't find ship1.OrbitData.oe");
+        var od1 = src.GetComponent<OrbitData>();
+        var oe1 = Util.rv2oe(OrbitData.parentGM, od1.rv);
 
-        var od2 = UXStateManager.GetTarget().GetComponent<OrbitData>();
+        var od2 = tgt.GetComponent<OrbitData>();
         var oe2 = Util.rv2oe(OrbitData.parentGM, od2.rv);
-        if (oe2 == null) Debug.Log("can't find ship2.OrbitData.oe");
-        //Debug.Log("calling findInterceptPoint");
         
         findInterceptPoints(oe1, oe2);
-#endif
     }
 
     void DrawOrbit(LineRenderer line, ref OrbitalElements oe)

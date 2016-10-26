@@ -27,20 +27,16 @@ public class OR_Controller : MonoBehaviour
 
     private void DebugLogger(uint index, string button, string action, ControllerInteractionEventArgs e)
     {
+        return;//TODO turn this on for controller debug
         Debug.Log("Controller on index '" + index + "' " + button + " has been " + action
                 + " with a pressure of " + e.buttonPressure + " / trackpad axis at: " + e.touchpadAxis + " (" + e.touchpadAngle + " degrees)");
     }
     private void DoTriggerPressed(object sender, ControllerInteractionEventArgs e)
     {
         DebugLogger(e.controllerIndex, "TRIGGER", "pressed", e);
-        mov_origin.transform.position = transform.position;
-        originPos = transform.position;
-        mov_origin.SetActive(true);
-        line.enabled = true;
+        ;
 
-        Orbit.timeScale = 0.1f;
-
-        if (leftController == null)
+        if (false)//leftController == null)
         {
             PorkChopPlot.triggerPork = true;
          
@@ -150,11 +146,11 @@ public class OR_Controller : MonoBehaviour
     }
     public static float scale = 1;
     public static float totalAngle = 0;
-    public static float totalMoveY = 0;
+    public static Vector3 totalMoveY;
     float baseScale;
     float lastAngle = 0;
-    float lastMoveY = 0;
-    float lastY = 0;
+    Vector3 lastMoveY;
+    Vector3 lastY;
     // Update is called once per frame
     void rotateWorld()
     {
@@ -167,6 +163,15 @@ public class OR_Controller : MonoBehaviour
             worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
     }
 
+    public void EnableOAccelerate()
+    {
+        mov_origin.transform.position = transform.position;
+        originPos = transform.position;
+        mov_origin.SetActive(true);
+        line.enabled = true;
+
+        Orbit.timeScale = 0.1f;
+    }
     void OAccelerate()
     {
         if (line.enabled && UXStateManager.GetSource() != null)
@@ -196,17 +201,24 @@ public class OR_Controller : MonoBehaviour
             line.SetPosition(1, transform.position);
         }
     }
+    int gripState = 0;
     void Update()
     {
         OAccelerate();
         simpleMove();
-        
-        if (gripsPressed == 1 && leftController != null)
+
+        if (gripsPressed == 0)
+            gripState = 0;
+        else if (gripsPressed == 1 )
         {
-            rotateWorld();
+            if (gripState == 1)
+                rotateWorld();
+            if (gripState == 0)
+                gripState = 1;
         } else 
         if (gripsPressed == 2 && leftController != null)
         {
+            gripState = 2;
             if (afterGrabs == false)
             {
                 Debug.Log("two grips pressed!");
@@ -221,7 +233,7 @@ public class OR_Controller : MonoBehaviour
                     worldObjectRotations[i] = worldObjects[i].transform.rotation;
                 }
                 baseScale = OrbitData.scale;
-                lastMoveY = 0;
+                lastY = (transform.position + leftController.transform.position);
                 lastAngle = 0;
             }
             else
@@ -238,8 +250,8 @@ public class OR_Controller : MonoBehaviour
                 lastAngle = tempAngle;
                 totalAngle += angle;
 */
-                var moveY = newVector.y - baselineVector.y;
-                var y = transform.position.y + leftController.transform.position.y;
+                var moveY = newVector - baselineVector;
+                var y = transform.position + leftController.transform.position;
                 moveY = (y - lastY)/2;
                 totalMoveY += moveY;
                 lastY = y;
@@ -248,7 +260,7 @@ public class OR_Controller : MonoBehaviour
                 for (int i = 0; i < worldObjects.Count; i++)
                 {
                     worldObjects[i].transform.localScale = scale * worldObjectScales[i];
-                    worldObjects[i].transform.Translate(Vector3.up * moveY, Space.World);
+                    worldObjects[i].transform.Translate(moveY, Space.World);
                 }
                 OrbitData.scale = baseScale * scale;
             }

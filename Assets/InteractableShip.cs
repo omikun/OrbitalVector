@@ -29,6 +29,7 @@ public class InteractableShip : VRTK_InteractableObject {
         base.StopUsing(previousUsingObject);
         debugToolTip.triggerText = "cleared!";
                 debugToolTip.triggerInitialised = false;
+        UXStateManager.ClearSource();
         triggerObj.SetActive(false);
     }
     // Use this for initialization

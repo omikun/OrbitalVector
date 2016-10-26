@@ -14,6 +14,7 @@ public enum SelectStates
 }
 public enum UXStates
 {
+    HIDDEN,
     IDLE,
     MOVE,
     ATTACK,
@@ -33,25 +34,48 @@ public static class UXStateManager
             case SelectStates.SELECT_SOURCE:
                 selectedSource = unit;
                 selectState = SelectStates.SELECT_TARGET;
+                uxState = UXStates.IDLE;
                 ClearTarget();
+                Debug.Log("Selected source");
+                ShowMenu();
                 break;
             case SelectStates.SELECT_TARGET:
+                //can't select same target as source
+                if (selectedSource == unit)
+                {
+                    Debug.Log("Can't select same target as source");
+                    break;
+                }
+                Debug.Log("Selected target");
                 selectedTarget = unit;
+                //TODO this shouldn't happen until menu state change (cancel/escape from current mode)
                 selectState = SelectStates.SELECT_SOURCE;
                 break;
         }
     }
-    public static void ClearSource() { selectedSource = null; }
+    public static void ClearSource() { selectedSource = null; uxState = UXStates.HIDDEN; }
     public static void ClearTarget() { selectedTarget = null; }
-    public static GameObject GetSource() { return selectedSource; }
-    public static GameObject GetTarget() { return selectedTarget; }
+    public static GameObject GetSource()
+    {
+        if (selectedSource == null)
+            Debug.Log("No source set");
+        return selectedSource;
+    }
+    public static GameObject GetTarget()
+    {
+        if (selectedSource == null)
+            Debug.Log("No target set");
+        return selectedTarget;
+    }
+    public static UXStates getUXState() { return uxState; }
 
-    static void Update()
+    static void ShowMenu()
     {
         switch (uxState)
         {
             case UXStates.IDLE:
-                //if 
+                //show main menu
+                //spawn menu in front of player
                 break;
             case UXStates.MOVE:
                 break;
@@ -64,5 +88,9 @@ public static class UXStateManager
             case UXStates.CONFIG:
                 break;
         }
+    }
+    static void Update()
+    {
+        
     }
 }
