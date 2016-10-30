@@ -85,9 +85,17 @@ public class OrbitData : MonoBehaviour {
     {
         var position = scale * new Vector3((float)rv[0], 
                                          (float)rv[1], (float)rv[2]);
+        if (!OR_Controller.useRoot)
+        {
+            transform.position = Quaternion.AngleAxis(OR_Controller.totalAngle, Vector3.up) * position;
         //transform.Rotate(0, OR_Controller.totalAngle, 0, Space.World);
-        transform.position = Quaternion.AngleAxis(OR_Controller.totalAngle, Vector3.up) * position;
-        transform.Translate(OR_Controller.totalMoveY, Space.World);
-
+        } else
+        {
+            //HACK orbit position is using global coordinates for some reason, why??
+            //removing parent offset fixes this while retaining parent rotation
+            position -= transform.parent.transform.position;
+            transform.localPosition = position;
+        }
+        //transform.Translate(OR_Controller.totalMoveY, Space.World);
     }
 }

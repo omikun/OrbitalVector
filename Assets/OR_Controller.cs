@@ -12,6 +12,7 @@ public class OR_Controller : MonoBehaviour
     Vector3 accelVector;
     public GameObject leftController;
     Vector3 lastPos;
+    GameObject root;
 
     public static int gripsPressed = 0;
     public static bool afterGrabs = false;
@@ -21,8 +22,6 @@ public class OR_Controller : MonoBehaviour
 
     List<GameObject> worldObjects = new List<GameObject>();
     List<Vector3> worldObjectScales = new List<Vector3>();
-    List<Vector3> worldObjectPositions = new List<Vector3>();
-    List<Quaternion> worldObjectRotations = new List<Quaternion>();
 
 
     private void DebugLogger(uint index, string button, string action, ControllerInteractionEventArgs e)
@@ -92,6 +91,7 @@ public class OR_Controller : MonoBehaviour
             return;
         }
 
+        root = GameObject.Find("HoloRoot");
         //Setup controller event listeners
         GetComponent<VRTK_ControllerEvents>().TriggerPressed += new ControllerInteractionEventHandler(DoTriggerPressed);
         GetComponent<VRTK_ControllerEvents>().TriggerReleased += new ControllerInteractionEventHandler(DoTriggerReleased);
@@ -131,8 +131,6 @@ public class OR_Controller : MonoBehaviour
                 //worldObjectScales.Add(Vector3.zero);
                 //worldObjectPositions.Add(Vector3.zero);
                 worldObjectScales.Add(obj.transform.localScale);
-                worldObjectPositions.Add(obj.transform.position);
-                worldObjectRotations.Add(obj.transform.rotation);
                 i++;
             }
         }
@@ -152,6 +150,7 @@ public class OR_Controller : MonoBehaviour
     Vector3 lastMoveY;
     Vector3 lastY;
     // Update is called once per frame
+    public static bool useRoot = true;
     void rotateWorld()
     {
         float angle = -AngleSigned(transform.position, lastPos, Vector3.up);
@@ -159,8 +158,13 @@ public class OR_Controller : MonoBehaviour
         angle *= 10;
         totalAngle += angle;
 
-        for (int i = 0; i < worldObjects.Count; i++)
-            worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
+        if (!useRoot)
+        {
+            for (int i = 0; i < worldObjects.Count; i++)
+                worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
+        }
+        else
+            root.transform.Rotate(0, angle, 0);
     }
 
     public void EnableOAccelerate()
@@ -214,9 +218,11 @@ public class OR_Controller : MonoBehaviour
             if (gripState == 1)
                 rotateWorld();
             if (gripState == 0)
+            {
+                Debug.Log("To gripState 1");
                 gripState = 1;
-        } else 
-        if (gripsPressed == 2 && leftController != null)
+            }
+        } else if (gripsPressed == 2 && leftController != null)
         {
             gripState = 2;
             if (afterGrabs == false)
@@ -229,12 +235,11 @@ public class OR_Controller : MonoBehaviour
                 for (int i = 0; i < worldObjects.Count; i++)
                 {
                     worldObjectScales[i] = worldObjects[i].transform.localScale;
-                    worldObjectPositions[i] = worldObjects[i].transform.position;
-                    worldObjectRotations[i] = worldObjects[i].transform.rotation;
                 }
                 baseScale = OrbitData.scale;
                 lastY = (transform.position + leftController.transform.position);
                 lastAngle = 0;
+
             }
             else
             {
@@ -257,12 +262,19 @@ public class OR_Controller : MonoBehaviour
                 lastY = y;
                 //subseqpent vector/magnitudes are rotation/scales,
                 //center of two controllers control translation
-                for (int i = 0; i < worldObjects.Count; i++)
+                if (!useRoot)
                 {
-                    worldObjects[i].transform.localScale = scale * worldObjectScales[i];
-                    worldObjects[i].transform.Translate(moveY, Space.World);
+                    for (int i = 0; i < worldObjects.Count; i++)
+                    {
+                        worldObjects[i].transform.localScale = scale * worldObjectScales[i];
+                        worldObjects[i].transform.Translate(moveY, Space.World);
+                    }
+                    OrbitData.scale = baseScale * scale;
                 }
-                OrbitData.scale = baseScale * scale;
+                else
+                {
+                    root.transform.Translate(moveY);
+                }
             }
         }
     }
