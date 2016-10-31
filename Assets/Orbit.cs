@@ -54,7 +54,7 @@ public class Orbit : MonoBehaviour
             float r = a * (1.0f - e * e) / denominator;
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
-            line.SetPosition(i, rot * pos);
+            line.SetPosition(i, rot * pos + transform.parent.position);
         }
         //line.SetPosition(i++, Vector3.zero);
         //line.SetPosition(i++, rot*Vector3.up);

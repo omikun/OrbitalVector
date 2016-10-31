@@ -93,7 +93,7 @@ public class OrbitData : MonoBehaviour {
         {
             //HACK orbit position is using global coordinates for some reason, why??
             //removing parent offset fixes this while retaining parent rotation
-            position -= transform.parent.transform.position;
+            //position -= transform.parent.transform.position;
             transform.localPosition = position;
         }
         //transform.Translate(OR_Controller.totalMoveY, Space.World);
