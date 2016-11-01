@@ -79,6 +79,7 @@ public class OR_Controller : MonoBehaviour
     {
         DebugLogger(e.controllerIndex, "GRIP", "released", e);
         gripsPressed--;
+
         afterGrabs = false;
     }
 
@@ -105,34 +106,7 @@ public class OR_Controller : MonoBehaviour
         //only on right controller (master)
         if (leftController != null)
         {
-
-#if false
-        //this doesn't always get both controllers for some reason... initialization order error?
-        foreach (var controller in GameObject.FindGameObjectsWithTag("GameController"))
-        {
-            Debug.Log("found a game controller");
-            Debug.Log("game trnasform: " + controller.transform.position);
-            controllers.Add(controller);
-        }
-        Debug.Log("game trnasform: " + controllers[1].transform.position);
-#endif
             //populate all objects that will be affected
-            worldObjects.Add(GameObject.Find("Earth"));
-            worldObjects.Add(GameObject.Find("OrbitManager"));
-            foreach (var ship in GameObject.FindGameObjectsWithTag("ship"))
-            {
-                worldObjects.Add(ship);
-            }
-
-            //resize worldObjectScales to match with worldObjects
-            int i = 0;
-            foreach (var obj in worldObjects)
-            {
-                //worldObjectScales.Add(Vector3.zero);
-                //worldObjectPositions.Add(Vector3.zero);
-                worldObjectScales.Add(obj.transform.localScale);
-                i++;
-            }
         }
     }
     //returns degrees
@@ -145,12 +119,8 @@ public class OR_Controller : MonoBehaviour
     public static float scale = 1;
     public static float totalAngle = 0;
     public static float totalAnglex = 0;
-    public static Vector3 totalMoveY;
     float baseScale;
-    float lastAngle = 0;
-    Vector3 lastMoveY;
-    Vector3 lastY;
-    // Update is called once per frame
+    Vector3 lastCenterPoint;
     public static bool useRoot = true;
     void rotateWorld()
     {
@@ -216,9 +186,8 @@ public class OR_Controller : MonoBehaviour
     //FIXME when going from 2 grips to 1 grip, rotation pops; I think something about afterGrabs state capture
     void Update()
     {
-
-        OAccelerate();
-        simpleMove();
+        //OAccelerate();
+        //simpleMove();
         if (leftController == null)
         {
             return;
@@ -229,41 +198,24 @@ public class OR_Controller : MonoBehaviour
             Debug.Log("To gripState 2");
             if (afterGrabs == false)
             {
-                Debug.Log("two grips pressed!");
                 afterGrabs = true;
-                Debug.Log("controllers found: " + controllers.Count);
-                //baselineVector = controllers[0].transform.position - controllers[1].transform.position;
+                Debug.Log("two grips pressed!");
                 baselineVector = transform.position - leftController.transform.position;
-                for (int i = 0; i < worldObjects.Count; i++)
-                {
-                    worldObjectScales[i] = worldObjects[i].transform.localScale;
-                }
-                baseScale = OrbitData.scale;
-                lastY = (transform.position + leftController.transform.position);
-                lastAngle = 0;
-
+                lastCenterPoint = (transform.position + leftController.transform.position);
             }
             else
             {
                 Vector3 newVector = transform.position - leftController.transform.position;
-                var moveY = newVector - baselineVector;
-                var y = transform.position + leftController.transform.position;
-                moveY = (y - lastY)/2;
-                totalMoveY += moveY;
-                lastY = y;
+                var diffPos = newVector - baselineVector;
+                var centerPoint = transform.position + leftController.transform.position;
+                diffPos = (centerPoint - lastCenterPoint)/2;
+                lastCenterPoint = centerPoint;
                 //subseqpent vector/magnitudes are rotation/scales,
                 //center of two controllers control translation
-                if (!useRoot)
-                {
-                    
-                }
-                else
-                {
-                    scale = newVector.magnitude / prevVector.magnitude;
-                    prevVector = newVector;
-                    root.transform.Translate(moveY);
-                    root.transform.localScale *= scale;
-                }
+                scale = newVector.magnitude / prevVector.magnitude;
+                prevVector = newVector;
+                root.transform.Translate(diffPos);
+                root.transform.localScale *= scale;
             }
         } else if (gripsPressed == 1 )
         {
@@ -279,7 +231,5 @@ public class OR_Controller : MonoBehaviour
             gripState = 0;
             //Debug.Log("To gripState 0");
         }
-
-        
     }
 }

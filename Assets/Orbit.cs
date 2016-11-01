@@ -14,10 +14,9 @@ public class Orbit : MonoBehaviour
     List<LineRenderer> lines = new List<LineRenderer>();
     public GameObject display;
     private Text textRef;
-    public Vector3 parentPos;
+    Vector3 initialOffset;
     public static Vector3 accelVector;
     public GameObject OrbitRenderer;
-
     public static List<String> output = new List<String>();
     //This is just a test, not actually used for anything
     void drawEllipse()
@@ -54,7 +53,7 @@ public class Orbit : MonoBehaviour
             float r = a * (1.0f - e * e) / denominator;
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
-            line.SetPosition(i, rot * pos + transform.parent.position);//isn't this hacky?
+            line.SetPosition(i, rot * pos + initialOffset);// + transform.parent.position);//isn't this hacky?
         }
         //line.SetPosition(i++, Vector3.zero);
         //line.SetPosition(i++, rot*Vector3.up);
@@ -65,7 +64,9 @@ public class Orbit : MonoBehaviour
     {
         textRef = display.GetComponent<Text>();
         accelVector = Vector3.zero;
-
+        //HACK FIXME workaround line.SetPosition is relative to parent translation, but absolute to world initially
+        //one time offset relative to intiial parent position
+        initialOffset = transform.parent.position;
         foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
         {
             AddOrbitRenderer(ship);
