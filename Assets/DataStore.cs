@@ -24,20 +24,28 @@ public enum UXStates
 }
 public static class UXStateManager
 {
+    public static GameObject selectionIcon;
+    public static GameObject targetIcon;
     static SelectStates selectState;
     static UXStates uxState;
     static GameObject selectedSource, selectedTarget;
+    public static void EnableTargetSelection()
+    {
+        selectState = SelectStates.SELECT_TARGET;
+        Debug.Log("Now selecting target");
+    }
     public static void SelectUnit(GameObject unit)
     {
         switch (selectState)
         {
             case SelectStates.SELECT_SOURCE:
                 selectedSource = unit;
-                selectState = SelectStates.SELECT_TARGET;
+                selectionIcon.transform.parent = unit.transform;
+                selectionIcon.transform.localPosition = Vector3.zero;
+                selectionIcon.SetActive(true);
                 uxState = UXStates.IDLE;
                 ClearTarget();
                 Debug.Log("Selected source");
-                ShowMenu();
                 break;
             case SelectStates.SELECT_TARGET:
                 //can't select same target as source
@@ -48,8 +56,10 @@ public static class UXStateManager
                 }
                 Debug.Log("Selected target");
                 selectedTarget = unit;
+                targetIcon.transform.parent = unit.transform;
+                targetIcon.transform.localPosition = Vector3.zero;
+                targetIcon.SetActive(true);
                 //TODO this shouldn't happen until menu state change (cancel/escape from current mode)
-                selectState = SelectStates.SELECT_SOURCE;
                 break;
         }
     }

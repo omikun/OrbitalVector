@@ -16,7 +16,7 @@ public class OR_Controller : MonoBehaviour
 
     public static int gripsPressed = 0;
     public static bool afterGrabs = false;
-    Vector3 baselineVector;
+    Vector3 baselineVector, prevVector;
     Vector3[] gripPositions = new Vector3[2];
     List<GameObject> controllers = new List<GameObject>();
 
@@ -144,6 +144,7 @@ public class OR_Controller : MonoBehaviour
     }
     public static float scale = 1;
     public static float totalAngle = 0;
+    public static float totalAnglex = 0;
     public static Vector3 totalMoveY;
     float baseScale;
     float lastAngle = 0;
@@ -154,9 +155,15 @@ public class OR_Controller : MonoBehaviour
     void rotateWorld()
     {
         float angle = -AngleSigned(transform.position, lastPos, Vector3.up);
+        float xangle = -AngleSigned(transform.position, lastPos, Vector3.right);
         lastPos = transform.position;
         angle *= 10;
         totalAngle += angle;
+        xangle *= 5;
+        if (totalAnglex + xangle > 90 || totalAnglex + xangle < -90)
+            return;
+        totalAnglex += xangle;
+
 
         if (!useRoot)
         {
@@ -164,7 +171,7 @@ public class OR_Controller : MonoBehaviour
                 worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
         }
         else
-            root.transform.Rotate(0, angle, 0);
+            root.transform.Rotate(xangle, angle, 0, Space.World);
     }
 
     public void EnableOAccelerate()
@@ -206,25 +213,20 @@ public class OR_Controller : MonoBehaviour
         }
     }
     int gripState = 0;
+    //FIXME when going from 2 grips to 1 grip, rotation pops; I think something about afterGrabs state capture
     void Update()
     {
+
         OAccelerate();
         simpleMove();
-
-        if (gripsPressed == 0)
-            gripState = 0;
-        else if (gripsPressed == 1 )
+        if (leftController == null)
         {
-            if (gripState == 1)
-                rotateWorld();
-            if (gripState == 0)
-            {
-                Debug.Log("To gripState 1");
-                gripState = 1;
-            }
-        } else if (gripsPressed == 2 && leftController != null)
+            return;
+        }
+        if (gripsPressed == 2 )
         {
             gripState = 2;
+            Debug.Log("To gripState 2");
             if (afterGrabs == false)
             {
                 Debug.Log("two grips pressed!");
@@ -244,17 +246,6 @@ public class OR_Controller : MonoBehaviour
             else
             {
                 Vector3 newVector = transform.position - leftController.transform.position;
-                scale = newVector.magnitude / baselineVector.magnitude;
-
-                var diff = newVector - baselineVector;
-                var angle = Vector3.Angle(baselineVector, newVector);
-/*
-                angle = -AngleSigned(newVector, baselineVector, Vector3.up);
-                var tempAngle = angle;
-                angle -= lastAngle;
-                lastAngle = tempAngle;
-                totalAngle += angle;
-*/
                 var moveY = newVector - baselineVector;
                 var y = transform.position + leftController.transform.position;
                 moveY = (y - lastY)/2;
@@ -264,18 +255,31 @@ public class OR_Controller : MonoBehaviour
                 //center of two controllers control translation
                 if (!useRoot)
                 {
-                    for (int i = 0; i < worldObjects.Count; i++)
-                    {
-                        worldObjects[i].transform.localScale = scale * worldObjectScales[i];
-                        worldObjects[i].transform.Translate(moveY, Space.World);
-                    }
-                    OrbitData.scale = baseScale * scale;
+                    
                 }
                 else
                 {
+                    scale = newVector.magnitude / prevVector.magnitude;
+                    prevVector = newVector;
                     root.transform.Translate(moveY);
+                    root.transform.localScale *= scale;
                 }
             }
+        } else if (gripsPressed == 1 )
+        {
+            if (gripState == 1)
+                rotateWorld();
+            if (gripState == 0)
+            {
+                Debug.Log("To gripState 1");
+                gripState = 1;
+            }
+        } else if (gripsPressed == 0)
+        {
+            gripState = 0;
+            //Debug.Log("To gripState 0");
         }
+
+        
     }
 }

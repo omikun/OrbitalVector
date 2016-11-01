@@ -6,10 +6,11 @@ using UnityEngine.Events;
 public class UIButton : VRTK_InteractableObject {
 
     public UnityEvent OnEvent;
+    int count = 0;
 
     public override void StartUsing(GameObject currentUsingObject)
     {
-        Debug.Log("using moveIntercept");
+        Debug.Log("using moveIntercept: "+count++);
         OnEvent.Invoke();
     }
     public override void StopUsing(GameObject currentUsingObject)

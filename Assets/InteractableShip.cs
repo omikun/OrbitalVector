@@ -4,24 +4,16 @@ using VRTK;
 
 public class InteractableShip : VRTK_InteractableObject {
 
-    bool onSelect = false;
-    float timeOnSelect;
     float duration = 0.5f;
     public GameObject controller;
     VRTK_ControllerTooltips debugToolTip;
     public GameObject triggerObj;
-    GameObject selection;
     public override void StartUsing(GameObject currentUsingObject)
     {
         base.StartUsing(currentUsingObject);
-        onSelect = !onSelect;
-        timeOnSelect = Time.time;
 
         Debug.Log(name + "selected!");
-        //debugToolTip.triggerText = "selected!";
-        //        debugToolTip.triggerInitialised = false;
         UXStateManager.SelectUnit(gameObject);
-        selection.SetActive(onSelect);
     }
 
     public override void StopUsing(GameObject previousUsingObject)
@@ -35,16 +27,6 @@ public class InteractableShip : VRTK_InteractableObject {
     // Use this for initialization
     void Start () {
         base.Start();
-        var baseObj = Resources.Load("SelectionIcon");
-        if (baseObj == null)
-            Debug.Log("can't find config anywhere");
-        selection = (GameObject)Instantiate(baseObj);
-        Debug.Log("instantiated selection gameobject");
-        selection.transform.parent = transform;
-        selection.transform.localPosition = Vector3.zero;
-        selection.SetActive(false);
-
-
         foreach (var controller in GameObject.FindGameObjectsWithTag("GameController") )
         {
             Debug.Log("finding controller");
@@ -69,8 +51,5 @@ public class InteractableShip : VRTK_InteractableObject {
 	
 	// Update is called once per frame
 	void Update () {
-	    if (onSelect)
-        {
-        }
 	}
 }
