@@ -13,7 +13,7 @@ public class InteractablePlot : VRTK_InteractableObject {
         if (GetComponent<Collider>().Raycast(ray, out hit, 100))
         {
             //SetSelectorPosition(hit.point);
-            selector.transform.position = hit.point + new Vector3(0,0,-.01f);
+            selector.transform.position = new Vector3(hit.point.x, hit.point.y, selector.transform.position.z);
         }
         Debug.Log("Using plot!");
     }
