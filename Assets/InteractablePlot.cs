@@ -4,6 +4,7 @@ using VRTK;
 
 public class InteractablePlot : VRTK_InteractableObject {
     GameObject selector;
+    PorkChopPlot pcp;
     public override void StartUsing(GameObject currentUsingObject)
     {
         base.StartUsing(currentUsingObject);
@@ -14,6 +15,8 @@ public class InteractablePlot : VRTK_InteractableObject {
         {
             //SetSelectorPosition(hit.point);
             selector.transform.position = new Vector3(hit.point.x, hit.point.y, selector.transform.position.z);
+            var plotCoord = new Vector2(hit.point.x, hit.point.y);
+            pcp.SelectedTrajectory(plotCoord);
         }
         Debug.Log("Using plot!");
     }
@@ -36,6 +39,10 @@ public class InteractablePlot : VRTK_InteractableObject {
         selector = GameObject.Find("selector");
         if (selector == null)
             Debug.Log("cann't find selector in plot");
+
+        pcp = GetComponent<PorkChopPlot>();
+        if (pcp == null)
+            Debug.Log("can't find porkchopplot component");
 	}
 	
 	// Update is called once per frame

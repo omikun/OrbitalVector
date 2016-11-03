@@ -333,6 +333,21 @@ velocity.
 
             return oe;
         }
+        public static VectorD convertToRv(ref Vector3d pos, ref Vector3d vel)
+        {
+            VectorD params_ = new VectorD();
+            params_.Resize(6);
+            Debug.Assert(params_.Count == 6);
+            //2013 Orbital Vector was written with z being up
+            //unity y is up, so must swap axis
+            params_[0] = pos.x;
+            params_[1] = pos.y;
+            params_[2] = pos.z;
+            params_[3] = vel.x;
+            params_[4] = vel.y;
+            params_[5] = vel.z;
+            return params_;
+        }
         public static VectorD convertToRv(ref double[] pos, ref double[] vel)
         {
             Debug.Assert(vel.Length == 3);
