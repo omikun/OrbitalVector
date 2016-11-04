@@ -59,6 +59,32 @@ public class Orbit : MonoBehaviour
     {
         //coroutine execute in x time?
         Debug.Log("ManeuverEvent fired");
+        StartCoroutine(AdjustOrbit(e));
+        
+    }
+    IEnumerator AdjustOrbit(ManeuverEvent e)
+    {
+        float time = (float)e.time;
+        
+        while (time > 5)
+        {
+            Debug.Log("Waiting for " + time + " seconds");
+            yield return new WaitForSeconds(5);
+            time -= 5;
+        }
+        Debug.Log("Waiting for " + time + " seconds");
+        yield return new WaitForSeconds(time);
+
+        Debug.Log("Firing! " + e.velocity.magnitude);
+        var odata = e.obj.GetComponent<OrbitData>();
+        if (odata == null)
+        {
+            Debug.Log("no orbital data from ship!!");
+        }
+
+        odata.rv[0] += e.velocity.x;
+        odata.rv[1] += e.velocity.y;
+        odata.rv[2] += e.velocity.z;
     }
     void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
     {
