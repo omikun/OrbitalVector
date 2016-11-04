@@ -73,12 +73,14 @@ public class PorkChopPlot : MonoBehaviour {
         }
     }
 
+    Vector3d injectionVector;
+    double startTime;
     //update maneuver node w/ trajectory
     public void SelectedTrajectory(Vector3 coord)
     {
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
-        double startTime = (coord.x + 0.5d) * period;
+        startTime = (coord.x + 0.5d) * period;
         double travelTime = (coord.y + 0.5d) * period;
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
@@ -96,7 +98,7 @@ public class PorkChopPlot : MonoBehaviour {
             OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe2, out r2, out v2);
 
             MuMech.LambertSolver.Solve(r1, r2, travelTime, OrbitData.parentGM, true, out initVel, out finalVel);
-            var injectionVector = initVel - v1;
+            injectionVector = initVel - v1;
             var rendezvousVector = finalVel - v2;
         }
         //convert initial velocity to oe
@@ -114,6 +116,11 @@ public class PorkChopPlot : MonoBehaviour {
         //display start time at start node
         //display required deltaV for intercept
         //based on mode: display required deltaV for rendezvous
+    }
+    public void TriggerIntercept()
+    {
+        var tgt = UXStateManager.GetTarget();
+        Events.instance.Raise(new ManeuverEvent(injectionVector, startTime, tgt));
     }
 
     void OnDisable()

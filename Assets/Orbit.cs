@@ -7,6 +7,18 @@ using System;
  using System.Text;
  using System.IO;
 
+public class ManeuverEvent : GameEvent
+{
+    public Vector3d velocity;
+    public double time;
+    public GameObject obj;
+    public ManeuverEvent(Vector3d v, double t, GameObject o)
+    {
+        velocity = v;
+        time = t;
+        obj = o;
+    }
+}
 public class Orbit : MonoBehaviour
 {
     public int segments = 360;
@@ -35,6 +47,19 @@ public class Orbit : MonoBehaviour
         }
     }
 
+    void OnEnable()
+    {
+        Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
+    }
+    void OnDisable()
+    {
+        Events.instance.RemoveListener<ManeuverEvent>(OnManeuverEvent);
+    }
+    void OnManeuverEvent(ManeuverEvent e)
+    {
+        //coroutine execute in x time?
+        Debug.Log("ManeuverEvent fired");
+    }
     void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
     {
         //clear path?
