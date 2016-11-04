@@ -15,6 +15,10 @@ public class Vector3d
         z = z_;
         magnitude = Math.Sqrt(x * x + y * y + z * z);
     }
+    public Vector3 ToFloat()
+    {
+        return new Vector3((float)x, (float)y, (float)z);
+    }
     public string ToString()
     {
         return x.ToString() + ", " +

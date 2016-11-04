@@ -103,6 +103,13 @@ public class PorkChopPlot : MonoBehaviour {
         VectorD rv = Util.convertToRv(ref r1, ref initVel);
         var interceptOE = Util.rv2oe(OrbitData.parentGM, rv);
         //initialize/update maneuver node/orbit w/ oe
+        var marker1 = GameObject.Find("Marker1");
+        marker1.transform.localPosition = r1.ToFloat();
+        var marker2 = GameObject.Find("Marker2");
+        marker2.transform.localPosition = r2.ToFloat();
+        var orbitManager = GameObject.Find("OrbitManager").GetComponent<Orbit>();
+        orbitManager.updateInterceptLine(ref interceptOE, true);
+        //display time of arrival at intersect point
         //display time of arrival at intersect point
         //display start time at start node
         //display required deltaV for intercept

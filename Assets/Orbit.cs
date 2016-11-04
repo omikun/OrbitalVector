@@ -12,6 +12,7 @@ public class Orbit : MonoBehaviour
     public int segments = 360;
     public static float timeScale = 1;
     List<LineRenderer> lines = new List<LineRenderer>();
+    LineRenderer interceptLine;
     public GameObject display;
     private Text textRef;
     Vector3 initialOffset;
@@ -71,7 +72,13 @@ public class Orbit : MonoBehaviour
         {
             AddOrbitRenderer(ship);
         }
-
+        var newObj = Instantiate(OrbitRenderer);
+        newObj.transform.parent = transform;
+        interceptLine = newObj.GetComponent<LineRenderer>();
+        interceptLine.SetVertexCount(segments+1);
+        interceptLine.material = new Material(Shader.Find("Particles/Additive"));
+        interceptLine.SetColors(Color.white, Color.red);
+        interceptLine.enabled = false;
         //InvokeRepeating("prepFindIntercept", 5.0f, 2f);
     }
     void AddOrbitRenderer(GameObject ship)
@@ -118,7 +125,12 @@ public class Orbit : MonoBehaviour
 
             count++;
         }
+    }
 
+    public void updateInterceptLine(ref OrbitalElements oe, bool enable)
+    {
+        interceptLine.enabled = enable;
+        DrawOrbit(interceptLine, ref oe);
     }
     public void prepFindIntercept()
     {

@@ -141,7 +141,8 @@ public class OR_Controller : MonoBehaviour
                 worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
         }
         else
-            root.transform.Rotate(xangle, angle, 0, Space.World);
+            root.transform.Rotate(0, angle, 0, Space.Self);
+            root.transform.Rotate(xangle, 0, 0, Space.World);
     }
 
     public void EnableOAccelerate()
