@@ -16,6 +16,9 @@ public class InteractablePlot : VRTK_InteractableObject {
             //SetSelectorPosition(hit.point);
             selector.transform.position = new Vector3(hit.point.x, hit.point.y, selector.transform.position.z);
             var plotCoord = new Vector2(hit.point.x, hit.point.y);
+            plotCoord.x *= 1 / transform.localScale.x;
+            plotCoord.y -= transform.position.y;
+            plotCoord.y *= 1 / transform.localScale.y;
             pcp.SelectedTrajectory(plotCoord);
         }
         Debug.Log("Using plot!");

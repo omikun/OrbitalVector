@@ -124,16 +124,13 @@ public class OR_Controller : MonoBehaviour
     public static bool useRoot = true;
     void rotateWorld()
     {
-        float angle = -AngleSigned(transform.position, lastPos, Vector3.up);
-        float xangle = -AngleSigned(transform.position, lastPos, Vector3.right);
+        float angle = -250 * (transform.position.x - lastPos.x);
+        float xangle = 50 * (transform.position.y - lastPos.y);
         lastPos = transform.position;
-        angle *= 10;
         totalAngle += angle;
-        xangle *= 5;
-        if (totalAnglex + xangle > 90 || totalAnglex + xangle < -90)
+        if (totalAnglex + xangle > 80 || totalAnglex + xangle < -80)
             return;
         totalAnglex += xangle;
-
 
         if (!useRoot)
         {
@@ -141,8 +138,10 @@ public class OR_Controller : MonoBehaviour
                 worldObjects[i].transform.Rotate(0, angle, 0, Space.World);
         }
         else
+        {
             root.transform.Rotate(0, angle, 0, Space.Self);
             root.transform.Rotate(xangle, 0, 0, Space.World);
+        }
     }
 
     public void EnableOAccelerate()

@@ -75,6 +75,7 @@ public class Orbit : MonoBehaviour
         Debug.Log("Waiting for " + time + " seconds");
         yield return new WaitForSeconds(time);
 
+        Debug.Log("Name of source: " + e.obj.name);
         Debug.Log("Firing! " + e.velocity.magnitude);
         var odata = e.obj.GetComponent<OrbitData>();
         if (odata == null)

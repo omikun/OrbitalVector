@@ -16,6 +16,7 @@ public class PorkChopPlot : MonoBehaviour {
     public static bool triggerPork = false; //external flag to run porkchop plot
     bool porkDone = false;
     bool intercept = true;
+    double computeTime;
 
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
@@ -74,14 +75,17 @@ public class PorkChopPlot : MonoBehaviour {
     }
 
     Vector3d injectionVector;
-    double startTime;
+    double startTime; //absolute time
     //update maneuver node w/ trajectory
-    public void SelectedTrajectory(Vector3 coord)
+    public void SelectedTrajectory(Vector2 coord)
     {
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
-        startTime = (coord.x + 0.5d) * period;
+        startTime = (coord.x + 0.5d) * period + computeTime;
+        var curStartTime = startTime - Time.time; //relative to now
         double travelTime = (coord.y + 0.5d) * period;
+        Debug.Log("coord: " + coord);
+        Debug.Log("startTime: " + curStartTime + " travelTime: " + travelTime);
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
@@ -89,8 +93,8 @@ public class PorkChopPlot : MonoBehaviour {
         {
             var tempOe1 = oe1.copyOE();
             var tempOe2 = oe2.copyOE();
-            var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime);
-            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, startTime + travelTime);
+            var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, curStartTime);
+            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, curStartTime + travelTime);
             tempOe2.tra = tra2;
             tempOe1.tra = tra1;
 
@@ -119,8 +123,13 @@ public class PorkChopPlot : MonoBehaviour {
     }
     public void TriggerIntercept()
     {
-        var tgt = UXStateManager.GetTarget();
-        Events.instance.Raise(new ManeuverEvent(injectionVector, startTime, tgt));
+        if (startTime <= Time.time)
+        {
+            Debug.Log("Error: Intercept injection in the past");
+            return;
+        }
+        var src = UXStateManager.GetSource();
+        Events.instance.Raise(new ManeuverEvent(injectionVector, startTime-Time.time, src));
     }
 
     void OnDisable()
@@ -135,6 +144,7 @@ public class PorkChopPlot : MonoBehaviour {
     {
         triggerPork = true;
         intercept = enableIntercept;
+        computeTime = Time.time;
     }
 
     void FindVel(double startTime, double travelTime, out Vector3d injectionVector, out Vector3d rendezvousVector)
