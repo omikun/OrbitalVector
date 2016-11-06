@@ -14,6 +14,9 @@ public class InitMe : MonoBehaviour {
 
         var root = GameObject.Find("HoloRoot");
         root.transform.localScale *= .4f;
+
+        //IMPORTANT disables VR preview, enables regular camera
+        UnityEngine.VR.VRSettings.showDeviceView = false;
     }
 
     public void EnableTargetSelection()

@@ -102,7 +102,7 @@ public class PorkChopPlot : MonoBehaviour {
             OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe2, out r2, out v2);
 
             MuMech.LambertSolver.Solve(r1, r2, travelTime, OrbitData.parentGM, true, out initVel, out finalVel);
-            injectionVector = initVel - v1;
+            injectionVector = initVel;// - v1;
             var rendezvousVector = finalVel - v2;
         }
         //convert initial velocity to oe

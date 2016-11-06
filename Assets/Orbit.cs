@@ -83,9 +83,9 @@ public class Orbit : MonoBehaviour
             Debug.Log("no orbital data from ship!!");
         }
 
-        odata.rv[0] += e.velocity.x;
-        odata.rv[1] += e.velocity.y;
-        odata.rv[2] += e.velocity.z;
+        odata.rv[3] = e.velocity.x;
+        odata.rv[4] = e.velocity.y;
+        odata.rv[5] = e.velocity.z;
     }
     void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
     {
