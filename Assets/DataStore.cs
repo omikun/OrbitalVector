@@ -60,6 +60,7 @@ public static class UXStateManager
                 targetIcon.transform.localPosition = Vector3.zero;
                 targetIcon.SetActive(true);
                 //TODO this shouldn't happen until menu state change (cancel/escape from current mode)
+//TODO reset porkchop plot and intercept line on tgt or src change
                 break;
         }
     }
