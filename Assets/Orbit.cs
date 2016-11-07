@@ -94,8 +94,9 @@ public class Orbit : MonoBehaviour
         var marker2 = GameObject.Find("Marker2");
         marker2.transform.localPosition = Vector3.zero;
     }
-    void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
+    void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot, out Vector3 apo)
     {
+        apo = Vector3.zero;
         //clear path?
         //inputs
         tra = (tra >= Mathf.PI) ? tra - 2 * Mathf.PI : tra;
@@ -114,6 +115,10 @@ public class Orbit : MonoBehaviour
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
             line.SetPosition(i, rot * pos + initialOffset);// + transform.parent.position);//isn't this hacky?
+            if (theta == Mathf.PI/2)
+            {
+                apo = rot * pos + initialOffset;
+            }
         }
         //line.SetPosition(i++, Vector3.zero);
         //line.SetPosition(i++, rot*Vector3.up);
@@ -180,8 +185,16 @@ public class Orbit : MonoBehaviour
 
             odata.setOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
             var oe = odata.getOE();
-            DrawOrbit(lines[count], ref oe);
+            Vector3 apo;
+            DrawOrbit(lines[count], ref oe, out apo);
 
+    
+            //draw icons for selected orbits
+            if (ship == UXStateManager.GetSource())
+            {
+                var iconApo = GameObject.Find("iconApo");
+                iconApo.transform.position = apo;
+            }
             count++;
         }
     }
@@ -189,7 +202,8 @@ public class Orbit : MonoBehaviour
     public void updateInterceptLine(ref OrbitalElements oe, bool enable)
     {
         interceptLine.enabled = enable;
-        DrawOrbit(interceptLine, ref oe);
+        Vector3 apo;
+        DrawOrbit(interceptLine, ref oe, out apo);
     }
     public void prepFindIntercept()
     {
@@ -207,7 +221,7 @@ public class Orbit : MonoBehaviour
         findInterceptPoints(oe1, oe2);
     }
 
-    void DrawOrbit(LineRenderer line, ref OrbitalElements oe)
+    void DrawOrbit(LineRenderer line, ref OrbitalElements oe, out Vector3 apo)
     {
 #if false
         Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
@@ -234,7 +248,7 @@ public class Orbit : MonoBehaviour
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
         var rotq = incOffset * lan * inc * aop;
 
-        drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
+        drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq, out apo);
     }
 
     bool writeOnce = true;

@@ -3,6 +3,7 @@ using System.Collections;
 
 public class InitMe : MonoBehaviour {
     public bool ShowVRPreview = true;
+    public bool EnableVR = true;
 	// Use this for initialization
 	void Start () {
         UXStateManager.selectionIcon = GameObject.Find("SelectionIcon");
@@ -17,11 +18,13 @@ public class InitMe : MonoBehaviour {
 
         //IMPORTANT disables VR preview, enables regular camera
         UnityEngine.VR.VRSettings.showDeviceView = ShowVRPreview;
-        if (ShowVRPreview)
-        {
-            GameObject camera = GameObject.Find("Camera");
-            camera.SetActive(false);
-        }
+        GameObject camera = GameObject.Find("Camera");
+        camera.SetActive(!ShowVRPreview);
+        GameObject cameraRig = GameObject.Find("[CameraRig]");
+        cameraRig.SetActive(EnableVR);
+        GameObject steamVR = GameObject.Find("[SteamVR]");
+        steamVR.SetActive(EnableVR);
+
     }
 
     public void EnableTargetSelection()

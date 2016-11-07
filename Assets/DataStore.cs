@@ -68,8 +68,6 @@ public static class UXStateManager
     public static void ClearTarget() { selectedTarget = null; }
     public static GameObject GetSource()
     {
-        if (selectedSource == null)
-            Debug.Log("No source set");
         return selectedSource;
     }
     public static GameObject GetTarget()

@@ -6,13 +6,13 @@ using MuMech;
 
 public class OR_Controller : MonoBehaviour
 {
+    GameObject root;
     public GameObject mov_origin; //obj when trigger first pressed
     Vector3 originPos;
     LineRenderer line;
     Vector3 accelVector;
     public GameObject leftController;
-    Vector3 lastPos, lastMousePos;
-    GameObject root;
+    Vector3 lastPos;
 
     public static int gripsPressed = 0;
     public static bool afterGrabs = false;
@@ -122,20 +122,6 @@ public class OR_Controller : MonoBehaviour
     float baseScale;
     Vector3 lastCenterPoint;
 
-    void rotateWorldMouse()
-    {
-        float angle =  -.5f * (Input.mousePosition.x - lastMousePos.x);
-        float xangle = .5f * (Input.mousePosition.y - lastMousePos.y);
-        lastMousePos = Input.mousePosition;
-        totalAngle += angle;
-        if (totalAnglex + xangle > 80 || totalAnglex + xangle < -80)
-            return;
-        totalAnglex += xangle;
-
-
-        root.transform.Rotate(0, angle, 0, Space.Self);
-        root.transform.Rotate(xangle, 0, 0, Space.World);
-    }
     void rotateWorld()
     {
         float angle = -250 * (transform.position.x - lastPos.x);
@@ -145,7 +131,6 @@ public class OR_Controller : MonoBehaviour
         if (totalAnglex + xangle > 80 || totalAnglex + xangle < -80)
             return;
         totalAnglex += xangle;
-
 
         root.transform.Rotate(0, angle, 0, Space.Self);
         root.transform.Rotate(xangle, 0, 0, Space.World);
@@ -193,15 +178,7 @@ public class OR_Controller : MonoBehaviour
     //FIXME when going from 2 grips to 1 grip, rotation pops; I think something about afterGrabs state capture
     void Update()
     {
-        if (Input.GetButton("Fire1"))
-        {
-            if (Input.GetButtonDown("Fire1"))
-                lastMousePos = Input.mousePosition;
-
-            rotateWorldMouse();
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            //if (Physics.Raycast(ray))
-        }
+        
         //OAccelerate();
         //simpleMove();
         if (leftController == null)
