@@ -86,6 +86,13 @@ public class Orbit : MonoBehaviour
         odata.rv[3] = e.velocity.x;
         odata.rv[4] = e.velocity.y;
         odata.rv[5] = e.velocity.z;
+
+        //disable intercept line render
+        interceptLine.enabled = false;
+        var marker1 = GameObject.Find("Marker1");
+        marker1.transform.localPosition = Vector3.zero;
+        var marker2 = GameObject.Find("Marker2");
+        marker2.transform.localPosition = Vector3.zero;
     }
     void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
     {
