@@ -115,10 +115,12 @@ public class Orbit : MonoBehaviour
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
             line.SetPosition(i, rot * pos + initialOffset);// + transform.parent.position);//isn't this hacky?
-            if (theta == Mathf.PI/2)
+            if (i == 0)
             {
-                apo = rot * pos + initialOffset;
+                apo = rot * pos;// + initialOffset;
             }
+            //if (drawPathCount == 0)
+             //   Debug.Log("draw path count");
         }
         //line.SetPosition(i++, Vector3.zero);
         //line.SetPosition(i++, rot*Vector3.up);
@@ -193,7 +195,7 @@ public class Orbit : MonoBehaviour
             if (ship == UXStateManager.GetSource())
             {
                 var iconApo = GameObject.Find("iconApo");
-                iconApo.transform.position = apo;
+                iconApo.transform.localPosition = apo;
             }
             count++;
         }

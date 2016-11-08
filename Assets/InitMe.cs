@@ -24,12 +24,11 @@ public class InitMe : MonoBehaviour {
         cameraRig.SetActive(EnableVR);
         GameObject steamVR = GameObject.Find("[SteamVR]");
         steamVR.SetActive(EnableVR);
-
     }
 
-    public void EnableTargetSelection()
+    public void ToggleTargetSelection()
     {
-        UXStateManager.EnableTargetSelection();
+        UXStateManager.ToggleTargetSelection();
     }
 	// Update is called once per frame
 	void Update () {

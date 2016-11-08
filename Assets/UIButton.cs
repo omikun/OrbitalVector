@@ -40,7 +40,6 @@ public class UIButton : VRTK_InteractableObject {
 	void Update () {
         if (prevHover && !hover && !falseUsing)
         {
-            Debug.Log("Detected my using");
             OnEvent.Invoke();
             tooltip.SetActive(false);
         }

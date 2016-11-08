@@ -29,10 +29,22 @@ public static class UXStateManager
     static SelectStates selectState;
     static UXStates uxState;
     static GameObject selectedSource, selectedTarget;
-    public static void EnableTargetSelection()
+    public static void ToggleTargetSelection()
     {
-        selectState = SelectStates.SELECT_TARGET;
-        Debug.Log("Now selecting target");
+        switch (selectState)
+        {
+            case SelectStates.SELECT_SOURCE:
+                Debug.Log("Now selecting target");
+                selectState = SelectStates.SELECT_TARGET;
+                break;
+            case SelectStates.SELECT_TARGET:
+                Debug.Log("Now selecting source");
+                selectState = SelectStates.SELECT_SOURCE;
+                break;
+            default:
+                Debug.Log("ERROR invalid selectState");
+                break;
+        }
     }
     public static void SelectUnit(GameObject unit)
     {
@@ -72,7 +84,7 @@ public static class UXStateManager
     }
     public static GameObject GetTarget()
     {
-        if (selectedSource == null)
+        if (selectedTarget == null)
             Debug.Log("No target set");
         return selectedTarget;
     }
