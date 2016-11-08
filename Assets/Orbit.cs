@@ -31,6 +31,8 @@ public class Orbit : MonoBehaviour
     public static Vector3 accelVector;
     public GameObject OrbitRenderer;
     public static List<String> output = new List<String>();
+
+    Vector3 apo, peri;
     //This is just a test, not actually used for anything
     void drawEllipse()
     {
@@ -94,15 +96,12 @@ public class Orbit : MonoBehaviour
         var marker2 = GameObject.Find("Marker2");
         marker2.transform.localPosition = Vector3.zero;
     }
-    void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot, out Vector3 apo)
+    void drawOrbitalPath(LineRenderer line, float tra, float a, float e, Quaternion rot)
     {
-        apo = Vector3.zero;
-        //clear path?
         //inputs
         tra = (tra >= Mathf.PI) ? tra - 2 * Mathf.PI : tra;
         float theta = (a > 0) ? -Mathf.PI : tra;
         Vector3 pos = Vector3.zero;
-        //pos.0 = -.2f;
         int i = 0;
         for (; theta < Mathf.PI; theta += Mathf.PI * 2 / segments, i++)
         {
@@ -114,16 +113,12 @@ public class Orbit : MonoBehaviour
             float r = a * (1.0f - e * e) / denominator;
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
-            line.SetPosition(i, rot * pos + initialOffset);// + transform.parent.position);//isn't this hacky?
-            if (i == 0)
-            {
-                apo = rot * pos;// + initialOffset;
-            }
+            line.SetPosition(i, rot * pos + initialOffset);//hacky
+            if (i == 0) { apo = rot * pos; }
+            if (i == segments/2) { peri = rot * pos; }
             //if (drawPathCount == 0)
              //   Debug.Log("draw path count");
         }
-        //line.SetPosition(i++, Vector3.zero);
-        //line.SetPosition(i++, rot*Vector3.up);
 
     }
 
@@ -187,8 +182,7 @@ public class Orbit : MonoBehaviour
 
             odata.setOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
             var oe = odata.getOE();
-            Vector3 apo;
-            DrawOrbit(lines[count], ref oe, out apo);
+            DrawOrbit(lines[count], ref oe);
 
     
             //draw icons for selected orbits
@@ -196,6 +190,8 @@ public class Orbit : MonoBehaviour
             {
                 var iconApo = GameObject.Find("iconApo");
                 iconApo.transform.localPosition = apo;
+                var iconPeri = GameObject.Find("iconPeri");
+                iconPeri.transform.localPosition = peri;
             }
             count++;
         }
@@ -204,8 +200,7 @@ public class Orbit : MonoBehaviour
     public void updateInterceptLine(ref OrbitalElements oe, bool enable)
     {
         interceptLine.enabled = enable;
-        Vector3 apo;
-        DrawOrbit(interceptLine, ref oe, out apo);
+        DrawOrbit(interceptLine, ref oe);
     }
     public void prepFindIntercept()
     {
@@ -223,7 +218,7 @@ public class Orbit : MonoBehaviour
         findInterceptPoints(oe1, oe2);
     }
 
-    void DrawOrbit(LineRenderer line, ref OrbitalElements oe, out Vector3 apo)
+    void DrawOrbit(LineRenderer line, ref OrbitalElements oe)
     {
 #if false
         Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
@@ -250,7 +245,7 @@ public class Orbit : MonoBehaviour
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
         var rotq = incOffset * lan * inc * aop;
 
-        drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq, out apo);
+        drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
     }
 
     bool writeOnce = true;

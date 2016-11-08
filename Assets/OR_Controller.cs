@@ -132,7 +132,6 @@ public class OR_Controller : MonoBehaviour
             return;
         totalAnglex += xangle;
 
-        Debug.Log("anglex: " + totalAnglex + ", angley" + angle);
         root.transform.Rotate(0, angle, 0, Space.Self);
         root.transform.Rotate(xangle, 0, 0, Space.World);
     }
