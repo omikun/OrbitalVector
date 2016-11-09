@@ -19,6 +19,7 @@ public class PorkChopPlot : MonoBehaviour {
     double computeTime;
     public GameObject trajectoryDeltaVTooltip;
     public GameObject shipDeltaVTooltip;
+    public GameObject durationTooltip, startTimeTooltip;
 
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
@@ -119,17 +120,25 @@ public class PorkChopPlot : MonoBehaviour {
         orbitManager.updateInterceptLine(ref interceptOE, true);
 
 
-        //display time of arrival at intersect point
-        //display time of arrival at intersect point
-        //display start time at start node
         //display required deltaV for intercept
+        //TODO based on mode: display required deltaV for rendezvous
         var tooltip = trajectoryDeltaVTooltip.GetComponent<Tooltip>();
         tooltip.displayText = "Req dV: " + (initVel-v1).magnitude.ToString("G2");
         tooltip.Reset();
         tooltip = shipDeltaVTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Ship dV: " + UXStateManager.GetSource().GetComponent<OrbitData>().GetDV().ToString();
+        tooltip.displayText = "Ship dV: " + UXStateManager.GetSource().GetComponent<OrbitData>().GetDV().ToString("G2");
         tooltip.Reset();
-        //based on mode: display required deltaV for rendezvous
+
+        //display start time/travel time
+        tooltip = startTimeTooltip.GetComponent<Tooltip>();
+        tooltip.displayText = "Start Time: " + startTime.ToString("G2");
+        tooltip.Reset();
+        tooltip = durationTooltip.GetComponent<Tooltip>();
+        tooltip.displayText = "Duration: " + travelTime.ToString("G2");
+        tooltip.Reset();
+
+        //display time of arrival at intersect point
+        //display start time at injection point
     }
     public void TriggerIntercept()
     {
