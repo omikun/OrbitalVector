@@ -8,12 +8,37 @@ public class OrbitData : MonoBehaviour {
     public VectorD rv;
     public VectorD params_;
     OrbitalElements oe = new OrbitalElements();
+    float dv = 100;
+    float maxDV = 200;
+    public float GetDV() { return dv; }
+    public bool SubtractDV(float burnDv)
+    {
+        bool canBurn = dv >= burnDv;
+        if (canBurn) dv -= burnDv;
+        return canBurn;
+    }
+    public float AddDV(float addDV)
+    {
+        dv += addDV;
+        if (dv > maxDV)
+        {
+            var ret = dv - maxDV;
+            dv = maxDV;
+            return ret;
+        } else
+        {
+            return addDV;
+        }
+    }
 
     public static float scale = 1;
     static double r = 4;
     static double m = 7e10;
     static double G = 6.673e-11;
     public static double parentGM = m * G;
+
+
+
     public static class Global
     {
         public static double[] vel = new double[] { .1d, 0, Math.Sqrt(parentGM / r) };

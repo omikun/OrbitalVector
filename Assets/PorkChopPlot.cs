@@ -17,6 +17,8 @@ public class PorkChopPlot : MonoBehaviour {
     bool porkDone = false;
     bool intercept = true;
     double computeTime;
+    public GameObject trajectoryDeltaVTooltip;
+    public GameObject shipDeltaVTooltip;
 
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
@@ -115,10 +117,18 @@ public class PorkChopPlot : MonoBehaviour {
         marker2.transform.localPosition = r2.ToFloat();
         var orbitManager = GameObject.Find("OrbitManager").GetComponent<Orbit>();
         orbitManager.updateInterceptLine(ref interceptOE, true);
+
+
         //display time of arrival at intersect point
         //display time of arrival at intersect point
         //display start time at start node
         //display required deltaV for intercept
+        var tooltip = trajectoryDeltaVTooltip.GetComponent<Tooltip>();
+        tooltip.displayText = "Req dV: " + (initVel-v1).magnitude.ToString("G2");
+        tooltip.Reset();
+        tooltip = shipDeltaVTooltip.GetComponent<Tooltip>();
+        tooltip.displayText = "Ship dV: " + UXStateManager.GetSource().GetComponent<OrbitData>().GetDV().ToString();
+        tooltip.Reset();
         //based on mode: display required deltaV for rendezvous
     }
     public void TriggerIntercept()

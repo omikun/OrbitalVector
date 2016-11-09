@@ -1,5 +1,4 @@
-﻿namespace VRTK
-{
+﻿//namespace VRTK
     using UnityEngine;
     using UnityEngine.UI;
 
@@ -79,4 +78,3 @@
             DrawLine();
         }
     }
-}
