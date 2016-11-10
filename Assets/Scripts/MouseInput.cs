@@ -55,12 +55,19 @@ public class MouseInput : MonoBehaviour {
 				} else {
 					Debug.Log ("hit, but not construction, which is fine");
 				}
-				
-			if (Input.GetButtonUp("Fire1")) {
-				if (uibComp)
-					uibComp.Click ();
-			}
-			} else {
+
+				var ipComp = hitObj.GetComponent<InteractablePlot> ();
+                Debug.Log("IpComp: " + ipComp);
+				if (ipComp)
+					ipComp.StartMouseUsing (hitInfo);
+
+                if (Input.GetButtonUp("Fire1"))
+                {
+                    if (uibComp)
+                        uibComp.Click();
+                }
+            }
+            else {
 				Debug.Log("No hit");
 			}
         }
