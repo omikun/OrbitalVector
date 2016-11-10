@@ -5,7 +5,11 @@ public class LookAtCamera : MonoBehaviour {
     GameObject camera;
 	// Use this for initialization
 	void Start () {
-        camera = GameObject.Find("Camera (eye)");
+		if (InitMe.GetInstance().EnableVR) {
+			camera = GameObject.Find ("Camera (eye)");
+		} else {
+			camera = GameObject.Find ("Camera");
+		}
         if (camera == null)
         {
             Debug.Log("Can't find camera");

@@ -4,10 +4,12 @@ using System.Collections;
 public class MouseInput : MonoBehaviour {
     Vector3 lastMousePos;
     GameObject root;
+	GameObject camera;
     float totalAngle = 0, totalAnglex = 0;
 	// Use this for initialization
 	void Start () {
         root = GameObject.Find("HoloRoot");
+        camera = GameObject.Find("Camera");
 	}
 	void rotateWorldMouse()
     {
@@ -28,12 +30,48 @@ public class MouseInput : MonoBehaviour {
 	void Update () {
         if (Input.GetButton("Fire1"))
         {
-            if (Input.GetButtonDown("Fire1"))
-                lastMousePos = Input.mousePosition;
+			if (Input.GetButtonDown ("Fire1")) {
+				lastMousePos = Input.mousePosition;
+			}
 
             rotateWorldMouse();
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            //if (Physics.Raycast(ray))
+
+			var cam = camera.GetComponent<Camera> ();
+			RaycastHit hitInfo = new RaycastHit();
+			bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+			if (hit) 
+			{
+				Debug.Log("Hit " + hitInfo.transform.gameObject.name);
+				var hitObj = hitInfo.transform.gameObject;
+				var isComp = hitObj.GetComponent<InteractableShip>();
+				if (isComp)
+					isComp.StartUsing(hitInfo.transform.gameObject);
+				var uibComp = hitObj.GetComponent<UIButton> ();
+				if (uibComp)
+					uibComp.StartUsing (hitInfo.transform.gameObject);
+				if (hitInfo.transform.gameObject.tag == "Construction")
+				{
+					Debug.Log ("It's working!");
+				} else {
+					Debug.Log ("hit, but not construction, which is fine");
+				}
+				
+			if (Input.GetButtonUp("Fire1")) {
+				if (uibComp)
+					uibComp.Click ();
+			}
+			} else {
+				Debug.Log("No hit");
+			}
         }
+		var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");
+		if (deltaScroll != 0)
+		{
+			var zoom = Mathf.Min(1.3f, Mathf.Max(0.7f, (1 - deltaScroll)));
+			if (zoom < 1 && root.transform.localScale.magnitude > .1f)
+				root.transform.localScale *= zoom;
+			if (zoom > 1 && root.transform.localScale.magnitude < 3f)
+				root.transform.localScale *= zoom;
+		}
 	}
 }

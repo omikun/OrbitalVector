@@ -34,14 +34,17 @@ public class UIButton : VRTK_InteractableObject {
         tooltip = transform.Find("Tooltip").gameObject;
         tooltip.SetActive(false);
 	}
-	
+
+	public void Click() {
+		OnEvent.Invoke ();
+		tooltip.SetActive (false);
+	}
 	// Update is called once per frame
     //FIXME HACK should not need to use update to get both hover and click
 	void Update () {
         if (prevHover && !hover && !falseUsing)
         {
-            OnEvent.Invoke();
-            tooltip.SetActive(false);
+			Click ();
         }
         prevHover = hover;
         hover = false;

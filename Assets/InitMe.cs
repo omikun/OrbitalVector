@@ -2,10 +2,22 @@
 using System.Collections;
 
 public class InitMe : MonoBehaviour {
+	private static InitMe instance;
     public bool ShowVRPreview = true;
     public bool EnableVR = true;
+	public static InitMe GetInstance() {
+		return instance;
+	}
 	// Use this for initialization
+	void Awake () {
+		if (!instance) {
+			instance = this;
+		} else {
+			return;
+		}
+	}
 	void Start () {
+		
         UXStateManager.selectionIcon = GameObject.Find("SelectionIcon");
         Debug.Log("selectionIcon: " + UXStateManager.selectionIcon);
         UXStateManager.selectionIcon.SetActive(false);
