@@ -21,11 +21,9 @@ public class InteractablePlot : VRTK_InteractableObject {
             plotCoord.y *= 1 / transform.localScale.y;
             pcp.SelectedTrajectory(plotCoord);
         }
-        Debug.Log("Using plot!");
     }
     public void StartMouseUsing(RaycastHit hitInfo)
     {
-        Debug.Log("Using porkchop plot w/ mouse");
         {
             selector.transform.position = new Vector3(hitInfo.point.x, hitInfo.point.y, selector.transform.position.z);
             var plotCoord = new Vector2(hitInfo.point.x, hitInfo.point.y);

@@ -28,50 +28,52 @@ public class MouseInput : MonoBehaviour {
     
 	// Update is called once per frame
 	void Update () {
+
+        var cam = camera.GetComponent<Camera>();
+        RaycastHit hitInfo = new RaycastHit();
+        bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+
+        if (hit)
+        {
+            var hitObj = hitInfo.transform.gameObject;
+            var uibComp = hitObj.GetComponent<UIButton>();
+            if (uibComp)
+                uibComp.StartUsing(hitInfo.transform.gameObject);
+        }
+
         if (Input.GetButton("Fire1"))
         {
+            //click down state
 			if (Input.GetButtonDown ("Fire1")) {
 				lastMousePos = Input.mousePosition;
-			}
-
-            rotateWorldMouse();
-
-			var cam = camera.GetComponent<Camera> ();
-			RaycastHit hitInfo = new RaycastHit();
-			bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
-			if (hit) 
-			{
-				Debug.Log("Hit " + hitInfo.transform.gameObject.name);
-				var hitObj = hitInfo.transform.gameObject;
-				var isComp = hitObj.GetComponent<InteractableShip>();
-				if (isComp)
-					isComp.StartUsing(hitInfo.transform.gameObject);
-				var uibComp = hitObj.GetComponent<UIButton> ();
-				if (uibComp)
-					uibComp.StartUsing (hitInfo.transform.gameObject);
-				if (hitInfo.transform.gameObject.tag == "Construction")
-				{
-					Debug.Log ("It's working!");
-				} else {
-					Debug.Log ("hit, but not construction, which is fine");
-				}
-
-				var ipComp = hitObj.GetComponent<InteractablePlot> ();
-                Debug.Log("IpComp: " + ipComp);
-				if (ipComp)
-					ipComp.StartMouseUsing (hitInfo);
-
-                if (Input.GetButtonUp("Fire1"))
+                if (hit)
                 {
-                    if (uibComp)
-                        uibComp.Click();
+                    var hitObj = hitInfo.transform.gameObject;
+                    Debug.Log("Hit " + hitInfo.transform.gameObject.name);
+                    var isComp = hitObj.GetComponent<InteractableShip>();
+                    if (isComp)
+                        isComp.StartUsing(hitInfo.transform.gameObject);
+
+                    if (Input.GetButtonUp("Fire1"))
+                    {
+                        var uibComp = hitObj.GetComponent<UIButton>();
+                        if (uibComp)
+                            uibComp.Click();
+                    }
                 }
             }
-            else {
-				Debug.Log("No hit");
-			}
+            //hover state
+            if (hit)
+            { 
+                var hitObj = hitInfo.transform.gameObject;
+				var ipComp = hitObj.GetComponent<InteractablePlot> ();
+				if (ipComp)
+					ipComp.StartMouseUsing (hitInfo);
+            }
+
+            rotateWorldMouse();
         }
-		var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");
+        var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");
 		if (deltaScroll != 0)
 		{
 			var zoom = Mathf.Min(1.3f, Mathf.Max(0.7f, (1 - deltaScroll)));

@@ -88,7 +88,7 @@ public class PorkChopPlot : MonoBehaviour {
         var curStartTime = startTime - Time.time; //relative to now
         double travelTime = (coord.y + 0.5d) * period;
         Debug.Log("coord: " + coord);
-        Debug.Log("startTime: " + curStartTime + " travelTime: " + travelTime);
+        Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
@@ -131,7 +131,7 @@ public class PorkChopPlot : MonoBehaviour {
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + startTime.ToString("G2");
+        tooltip.displayText = "Start Time: " + (curStartTime).ToString("G2");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
         tooltip.displayText = "Duration: " + travelTime.ToString("G2");
@@ -148,7 +148,8 @@ public class PorkChopPlot : MonoBehaviour {
             return;
         }
         var src = UXStateManager.GetSource();
-        Events.instance.Raise(new ManeuverEvent(injectionVector, startTime-Time.time, src));
+        Debug.Log("InjVec: " + injectionVector);
+        Events.instance.Raise(new ManeuverEvent(injectionVector, (startTime-Time.time), src));
     }
 
     void OnDisable()

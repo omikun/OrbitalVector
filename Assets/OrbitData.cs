@@ -33,7 +33,7 @@ public class OrbitData : MonoBehaviour {
 
     public static float scale = 1;
     static double r = 4;
-    static double m = 7e10;
+    static double m = 7e9;
     static double G = 6.673e-11;
     public static double parentGM = m * G;
 

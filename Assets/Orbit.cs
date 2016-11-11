@@ -89,6 +89,7 @@ public class Orbit : MonoBehaviour
         odata.rv[4] = e.velocity.y;
         odata.rv[5] = e.velocity.z;
 
+        Debug.Log("InjVec: " + e.velocity);
         //disable intercept line render
         interceptLine.enabled = false;
         var marker1 = GameObject.Find("Marker1");
