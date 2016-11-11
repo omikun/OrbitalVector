@@ -16,6 +16,7 @@ public class UIButton : VRTK_InteractableObject {
     {
         //Debug.Log("using moveIntercept: "+count++);
         tooltip.SetActive(true);
+        FadeOverTime(2);
         hover = true;
     }
     public override void StopUsing(GameObject currentUsingObject)
@@ -35,19 +36,47 @@ public class UIButton : VRTK_InteractableObject {
         tooltip.SetActive(false);
 	}
 
-	public void Click() {
-		OnEvent.Invoke ();
-		tooltip.SetActive (false);
+    public void Hover()
+    {
+        tooltip.SetActive(true);
+        FadeOverTime(2);
+    }
+    bool clicked = false;
+	public void Clicked() {
+        Debug.Log("UIButton clicked received");
+        clicked = true;
 	}
-	// Update is called once per frame
+    public void Click()
+    {
+		OnEvent.Invoke ();
+        FadeOverTime(2);
+    }
+    // Update is called once per frame
     //FIXME HACK should not need to use update to get both hover and click
+    float fadeTime, startTime;
+    void FadeOverTime(float time)
+    {
+        var progress = 0;
+        fadeTime = time;
+        startTime = Time.time;
+    }
 	void Update () {
         if (prevHover && !hover && !falseUsing)
         {
-			Click ();
+            clicked = true;
+        }
+        if (clicked)
+        {
+            clicked = false;
+            Click();
         }
         prevHover = hover;
         hover = false;
         falseUsing = false;
+
+        if (Time.time > fadeTime + startTime)
+        {
+            tooltip.SetActive(false);
+        }
     }
 }

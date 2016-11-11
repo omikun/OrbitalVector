@@ -38,9 +38,23 @@ public class MouseInput : MonoBehaviour {
             var hitObj = hitInfo.transform.gameObject;
             var uibComp = hitObj.GetComponent<UIButton>();
             if (uibComp)
-                uibComp.StartUsing(hitInfo.transform.gameObject);
+                //uibComp.StartUsing(hitInfo.transform.gameObject);
+                uibComp.Hover();
         }
-
+        if (Input.GetButtonUp("Fire1"))
+        {
+            Debug.Log("button up!");
+            if (hit)
+            {
+                var hitObj = hitInfo.transform.gameObject;
+                var uibComp = hitObj.GetComponent<UIButton>();
+                if (uibComp)
+                {
+                    Debug.Log("mouse click up");
+                    uibComp.Clicked();
+                }
+            }
+        }
         if (Input.GetButton("Fire1"))
         {
             //click down state
@@ -58,10 +72,14 @@ public class MouseInput : MonoBehaviour {
                     {
                         var uibComp = hitObj.GetComponent<UIButton>();
                         if (uibComp)
-                            uibComp.Click();
+                        {
+                            Debug.Log("mouse click up");
+                            uibComp.Clicked();
+                        }
                     }
                 }
             }
+            
             //hover state
             if (hit)
             { 

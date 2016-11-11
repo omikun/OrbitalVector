@@ -34,11 +34,11 @@ public static class UXStateManager
         switch (selectState)
         {
             case SelectStates.SELECT_SOURCE:
-                Debug.Log("Now selecting target");
+                Debug.Log("selecting TARGET");
                 selectState = SelectStates.SELECT_TARGET;
                 break;
             case SelectStates.SELECT_TARGET:
-                Debug.Log("Now selecting source");
+                Debug.Log("selecting SOURCE");
                 selectState = SelectStates.SELECT_SOURCE;
                 break;
             default:
