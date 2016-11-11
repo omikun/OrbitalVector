@@ -48,7 +48,6 @@ public class UIButton : VRTK_InteractableObject {
 	}
     public void Click()
     {
-        Debug.Log("UIButton clicking!");
 		OnEvent.Invoke ();
         FadeOverTime(2);
     }

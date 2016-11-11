@@ -21,13 +21,6 @@ public class PorkChopPlot : MonoBehaviour {
     public GameObject shipDeltaVTooltip;
     public GameObject durationTooltip, startTimeTooltip;
 
-    class PCPoint
-    {
-        public float dv = Mathf.Infinity;
-        public double startTime, travelTime;
-    }
-    PCPoint minDV;
-
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
 
@@ -76,7 +69,6 @@ public class PorkChopPlot : MonoBehaviour {
             computeTime = Time.time;
             oe1 = src.GetComponent<OrbitData>().getOE();
             oe2 = tgt.GetComponent<OrbitData>().getOE();
-            Debug.Log("_triggerPork is on");
             _triggerPork = true;
         }
         //TODO every .2 seconds?
@@ -86,7 +78,6 @@ public class PorkChopPlot : MonoBehaviour {
             texture.Apply();
             porkDone = false;
             Debug.Log("Period of ppc: " + period);
-            PlotTrajectory(minDV.startTime, minDV.travelTime);
         }
     }
 
@@ -98,15 +89,12 @@ public class PorkChopPlot : MonoBehaviour {
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
         startTime = (coord.x + 0.5d) * period; //relative to compute time
-        double travelTime = (coord.y + 0.5d) * period;
-        //recompute trajectory w/ those times
-        PlotTrajectory(startTime, travelTime);
-    }
-    public void PlotTrajectory(double startTime, double travelTime)
-    { 
         var timeSinceCompute = Time.time + computeTime;
         var curStartTime = startTime - timeSinceCompute; //relative to now
+        double travelTime = (coord.y + 0.5d) * period;
+        Debug.Log("coord: " + coord);
         Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
+        //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
         Vector3d r2, v2;
@@ -215,7 +203,7 @@ public class PorkChopPlot : MonoBehaviour {
         //plot is always 1 period across and 1/2 period tall
         double startTimeInc = period / imgWidth;
         double travelTimeInc = (period / 2) / imgHeight;
-        Debug.Log("running GeneratePorkChop()");
+
         //starting time
         for (double x = 0; x < imgWidth; x++)
         {
@@ -237,13 +225,6 @@ public class PorkChopPlot : MonoBehaviour {
                 porkChopValues[index] = diffMag;
                 maxHue = Mathf.Max(maxHue, diffMag);
                 minHue = Mathf.Min(minHue, diffMag);
-                if (diffMag < minDV.dv)
-                {
-                    Debug.Log("new minimum dv found!");
-                    minDV.dv = diffMag;
-                    minDV.startTime = startTime;
-                    minDV.travelTime = travelTime;
-                }
             }//per row
         }//per column
 
@@ -262,7 +243,7 @@ public class PorkChopPlot : MonoBehaviour {
             if (_triggerPork)
             {
                 _triggerPork = false;
-                Debug.Log("Porkchop thread executing GenPorkChop!");
+
                 GeneratePorkChop();
                 porkDone = true;
             }
