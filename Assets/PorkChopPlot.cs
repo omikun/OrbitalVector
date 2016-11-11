@@ -62,7 +62,11 @@ public class PorkChopPlot : MonoBehaviour {
             var src = UXStateManager.GetSource();
             var tgt = UXStateManager.GetTarget();
             if (src == null || tgt == null)
+            {
+                Debug.Log("src: " + src + " tgt: " + tgt);
                 return;
+            }
+            computeTime = Time.time;
             oe1 = src.GetComponent<OrbitData>().getOE();
             oe2 = tgt.GetComponent<OrbitData>().getOE();
             _triggerPork = true;
@@ -84,8 +88,9 @@ public class PorkChopPlot : MonoBehaviour {
     {
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
-        startTime = (coord.x + 0.5d) * period + computeTime;
-        var curStartTime = startTime - Time.time; //relative to now
+        startTime = (coord.x + 0.5d) * period; //relative to compute time
+        var timeSinceCompute = Time.time + computeTime;
+        var curStartTime = startTime - timeSinceCompute; //relative to now
         double travelTime = (coord.y + 0.5d) * period;
         Debug.Log("coord: " + coord);
         Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
@@ -96,8 +101,8 @@ public class PorkChopPlot : MonoBehaviour {
         {
             var tempOe1 = oe1.copyOE();
             var tempOe2 = oe2.copyOE();
-            var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, curStartTime);
-            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, curStartTime + travelTime);
+            var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime);
+            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, startTime + travelTime);
             tempOe2.tra = tra2;
             tempOe1.tra = tra1;
 
@@ -149,7 +154,7 @@ public class PorkChopPlot : MonoBehaviour {
         }
         var src = UXStateManager.GetSource();
         Debug.Log("InjVec: " + injectionVector);
-        Events.instance.Raise(new ManeuverEvent(injectionVector, (startTime-Time.time), src));
+        Events.instance.Raise(new ManeuverEvent(injectionVector, (startTime-Time.time+computeTime), src));
     }
 
     void OnDisable()
@@ -164,7 +169,6 @@ public class PorkChopPlot : MonoBehaviour {
     {
         triggerPork = true;
         intercept = enableIntercept;
-        computeTime = Time.time;
     }
 
     void FindVel(double startTime, double travelTime, out Vector3d injectionVector, out Vector3d rendezvousVector)
@@ -239,6 +243,7 @@ public class PorkChopPlot : MonoBehaviour {
             if (_triggerPork)
             {
                 _triggerPork = false;
+
                 GeneratePorkChop();
                 porkDone = true;
             }
