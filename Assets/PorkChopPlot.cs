@@ -134,7 +134,7 @@ public class PorkChopPlot : MonoBehaviour {
     }
     void PlotTrajectory(double startTime, double travelTime)
     {
-        var timeSinceCompute = Time.time + computeTime;
+        var timeSinceCompute = Time.time - computeTime;
         var curStartTime = startTime - timeSinceCompute; //relative to now
         Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
         //recompute trajectory w/ those times
@@ -178,15 +178,15 @@ public class PorkChopPlot : MonoBehaviour {
         tooltip.displayText = "Req dV: " + (initVel-v1).magnitude.ToString("G2");
         tooltip.Reset();
         tooltip = shipDeltaVTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Ship dV: " + UXStateManager.GetSource().GetComponent<OrbitData>().GetDV().ToString("G2");
+        tooltip.displayText = "Ship dV: " + UXStateManager.GetSource().GetComponent<OrbitData>().GetDV().ToString("G4");
         tooltip.Reset();
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + (curStartTime).ToString("G2");
+        tooltip.displayText = "Start Time: " + (curStartTime).ToString("G4");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Duration: " + travelTime.ToString("G2");
+        tooltip.displayText = "Duration: " + travelTime.ToString("G4");
         tooltip.Reset();
 
         //display time of arrival at intersect point

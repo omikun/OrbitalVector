@@ -29,10 +29,7 @@ public class InteractablePlot : VRTK_InteractableObject {
             var fixedZ = selector.transform.localPosition;
             fixedZ.z = -.05f;
             selector.transform.localPosition = fixedZ;
-            var plotCoord = new Vector2(hitInfo.point.x, hitInfo.point.y);
-            plotCoord.x *= 1 / transform.localScale.x;
-            plotCoord.y -= transform.position.y;
-            plotCoord.y *= 1 / transform.localScale.y;
+            var plotCoord = new Vector2(fixedZ.x, fixedZ.y);
             pcp.SelectedTrajectory(plotCoord);
         }
     }
