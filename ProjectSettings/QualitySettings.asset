@@ -140,10 +140,10 @@ QualitySettings:
     name: Fantastic
     pixelLightCount: 4
     shadows: 1
-    shadowResolution: 2
-    shadowProjection: 1
+    shadowResolution: 3
+    shadowProjection: 0
     shadowCascades: 4
-    shadowDistance: 150
+    shadowDistance: 5
     shadowNearPlaneOffset: 2
     shadowCascade2Split: 0.33333334
     shadowCascade4Split: {x: 0.06666667, y: 0.19999999, z: 0.46666664}

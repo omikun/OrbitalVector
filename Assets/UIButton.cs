@@ -33,12 +33,14 @@ public class UIButton : VRTK_InteractableObject {
 	void Start () {
         base.Start();
         tooltip = transform.Find("Tooltip").gameObject;
-        tooltip.SetActive(false);
+        if (tooltip)
+            tooltip.SetActive(false);
 	}
 
     public void Hover()
     {
-        tooltip.SetActive(true);
+        if (tooltip)
+            tooltip.SetActive(true);
         FadeOverTime(2);
     }
     bool clicked = false;
@@ -76,7 +78,8 @@ public class UIButton : VRTK_InteractableObject {
 
         if (Time.time > fadeTime + startTime)
         {
-            tooltip.SetActive(false);
+            if (tooltip)
+                tooltip.SetActive(false);
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Threading;
 using OrbitalTools;
+using UnityEditor;
+
 public class PCPoint
     {
         public float dv = Mathf.Infinity;
@@ -9,6 +11,19 @@ public class PCPoint
         PCPoint() { dv = Mathf.Infinity; }
     }
     
+[CustomEditor(typeof(PorkChopPlot))]
+public class ObjectBuilderEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        PorkChopPlot pcp = (PorkChopPlot)target;
+        if(GUILayout.Button("Build Object"))
+        {
+            pcp.CreatePlot();
+        }
+    }
+}
 public class PorkChopPlot : MonoBehaviour {
     const int imgWidth = 40;
     const int imgHeight = 30;
@@ -26,6 +41,7 @@ public class PorkChopPlot : MonoBehaviour {
     public GameObject trajectoryDeltaVTooltip;
     public GameObject shipDeltaVTooltip;
     public GameObject durationTooltip, startTimeTooltip;
+    public GameObject startTimeIndicator, travelTimeIndicator;
 
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
@@ -44,7 +60,7 @@ public class PorkChopPlot : MonoBehaviour {
         }
         texture.Apply();
     }
-    void CreatePlot()
+    public void CreatePlot()
     {
         var renderer = GetComponent<SpriteRenderer>();
         texture = new Texture2D(PorkChopPlot.imgWidth, PorkChopPlot.imgHeight, TextureFormat.RGB24, false);
@@ -125,6 +141,10 @@ public class PorkChopPlot : MonoBehaviour {
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
         Vector3d r2, v2;
+        if (oe1 == null || oe2 == null) {
+            Debug.Log("OE1 or 2 not initialized");
+            return;
+        }
         {
             var tempOe1 = oe1.copyOE();
             var tempOe2 = oe2.copyOE();
