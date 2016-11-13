@@ -56,7 +56,6 @@ public static class UXStateManager
                 selectionIcon.transform.localPosition = Vector3.zero;
                 selectionIcon.SetActive(true);
                 uxState = UXStates.IDLE;
-                ClearTarget();
                 Debug.Log("Selected source");
                 break;
             case SelectStates.SELECT_TARGET:

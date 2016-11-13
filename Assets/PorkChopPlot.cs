@@ -2,7 +2,13 @@
 using System.Collections;
 using System.Threading;
 using OrbitalTools;
-
+public class PCPoint
+    {
+        public float dv = Mathf.Infinity;
+        public double startTime, travelTime;
+        PCPoint() { dv = Mathf.Infinity; }
+    }
+    
 public class PorkChopPlot : MonoBehaviour {
     const int imgWidth = 40;
     const int imgHeight = 30;
@@ -23,6 +29,9 @@ public class PorkChopPlot : MonoBehaviour {
 
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
+    public PCPoint minDV;
+    float mindv = Mathf.Infinity;
+    double mindvStarTime, mindvTravelTime;
 
     void InitTexture2D(Texture2D texture)
     {
@@ -78,7 +87,21 @@ public class PorkChopPlot : MonoBehaviour {
             texture.Apply();
             porkDone = false;
             Debug.Log("Period of ppc: " + period);
+            Debug.Log("mindv: " + mindv);
+            PlotTrajectory(mindvStarTime, mindvTravelTime);
+            //move selector
+            MoveSelector(mindvStarTime, mindvTravelTime);
         }
+    }
+    void MoveSelector(double startTime, double travelTime)
+    {
+        GameObject selector = GameObject.Find("selector");
+        var width = (float)(startTime / period - .5d);
+        var height = (float)(travelTime / period - .5d);
+        Debug.Log("width: " + width + " height: " + height);
+        var newLocation = new Vector3(width, height, selector.transform.localPosition.z);
+        Debug.Log("selector pos: " + newLocation.ToString());
+        selector.transform.localPosition = newLocation;
     }
 
     Vector3d injectionVector;
@@ -88,11 +111,15 @@ public class PorkChopPlot : MonoBehaviour {
     {
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
+        Debug.Log("coord: " + coord);
         startTime = (coord.x + 0.5d) * period; //relative to compute time
+        double travelTime = (coord.y + 0.5d) * period;
+        PlotTrajectory(startTime, travelTime);
+    }
+    void PlotTrajectory(double startTime, double travelTime)
+    {
         var timeSinceCompute = Time.time + computeTime;
         var curStartTime = startTime - timeSinceCompute; //relative to now
-        double travelTime = (coord.y + 0.5d) * period;
-        Debug.Log("coord: " + coord);
         Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
@@ -225,12 +252,22 @@ public class PorkChopPlot : MonoBehaviour {
                 porkChopValues[index] = diffMag;
                 maxHue = Mathf.Max(maxHue, diffMag);
                 minHue = Mathf.Min(minHue, diffMag);
+                if (diffMag < mindv)
+                {
+                    mindv = diffMag;
+                    //Debug.Log("new minimum dv found!");
+                    //minDV.dv = diffMag;
+                    //minDV.startTime = startTime;
+                    //minDV.travelTime = travelTime;
+                    mindvStarTime = startTime;
+                    mindvTravelTime = travelTime;
+                }
             }//per row
         }//per column
 
         //convert to colors
         Debug.Log("Max hue: " + maxHue);
-        
+
         for (int index = 0; index < imgWidth * imgHeight; index++)
         {
             porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[index]), 1f, 1.0f, 1f);

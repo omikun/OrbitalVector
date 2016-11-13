@@ -10,6 +10,12 @@ public class MouseInput : MonoBehaviour {
 	void Start () {
         root = GameObject.Find("HoloRoot");
         camera = GameObject.Find("Camera");
+        if (camera == null)
+        {
+            Debug.Log("Cannot find camera, disabling mouse input");
+            gameObject.SetActive(false);
+            return;
+        }
 	}
 	void rotateWorldMouse()
     {
