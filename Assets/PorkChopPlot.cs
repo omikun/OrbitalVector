@@ -42,6 +42,7 @@ public class PorkChopPlot : MonoBehaviour {
     public GameObject shipDeltaVTooltip;
     public GameObject durationTooltip, startTimeTooltip;
     public GameObject startTimeIndicator, travelTimeIndicator;
+    public GameObject selectorIndicator;
 
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
@@ -119,7 +120,60 @@ public class PorkChopPlot : MonoBehaviour {
         Debug.Log("selector pos: " + newLocation.ToString());
         selector.transform.localPosition = newLocation;
     }
+    public void DragStartTimeIndicator()
+    {
+        //mouse only
+        //get mouse position
+        Debug.Log("dragging start time indicator");
+        var camera = GameObject.Find("Camera");
+        var cam = camera.GetComponent<Camera>();
+        RaycastHit hitInfo = new RaycastHit();
+        bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+        Debug.Log("loc: " + hitInfo.point.ToString());
+        //move localPosition.x
+        var oldLocalPosition = startTimeIndicator.transform.localPosition;
+        startTimeIndicator.transform.position = hitInfo.point;
+        var newLocalPosition = oldLocalPosition;
+        var localx = startTimeIndicator.transform.localPosition.x;
+        if (localx < .5f && localx > -.5)
+            newLocalPosition.x = localx;
+        startTimeIndicator.transform.localPosition = newLocalPosition;
+        var localy = travelTimeIndicator.transform.localPosition.y;
+        localx = newLocalPosition.x;
 
+        SelectedTrajectory(new Vector2(localx, localy));
+        var pos = selectorIndicator.transform.localPosition;
+        pos.x = localx;
+        pos.y = localy;
+        selectorIndicator.transform.localPosition = pos;
+    }
+    public void DragTravelTimeIndicator()
+    {
+        //mouse only
+        //get mouse position
+        Debug.Log("dragging travel time indicator3");
+        var camera = GameObject.Find("Camera");
+        var cam = camera.GetComponent<Camera>();
+        RaycastHit hitInfo = new RaycastHit();
+        bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+        Debug.Log("loc: " + hitInfo.point.ToString());
+        //move localPosition.y
+        var oldLocalPosition = travelTimeIndicator.transform.localPosition;
+        travelTimeIndicator.transform.position = hitInfo.point;
+        var newLocalPosition = oldLocalPosition;
+        var localy = travelTimeIndicator.transform.localPosition.y;
+        if (localy < .35f && localy > -.35)
+            newLocalPosition.y = localy;
+        travelTimeIndicator.transform.localPosition = newLocalPosition;
+        var localx = startTimeIndicator.transform.localPosition.x;
+        localy = newLocalPosition.y;
+
+        SelectedTrajectory(new Vector2(localx, localy));
+        var pos = selectorIndicator.transform.localPosition;
+        pos.x = localx;
+        pos.y = localy;
+        selectorIndicator.transform.localPosition = pos;
+    }
     Vector3d injectionVector;
     double startTime; //absolute time
     //update maneuver node w/ trajectory
@@ -131,6 +185,10 @@ public class PorkChopPlot : MonoBehaviour {
         startTime = (coord.x + 0.5d) * period; //relative to compute time
         double travelTime = (coord.y + 0.5d) * period;
         PlotTrajectory(startTime, travelTime);
+    }
+    float time2coord(double time)
+    {
+        return (float)(time / period - .5d);
     }
     void PlotTrajectory(double startTime, double travelTime)
     {
@@ -189,6 +247,14 @@ public class PorkChopPlot : MonoBehaviour {
         tooltip.displayText = "Duration: " + travelTime.ToString("G4");
         tooltip.Reset();
 
+        //set scrollers
+        var localPos = startTimeIndicator.transform.localPosition;
+        localPos.x = time2coord(startTime);
+        startTimeIndicator.transform.localPosition = localPos;
+
+        localPos = travelTimeIndicator.transform.localPosition;
+        localPos.y = time2coord(travelTime);
+        travelTimeIndicator.transform.localPosition = localPos;
         //display time of arrival at intersect point
         //display start time at injection point
     }

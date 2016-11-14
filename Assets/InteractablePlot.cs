@@ -24,14 +24,12 @@ public class InteractablePlot : VRTK_InteractableObject {
     }
     public void StartMouseUsing(RaycastHit hitInfo)
     {
-        {
-            selector.transform.position = new Vector3(hitInfo.point.x, hitInfo.point.y, selector.transform.position.z);
-            var fixedZ = selector.transform.localPosition;
-            fixedZ.z = -.05f;
-            selector.transform.localPosition = fixedZ;
-            var plotCoord = new Vector2(fixedZ.x, fixedZ.y);
-            pcp.SelectedTrajectory(plotCoord);
-        }
+        selector.transform.position = new Vector3(hitInfo.point.x, hitInfo.point.y, selector.transform.position.z);
+        var fixedZ = selector.transform.localPosition;
+        fixedZ.z = -.05f;
+        selector.transform.localPosition = fixedZ;
+        var plotCoord = new Vector2(fixedZ.x, fixedZ.y);
+        pcp.SelectedTrajectory(plotCoord);
     }
 
     void SetSelectorPosition(Vector3 point)

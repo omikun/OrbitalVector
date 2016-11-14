@@ -7,6 +7,7 @@ public class UIButton : VRTK_InteractableObject {
 
     GameObject tooltip;
     public UnityEvent OnEvent;
+    public UnityEvent OnDragEvent;
     int count = 0;
     bool hover = false;
     bool prevHover = false;
@@ -62,7 +63,14 @@ public class UIButton : VRTK_InteractableObject {
         fadeTime = time;
         startTime = Time.time;
     }
-	void Update () {
+    public void Drag()
+    {
+        if (OnDragEvent == null)
+            return;
+        Debug.Log("UIButton.Drag()");
+        OnDragEvent.Invoke();
+    }
+    void Update () {
         if (prevHover && !hover && !falseUsing)
         {
             clicked = true;

@@ -74,15 +74,7 @@ public class MouseInput : MonoBehaviour {
                     if (isComp)
                         isComp.StartUsing(hitInfo.transform.gameObject);
 
-                    if (Input.GetButtonUp("Fire1"))
-                    {
-                        var uibComp = hitObj.GetComponent<UIButton>();
-                        if (uibComp)
-                        {
-                            Debug.Log("mouse click up");
-                            uibComp.Clicked();
-                        }
-                    }
+                    
                 }
             }
             
@@ -90,7 +82,13 @@ public class MouseInput : MonoBehaviour {
             if (hit)
             { 
                 var hitObj = hitInfo.transform.gameObject;
-				var ipComp = hitObj.GetComponent<InteractablePlot> ();
+                var uibComp = hitObj.GetComponent<UIButton>();
+                if (uibComp)
+                {
+                    Debug.Log("mouse click/dragging");
+                    uibComp.Drag();
+                }
+                var ipComp = hitObj.GetComponent<InteractablePlot> ();
 				if (ipComp)
 					ipComp.StartMouseUsing (hitInfo);
             }
