@@ -16,14 +16,16 @@ public class UIButton : VRTK_InteractableObject {
     public override void StartUsing(GameObject currentUsingObject)
     {
         //Debug.Log("using moveIntercept: "+count++);
-        tooltip.SetActive(true);
+        if (tooltip)
+            tooltip.SetActive(true);
         FadeOverTime(2);
         hover = true;
     }
     public override void StopUsing(GameObject currentUsingObject)
    { 
-        Debug.Log("NOT using moveIntercept");
-        tooltip.SetActive(false);
+        Debug.Log("StopUsing button");
+        if (tooltip)
+            tooltip.SetActive(false);
         falseUsing = true;
     }
     public override void OnInteractableObjectTouched (InteractableObjectEventArgs e)
@@ -43,6 +45,8 @@ public class UIButton : VRTK_InteractableObject {
         if (tooltip)
             tooltip.SetActive(true);
         FadeOverTime(2);
+        if (OnDragEvent != null)
+            OnDragEvent.Invoke();
     }
     bool clicked = false;
 	public void Clicked() {

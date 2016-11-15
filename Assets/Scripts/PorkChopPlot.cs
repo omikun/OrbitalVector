@@ -251,7 +251,7 @@ public class PorkChopPlot : MonoBehaviour {
         var localPos = startTimeIndicator.transform.localPosition;
         localPos.x = time2coord(startTime);
         startTimeIndicator.transform.localPosition = localPos;
-
+//
         localPos = travelTimeIndicator.transform.localPosition;
         localPos.y = time2coord(travelTime);
         travelTimeIndicator.transform.localPosition = localPos;

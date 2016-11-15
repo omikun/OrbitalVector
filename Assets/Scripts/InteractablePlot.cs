@@ -14,11 +14,11 @@ public class InteractablePlot : VRTK_InteractableObject {
         if (GetComponent<Collider>().Raycast(ray, out hit, 100))
         {
             //SetSelectorPosition(hit.point);
-            selector.transform.position = new Vector3(hit.point.x, hit.point.y, selector.transform.position.z);
-            var plotCoord = new Vector2(hit.point.x, hit.point.y);
-            plotCoord.x *= 1 / transform.localScale.x;
-            plotCoord.y -= transform.position.y;
-            plotCoord.y *= 1 / transform.localScale.y;
+            selector.transform.position = hit.point;
+            var fixedZ = selector.transform.localPosition;
+            fixedZ.z = -0.05f;
+            selector.transform.localPosition = fixedZ;
+            var plotCoord = new Vector2(fixedZ.x, fixedZ.y);
             pcp.SelectedTrajectory(plotCoord);
         }
     }

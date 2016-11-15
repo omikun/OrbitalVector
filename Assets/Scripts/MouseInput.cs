@@ -38,7 +38,7 @@ public class MouseInput : MonoBehaviour {
         var cam = camera.GetComponent<Camera>();
         RaycastHit hitInfo = new RaycastHit();
         bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
-
+        //hover state
         if (hit)
         {
             var hitObj = hitInfo.transform.gameObject;
@@ -78,7 +78,7 @@ public class MouseInput : MonoBehaviour {
                 }
             }
             
-            //hover state
+            //drag state
             if (hit)
             { 
                 var hitObj = hitInfo.transform.gameObject;
