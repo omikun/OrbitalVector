@@ -30,38 +30,7 @@ public class MouseInput : MonoBehaviour {
         root.transform.Rotate(0, angle, 0, Space.Self);
         root.transform.Rotate(xangle, 0, 0, Space.World);
     }
-    
-    void uibClicked(UIButton uib)
-    {
-        if (uib == null) return;
-        Debug.Log("mouse click up");
-        uib.Clicked();
-    }
-    void uibHover(UIButton uib)
-    {
-        if (uib == null) return;
-        //Debug.Log("mouse hover");
-        //uib.StartUsing(hitInfo.transform.gameObject);
-        uib.Hover();
-    }
-    void uibDrag(UIButton uib)
-    {
-        if (uib == null) return;
-        //Debug.Log("mouse drag");
-        uib.Drag();
-    }
-    void ipDrag(InteractablePlot ip, RaycastHit hitInfo)
-    {
-        if (ip == null) return;
-        Debug.Log("mouse plot click");
-        ip.StartMouseUsing(hitInfo);
-    }
-    void isClick(InteractableShip isc, RaycastHit hitInfo)
-    {
-        if (isc == null) return;
-        Debug.Log("ship click");
-        isc.StartUsing(hitInfo.transform.gameObject);
-    }
+
 	// Update is called once per frame
 	void Update () {
         var cam = camera.GetComponent<Camera>();
@@ -71,23 +40,27 @@ public class MouseInput : MonoBehaviour {
         {
             var hitObj = hitInfo.transform.gameObject;
             var uibComp = hitObj.GetComponent<UIButton>();
-            //hover state
-            uibHover(uibComp);
-            //up state
-            if (Input.GetButtonUp("Fire1")) uibClicked(uibComp);
-            //drag/down state
-            if (Input.GetButton("Fire1"))
-            {
-                //click down state
-                if (Input.GetButtonDown("Fire1"))
-                {
-                    var isComp = hitObj.GetComponent<InteractableShip>();
-                    isClick(isComp, hitInfo);
-                }
-                uibDrag(uibComp);
-                var ipComp = hitObj.GetComponent<InteractablePlot> ();
-                ipDrag(ipComp, hitInfo);
-            }
+			var isComp = hitObj.GetComponent<InteractableShip>();
+			var ipComp = hitObj.GetComponent<InteractablePlot> ();
+            
+	    	bool buttonUp = Input.GetButtonUp("Fire1");
+			bool buttonEvent = InputGetButton("Fire1");
+	    	bool buttonDown = Input.GetButtonDown("Fire1");
+		
+			if (uibComp != null && true)
+				uibComp.Hover;
+			
+			if (uibComp != null && buttonUp) 
+				uibComp.Clicked();
+			
+			if (isComp != null && buttonEvent && ButtonDown) 
+				isComp.StartUsing(hitInfo.transform.gameObject);
+			
+			if (uibComp != null && buttonEvent) 
+				uibComp.Drag();
+			
+			if (ipComp != null && buttonEvent) 
+				ipComp.StartMouseUsing(hitInfo);
         }
 
         if (Input.GetButtonDown("Fire1")) lastMousePos = Input.mousePosition;
