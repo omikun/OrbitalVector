@@ -27,74 +27,71 @@ public class MouseInput : MonoBehaviour {
             return;
         totalAnglex += xangle;
 
-
         root.transform.Rotate(0, angle, 0, Space.Self);
         root.transform.Rotate(xangle, 0, 0, Space.World);
     }
     
+    void uibClicked(UIButton uib)
+    {
+        if (uib == null) return;
+        Debug.Log("mouse click up");
+        uib.Clicked();
+    }
+    void uibHover(UIButton uib)
+    {
+        if (uib == null) return;
+        //Debug.Log("mouse hover");
+        //uib.StartUsing(hitInfo.transform.gameObject);
+        uib.Hover();
+    }
+    void uibDrag(UIButton uib)
+    {
+        if (uib == null) return;
+        //Debug.Log("mouse drag");
+        uib.Drag();
+    }
+    void ipDrag(InteractablePlot ip, RaycastHit hitInfo)
+    {
+        if (ip == null) return;
+        Debug.Log("mouse plot click");
+        ip.StartMouseUsing(hitInfo);
+    }
+    void isClick(InteractableShip isc, RaycastHit hitInfo)
+    {
+        if (isc == null) return;
+        Debug.Log("ship click");
+        isc.StartUsing(hitInfo.transform.gameObject);
+    }
 	// Update is called once per frame
 	void Update () {
-
         var cam = camera.GetComponent<Camera>();
         RaycastHit hitInfo = new RaycastHit();
         bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
-        //hover state
         if (hit)
         {
             var hitObj = hitInfo.transform.gameObject;
             var uibComp = hitObj.GetComponent<UIButton>();
-            if (uibComp)
-                //uibComp.StartUsing(hitInfo.transform.gameObject);
-                uibComp.Hover();
-        }
-        if (Input.GetButtonUp("Fire1"))
-        {
-            Debug.Log("button up!");
-            if (hit)
+            //hover state
+            uibHover(uibComp);
+            //up state
+            if (Input.GetButtonUp("Fire1")) uibClicked(uibComp);
+            //drag/down state
+            if (Input.GetButton("Fire1"))
             {
-                var hitObj = hitInfo.transform.gameObject;
-                var uibComp = hitObj.GetComponent<UIButton>();
-                if (uibComp)
+                //click down state
+                if (Input.GetButtonDown("Fire1"))
                 {
-                    Debug.Log("mouse click up");
-                    uibComp.Clicked();
-                }
-            }
-        }
-        if (Input.GetButton("Fire1"))
-        {
-            //click down state
-			if (Input.GetButtonDown ("Fire1")) {
-				lastMousePos = Input.mousePosition;
-                if (hit)
-                {
-                    var hitObj = hitInfo.transform.gameObject;
-                    Debug.Log("Hit " + hitInfo.transform.gameObject.name);
                     var isComp = hitObj.GetComponent<InteractableShip>();
-                    if (isComp)
-                        isComp.StartUsing(hitInfo.transform.gameObject);
-
-                    
+                    isClick(isComp, hitInfo);
                 }
-            }
-            
-            //drag state
-            if (hit)
-            { 
-                var hitObj = hitInfo.transform.gameObject;
-                var uibComp = hitObj.GetComponent<UIButton>();
-                if (uibComp)
-                {
-                    Debug.Log("mouse click/dragging");
-                    uibComp.Drag();
-                }
+                uibDrag(uibComp);
                 var ipComp = hitObj.GetComponent<InteractablePlot> ();
-				if (ipComp)
-					ipComp.StartMouseUsing (hitInfo);
+                ipDrag(ipComp, hitInfo);
             }
-
-            rotateWorldMouse();
         }
+
+        if (Input.GetButtonDown("Fire1")) lastMousePos = Input.mousePosition;
+
         var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");
 		if (deltaScroll != 0)
 		{

@@ -71,7 +71,6 @@ public class UIButton : VRTK_InteractableObject {
     {
         if (OnDragEvent == null)
             return;
-        Debug.Log("UIButton.Drag()");
         OnDragEvent.Invoke();
     }
     void Update () {
