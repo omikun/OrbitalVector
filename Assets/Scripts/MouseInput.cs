@@ -48,6 +48,7 @@ public class MouseInput : MonoBehaviour {
         {
             var hitObj = hitInfo.transform.gameObject;
             var uibComp = hitObj.GetComponent<UIButton>();
+            var uidComp = hitObj.GetComponent<UIDraggable>();
 			var isComp = hitObj.GetComponent<InteractableShip>();
 			var ipComp = hitObj.GetComponent<InteractablePlot> ();
             
@@ -60,8 +61,8 @@ public class MouseInput : MonoBehaviour {
 			if (isComp != null && buttonDown) 
 				isComp.StartUsing(hitInfo.transform.gameObject);
 			
-			if (uibComp != null && buttonEvent) 
-				uibComp.Drag();
+			if (uidComp != null && buttonEvent) 
+				uidComp.Drag();
 			
 			if (ipComp != null && buttonEvent) 
 				ipComp.StartMouseUsing(hitInfo);

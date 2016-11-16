@@ -129,6 +129,10 @@ public class PorkChopPlot : MonoBehaviour {
         var cam = camera.GetComponent<Camera>();
         RaycastHit hitInfo = new RaycastHit();
         bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+        _DragStartTimeIndicator(hitInfo);
+    }
+    public void _DragStartTimeIndicator(RaycastHit hitInfo)
+    {
         Debug.Log("loc: " + hitInfo.point.ToString());
         //move localPosition.x
         var oldLocalPosition = startTimeIndicator.transform.localPosition;
@@ -156,6 +160,9 @@ public class PorkChopPlot : MonoBehaviour {
         var cam = camera.GetComponent<Camera>();
         RaycastHit hitInfo = new RaycastHit();
         bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+        _DragTravelTimeIndicator(hitInfo);
+    }
+    public void _DragTravelTimeIndicator(RaycastHit hitInfo) { 
         Debug.Log("loc: " + hitInfo.point.ToString());
         //move localPosition.y
         var oldLocalPosition = travelTimeIndicator.transform.localPosition;
@@ -181,7 +188,7 @@ public class PorkChopPlot : MonoBehaviour {
     {
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
-        Debug.Log("coord: " + coord);
+        Debug.Log("coord: " + coord.ToString());
         startTime = (coord.x + 0.5d) * period; //relative to compute time
         double travelTime = (coord.y + 0.5d) * period;
         PlotTrajectory(startTime, travelTime);

@@ -20,6 +20,7 @@ public class UIButton : VRTK_InteractableObject {
             tooltip.SetActive(true);
         FadeOverTime(2);
         hover = true;
+        Drag();
     }
     public override void StopUsing(GameObject currentUsingObject)
    { 
