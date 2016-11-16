@@ -36,6 +36,14 @@ public class MouseInput : MonoBehaviour {
         var cam = camera.GetComponent<Camera>();
         RaycastHit hitInfo = new RaycastHit();
         bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
+
+        bool buttonUp = Input.GetButtonUp("Fire1");
+        bool buttonEvent = Input.GetButton("Fire1");
+        bool buttonDown = Input.GetButtonDown("Fire1");
+
+        if (Input.GetButtonDown("Fire1")) lastMousePos = Input.mousePosition;
+        if (buttonEvent) rotateWorldMouse();
+
         if (hit)
         {
             var hitObj = hitInfo.transform.gameObject;
@@ -43,17 +51,13 @@ public class MouseInput : MonoBehaviour {
 			var isComp = hitObj.GetComponent<InteractableShip>();
 			var ipComp = hitObj.GetComponent<InteractablePlot> ();
             
-	    	bool buttonUp = Input.GetButtonUp("Fire1");
-			bool buttonEvent = InputGetButton("Fire1");
-	    	bool buttonDown = Input.GetButtonDown("Fire1");
-		
 			if (uibComp != null && true)
-				uibComp.Hover;
+				uibComp.Hover();
 			
 			if (uibComp != null && buttonUp) 
 				uibComp.Clicked();
 			
-			if (isComp != null && buttonEvent && ButtonDown) 
+			if (isComp != null && buttonDown) 
 				isComp.StartUsing(hitInfo.transform.gameObject);
 			
 			if (uibComp != null && buttonEvent) 
@@ -63,7 +67,6 @@ public class MouseInput : MonoBehaviour {
 				ipComp.StartMouseUsing(hitInfo);
         }
 
-        if (Input.GetButtonDown("Fire1")) lastMousePos = Input.mousePosition;
 
         var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");
 		if (deltaScroll != 0)

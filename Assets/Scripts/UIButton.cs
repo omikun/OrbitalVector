@@ -45,8 +45,6 @@ public class UIButton : VRTK_InteractableObject {
         if (tooltip)
             tooltip.SetActive(true);
         FadeOverTime(2);
-        if (OnDragEvent != null)
-            OnDragEvent.Invoke();
     }
     bool clicked = false;
 	public void Clicked() {
