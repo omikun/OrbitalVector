@@ -12,6 +12,7 @@ public class ManeuverEvent : GameEvent
     public Vector3d velocity;
     public double time;
     public GameObject obj;
+    public GameObject shipPrototype;
     public ManeuverEvent(Vector3d v, double t, GameObject o)
     {
         velocity = v;
@@ -49,6 +50,23 @@ public class Orbit : MonoBehaviour
         }
     }
 
+    public void CreateNewShip()
+    {
+        //get ship template
+        var temp = GameObject.Find("ship_test1");
+        //instantiate new one
+        var randomPos = new Vector3(4, 0, 0);
+        GameObject newShip = (GameObject)Instantiate(temp, randomPos, temp.transform.rotation);
+        newShip.transform.parent = transform.parent;
+        newShip.transform.localPosition = randomPos;
+        newShip.transform.localScale = new Vector3(.1f, .1f, .1f);
+        Debug.Log("newly created ship position: " + newShip.transform.position);
+        Debug.Log("newly created ship localposition: " + newShip.transform.localPosition);
+        newShip.GetComponent<OrbitData>().Init();
+        AddOrbitRenderer(newShip);
+        //TODO orbit renderer not fixed to holoroot
+        //newShip.GetComponent<OrbitData>().Init();
+    }
     void OnEnable()
     {
         Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
@@ -146,7 +164,9 @@ public class Orbit : MonoBehaviour
     void AddOrbitRenderer(GameObject ship)
     {
         var newObj = Instantiate(OrbitRenderer);
+        //TODO need to match localPosition in newly instantiated ship with ship that comes at startup
         newObj.transform.parent = transform;
+        newObj.transform.localScale = transform.localScale;
         var newLineRenderer = newObj.GetComponent<LineRenderer>();
         newLineRenderer.SetVertexCount(segments+1);
         lines.Add(newLineRenderer);

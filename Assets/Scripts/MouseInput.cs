@@ -47,25 +47,25 @@ public class MouseInput : MonoBehaviour {
         if (hit)
         {
             var hitObj = hitInfo.transform.gameObject;
-            var uibComp = hitObj.GetComponent<UIButton>();
-            var uidComp = hitObj.GetComponent<UIDraggable>();
-			var isComp = hitObj.GetComponent<InteractableShip>();
-			var ipComp = hitObj.GetComponent<InteractablePlot> ();
+            var uiButton = hitObj.GetComponent<UIButton>();
+            var uiDrag = hitObj.GetComponent<UIDraggable>();
+			var intShip = hitObj.GetComponent<InteractableShip>();
+			var intPlot = hitObj.GetComponent<InteractablePlot> ();
             
-			if (uibComp != null && true)
-				uibComp.Hover();
+			if (uiButton != null && true)
+				uiButton.Hover();
 			
-			if (uibComp != null && buttonUp) 
-				uibComp.Clicked();
+			if (uiButton != null && buttonUp) 
+				uiButton.Clicked();
 			
-			if (isComp != null && buttonDown) 
-				isComp.StartUsing(hitInfo.transform.gameObject);
+			if (uiDrag != null && buttonEvent) 
+				uiDrag.Drag();
 			
-			if (uidComp != null && buttonEvent) 
-				uidComp.Drag();
+			if (intShip != null && buttonDown) 
+				intShip.StartUsing(hitInfo.transform.gameObject);
 			
-			if (ipComp != null && buttonEvent) 
-				ipComp.StartMouseUsing(hitInfo);
+			if (intPlot != null && buttonEvent) 
+				intPlot.StartMouseUsing(hitInfo);
         }
 
 

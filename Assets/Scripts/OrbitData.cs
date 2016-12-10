@@ -11,6 +11,12 @@ public class OrbitData : MonoBehaviour {
     float dv = 100;
     float maxDV = 200;
     public float GetDV() { return dv; }
+    bool destroyed = false;
+    public void Destroy() {
+        if (destroyed)
+            Debug.Log("Ship already destroyed!");
+        destroyed = true;
+    }
     public bool SubtractDV(float burnDv)
     {
         bool canBurn = dv >= burnDv;
@@ -79,6 +85,10 @@ public class OrbitData : MonoBehaviour {
         return 2 * Math.PI * Math.Sqrt(oe.sma / parentGM);
     }
     void Start()
+    {
+        Init();
+    }
+    public void Init()
     {
         rv = new VectorD();
         rv.Resize(6);
