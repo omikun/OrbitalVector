@@ -132,7 +132,7 @@ public class Orbit : MonoBehaviour
             float r = a * (1.0f - e * e) / denominator;
             pos.x = r * Mathf.Cos(theta);
             pos.z = r * Mathf.Sin(theta);
-            line.SetPosition(i, rot * pos + initialOffset);//hacky
+            line.SetPosition(i, rot * pos);//hacky
             if (i == 0) { apo = rot * pos; }
             if (i == segments/2) { peri = rot * pos; }
             //if (drawPathCount == 0)
@@ -166,6 +166,8 @@ public class Orbit : MonoBehaviour
         var newObj = Instantiate(OrbitRenderer);
         //TODO need to match localPosition in newly instantiated ship with ship that comes at startup
         newObj.transform.parent = transform;
+        newObj.transform.localPosition = Vector3.zero;
+        newObj.transform.localRotation = Quaternion.identity;
         newObj.transform.localScale = transform.localScale;
         var newLineRenderer = newObj.GetComponent<LineRenderer>();
         newLineRenderer.SetVertexCount(segments+1);
