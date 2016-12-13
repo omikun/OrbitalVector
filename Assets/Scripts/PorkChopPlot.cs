@@ -273,8 +273,10 @@ public class PorkChopPlot : MonoBehaviour {
             return;
         }
         var src = UXStateManager.GetSource();
+        var tgt = UXStateManager.GetTarget();
         Debug.Log("InjVec: " + injectionVector);
-        Events.instance.Raise(new ManeuverEvent(injectionVector, (startTime-Time.time+computeTime), src));
+        var e = new ManeuverEvent(src, tgt, (startTime-Time.time+computeTime), "Intercept", injectionVector);
+        Events.instance.Raise(e);
     }
 
     void OnDisable()

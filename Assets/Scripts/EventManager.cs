@@ -3,6 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class EventManager : MonoBehaviour {
+	static EventManager instanceInternal = null;
+	EventManager() {}
+	public static EventManager instance{
+		get {
+			if (instanceInternal == null)
+			{
+				instanceInternal = new EventManager();
+			}
+			return instanceInternal;
+		}
+	}
 	public List<GameObject> eventObjects = new List<GameObject>();
 	public GameObject eventText;
 	bool EventFired = false;

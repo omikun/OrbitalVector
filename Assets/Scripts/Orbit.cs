@@ -9,16 +9,13 @@ using System;
 
 public class ManeuverEvent : GameEvent
 {
-    public Vector3d velocity;
-    public double time;
-    public GameObject obj;
-    public GameObject shipPrototype;
-    public ManeuverEvent(Vector3d v, double t, GameObject o)
+    public ManeuverEvent (GameObject src, GameObject tgt, double timeInFuture, string action, Vector3d v)
     {
+        GameEvent(src, tgt, timeInFuture, action);
         velocity = v;
-        time = t;
-        obj = o;
     }
+    public Vector3d velocity;
+    public GameObject projectile;
 }
 public class Orbit : MonoBehaviour
 {
@@ -95,7 +92,7 @@ public class Orbit : MonoBehaviour
         Debug.Log("Waiting for " + time + " seconds");
         yield return new WaitForSeconds(time);
 
-        Debug.Log("Name of source: " + e.obj.name);
+        Debug.Log("Name of source: " + e.source.name);
         Debug.Log("Firing! " + e.velocity.magnitude);
         var odata = e.obj.GetComponent<OrbitData>();
         if (odata == null)
