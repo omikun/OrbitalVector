@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
 public class GameEvent
 {
-	GameEvent(GameObject src, GameObject tgt, float fireTime, string action)
+	public GameEvent(GameObject src, GameObject tgt, float fireTime, string action)
 	{
 		source = src;
 		target = tgt;
@@ -12,6 +14,9 @@ public class GameEvent
 		actionString = action;
 	}
 	public float GetTime() { return eventFireTime; }
+    public GameObject GetSource() { return source; }
+    public GameObject GetTarget() { return target; }
+    public string GetAction() { return actionString; }
 	GameObject source, target;
 	float eventFireTime;
 	string actionString = "Undefined";
@@ -33,7 +38,7 @@ public class PriorityQueue<T> : IEnumerable<KeyValuePair<float, T>>
 	{
 		return dictionary.GetEnumerator();
 	}
-	IEnumerator<T> IEnumerable.GetEnumerator()
+	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return GetEnumerator();
 	}
@@ -42,15 +47,17 @@ public class PriorityQueue<T> : IEnumerable<KeyValuePair<float, T>>
 		int index = 1;
 		foreach(var item in dictionary)
 		{
-			var gee = item.Value.Peek();
-			if (gee.GetType() == typeof(GameObject))
 			{
-				GameObject g = gee;
-                g.transform.localPosition = new Vector3(0,-0.06f*index,0);
+                //GameObject g;
+                //g.transform.localPosition = new Vector3(0,-0.06f*index,0);
 			}
 			index++;
 		}
 	}
+    public int Count()
+    {
+        return dictionary.Count;
+    }
     public void Enqueue(T item, float key)
     {
 		/*
@@ -68,7 +75,7 @@ public class PriorityQueue<T> : IEnumerable<KeyValuePair<float, T>>
 
 	public T GetEvent(float time)
 	{
-		return dictionary[time].Peek(); //TODO get other than top of queue
+		return dictionary[time]; //TODO get other than top of queue
 	}
 	public float GetNextTime()
 	{
@@ -84,17 +91,16 @@ public class PriorityQueue<T> : IEnumerable<KeyValuePair<float, T>>
 	}
 	public T RemoveEvent(float key)
 	{
-        var queue = dictionary[key];
-        var output = queue.Dequeue();
-        if (queue.Count == 0)
-            dictionary.Remove(key);
+        var output = dictionary[key];
+        dictionary.Remove(key);
         return output;
     }
 }
 
-public class Events : MonoBehaviour
+public class Events
 {
 	static Events instanceInternal = null;
+    Events() { }
 	public static Events instance
 	{
 		get
@@ -103,7 +109,6 @@ public class Events : MonoBehaviour
 			{
 				instanceInternal = new Events();
 			}
-			
 			return instanceInternal;
 		}
 	}
@@ -111,8 +116,9 @@ public class Events : MonoBehaviour
 	public delegate void EventDelegate<T> (T e) where T : GameEvent;
 	private delegate void EventDelegate (GameEvent e);
 	
-	PriorityQueue<GameEvent> eventQueue;
-
+	public GameObject eventText;
+	public PriorityQueue<GameEvent> eventQueue = new PriorityQueue<GameEvent>();
+	public PriorityQueue<GameObject> GUIEventQueue = new PriorityQueue<GameObject>();
 	private Dictionary<System.Type, EventDelegate> delegates = new Dictionary<System.Type, EventDelegate>();
 	private Dictionary<System.Delegate, EventDelegate> delegateLookup = new Dictionary<System.Delegate, EventDelegate>();
 	
@@ -170,58 +176,42 @@ public class Events : MonoBehaviour
 		}
 	}
 
-	PriorityQueue<GameEvent> m_eventQueue;
 	public bool Queue(GameEvent evt) {
         if (!delegates.ContainsKey(evt.GetType())) {
             Debug.LogWarning("EventManager: QueueEvent failed due to no listeners for event: " + evt.GetType());
             return false;
         }
 
-        m_eventQueue.Enqueue(evt, evt.GetTime());
+        Debug.Log("Events queuing up new event");
+        eventQueue.Enqueue(evt, evt.GetTime());
 		CreateNewEvent(evt);
         return true;
     }
 
-	public GameObject eventGUI;
-	PriorityQueue<GameObject> GUIEventQueue;
-	float WarpFactor = 1.0f;
-    float simTime;
 	void CreateNewEvent(GameEvent e)
 	{
-		Debug.Log("EventManager got an event");
-		var newObj = (GameObject)Instantiate(eventGUI);
-		newObj.transform.parent = eventGUI.transform.parent;
+		if (eventText == null)
+		{
+            eventText = GameObject.Find("EventTitle");
+            if (eventText == null)
+                Debug.Log("================eventText not found?!?!");
+        }
+        Debug.Log("EventManager got an event to enqueue");
+		var newObj = (GameObject)Instantiate(eventText);
+		newObj.transform.parent = eventText.transform.parent;
 		GUIEventQueue.Enqueue(newObj, e.GetTime());
 		//update position
-		UpdateGUIPosition();
+		//TODO signal eventmanager update? UpdateGUIPosition();
 	}
-	void UpdateGUIPosition() 
+
+    private GameObject Instantiate(GameObject eventGUI)
+    {
+        throw new NotImplementedException();
+    }
+
+    void Update()
 	{
-		newObj.transform.localPosition = new Vector3(0,-0.06f*(1+eventObjects.Count),0);
-		newObj.transform.localRotation = Quaternion.identity;
-		eventObjects.Add(newObj)
-		foreach(var item in dictionary)
-		{
-			var gee = item.Value.Peek();
-			if (gee.GetType() == typeof(GameObject))
-			{
-				GameObject g = gee;
-                g.transform.localPosition = new Vector3(0,-0.06f*index,0);
-			}
-			index++;
-		;
-	}
-	void Update()
-	{
-		//get simulation time
-		simTime += WarpFactor * Time.deltaTime;
-		//check if top of queue is time
-		var nextTime = eventQueue.GetNextTime();
-		if (nextTime <= simTime)
-		{
-			//raise event and get 
-			var e = eventQueue.Dequeue();
-			Raise(e);
-		}
-	}
+		
+
+    }
 }

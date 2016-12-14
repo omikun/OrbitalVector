@@ -267,16 +267,17 @@ public class PorkChopPlot : MonoBehaviour {
     }
     public void TriggerIntercept()
     {
-        if (startTime <= Time.time)
+        if (computeTime+startTime <= Time.time)
         {
             Debug.Log("Error: Intercept injection in the past");
             return;
         }
+        Debug.Log("Trigger intercept event");
         var src = UXStateManager.GetSource();
         var tgt = UXStateManager.GetTarget();
         Debug.Log("InjVec: " + injectionVector);
-        var e = new ManeuverEvent(src, tgt, (startTime-Time.time+computeTime), "Intercept", injectionVector);
-        Events.instance.Raise(e);
+        var e = new ManeuverEvent(src, tgt, (float)(startTime-Time.time+computeTime), "intercepts", injectionVector);
+        Events.instance.Queue(e);
     }
 
     void OnDisable()

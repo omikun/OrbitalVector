@@ -9,9 +9,8 @@ using System;
 
 public class ManeuverEvent : GameEvent
 {
-    public ManeuverEvent (GameObject src, GameObject tgt, double timeInFuture, string action, Vector3d v)
+    public ManeuverEvent (GameObject src, GameObject tgt, float timeInFuture, string action, Vector3d v) : base(src, tgt, timeInFuture, action)
     {
-        GameEvent(src, tgt, timeInFuture, action);
         velocity = v;
     }
     public Vector3d velocity;
@@ -81,7 +80,7 @@ public class Orbit : MonoBehaviour
     }
     IEnumerator AdjustOrbit(ManeuverEvent e)
     {
-        float time = (float)e.time;
+        float time = (float)e.GetTime();
         
         while (time > 5)
         {
@@ -92,9 +91,9 @@ public class Orbit : MonoBehaviour
         Debug.Log("Waiting for " + time + " seconds");
         yield return new WaitForSeconds(time);
 
-        Debug.Log("Name of source: " + e.source.name);
+        Debug.Log("Name of source: " + e.GetSource().name);
         Debug.Log("Firing! " + e.velocity.magnitude);
-        var odata = e.obj.GetComponent<OrbitData>();
+        var odata = e.GetSource().GetComponent<OrbitData>();
         if (odata == null)
         {
             Debug.Log("no orbital data from ship!!");

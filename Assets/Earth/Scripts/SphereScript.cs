@@ -212,7 +212,7 @@ namespace DigitalRuby.Earth
             mesh.uv = uvs;
             mesh.triangles = triangles;
             mesh.RecalculateBounds();
-            mesh.Optimize();
+            ;
 
             #endregion Finish Up
         }
@@ -391,7 +391,7 @@ namespace DigitalRuby.Earth
             mesh.SetNormals(normals);
             mesh.SetTriangles(triList, 0);
             mesh.RecalculateBounds();
-            mesh.Optimize();
+            ;
 
             middlePointIndexCache.Clear();
         }
