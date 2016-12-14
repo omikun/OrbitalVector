@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class EventManager : MonoBehaviour {
 	static EventManager instanceInternal = null;
+	public GameObject eventText;
 	EventManager() {}
 	public static EventManager instance{
 		get {
@@ -21,7 +22,21 @@ public class EventManager : MonoBehaviour {
 		Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
         
 	}
-	
+	public void CreateNewEvent(GameEvent e)
+	{
+		if (eventText == null)
+		{
+            eventText = GameObject.Find("EventTitle");
+            if (eventText == null)
+                Debug.Log("================eventText not found?!?!");
+        }
+        Debug.Log("EventManager got an event to enqueue");
+		var newObj = Instantiate(eventText);
+		newObj.transform.parent = eventText.transform.parent;
+		Events.instance.GUIEventQueue.Enqueue(newObj, e.GetTime());
+		//update position
+		//TODO signal eventmanager update? UpdateGUIPosition();
+	}
 	void OnManeuverEvent(ManeuverEvent e)
 	{
 		Debug.Log("EventManager got an event");
@@ -62,6 +77,7 @@ public class EventManager : MonoBehaviour {
             //update time in each event
             var eEvent = Events.instance.eventQueue.GetEnumerator();
             var eGui = Events.instance.GUIEventQueue.GetEnumerator();
+            int index = 1;
             while (eEvent.MoveNext() && eGui.MoveNext())
             {
                 var e = eEvent.Current.Value;
@@ -69,7 +85,7 @@ public class EventManager : MonoBehaviour {
 
                 //update tooltip position
                 var eventObjects = Events.instance.eventQueue;
-                eventText.transform.localPosition = new Vector3(0, -0.06f * (1 + eventObjects.Count()), 0);
+                eventText.transform.localPosition = new Vector3(0, -0.06f * index, 0);
                 eventText.transform.localRotation = Quaternion.identity;
 
                 //update tooltip text
@@ -77,6 +93,7 @@ public class EventManager : MonoBehaviour {
                 tooltip.displayText = e.GetSource().name + " " + e.GetAction() + " " + e.GetTarget().name + " @ " + eGui.Current.Key;
                 tooltip.Reset();
                 //trigger when next to update text
+                index++;
             }
         }
     }

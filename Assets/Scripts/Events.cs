@@ -116,7 +116,6 @@ public class Events
 	public delegate void EventDelegate<T> (T e) where T : GameEvent;
 	private delegate void EventDelegate (GameEvent e);
 	
-	public GameObject eventText;
 	public PriorityQueue<GameEvent> eventQueue = new PriorityQueue<GameEvent>();
 	public PriorityQueue<GameObject> GUIEventQueue = new PriorityQueue<GameObject>();
 	private Dictionary<System.Type, EventDelegate> delegates = new Dictionary<System.Type, EventDelegate>();
@@ -184,30 +183,13 @@ public class Events
 
         Debug.Log("Events queuing up new event");
         eventQueue.Enqueue(evt, evt.GetTime());
-		CreateNewEvent(evt);
+		EventManager.instance.CreateNewEvent(evt);
         return true;
     }
 
-	void CreateNewEvent(GameEvent e)
-	{
-		if (eventText == null)
-		{
-            eventText = GameObject.Find("EventTitle");
-            if (eventText == null)
-                Debug.Log("================eventText not found?!?!");
-        }
-        Debug.Log("EventManager got an event to enqueue");
-		var newObj = (GameObject)Instantiate(eventText);
-		newObj.transform.parent = eventText.transform.parent;
-		GUIEventQueue.Enqueue(newObj, e.GetTime());
-		//update position
-		//TODO signal eventmanager update? UpdateGUIPosition();
-	}
+	
 
-    private GameObject Instantiate(GameObject eventGUI)
-    {
-        throw new NotImplementedException();
-    }
+    
 
     void Update()
 	{
