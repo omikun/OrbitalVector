@@ -87,16 +87,18 @@ public class PorkChopPlot : MonoBehaviour {
             triggerPork = false;
             var src = UXStateManager.GetSource();
             var tgt = UXStateManager.GetTarget();
+            Debug.Log("Triggering porkchop!");
             if (src == null || tgt == null)
             {
-                Debug.Log("src: " + src + " tgt: " + tgt);
+                Debug.Log("Something's not right, can't run prokchop: src: " + src + " tgt: " + tgt);
                 return;
             }
             computeTime = Time.time;
             oe1 = src.GetComponent<OrbitData>().getOE();
             oe2 = tgt.GetComponent<OrbitData>().getOE();
             _triggerPork = true;
-        }
+        } 
+
         //TODO every .2 seconds?
 	    if (porkDone)
         {
@@ -280,7 +282,7 @@ public class PorkChopPlot : MonoBehaviour {
         Events.instance.Queue(e);
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         if (_threadRunning)
         {
@@ -290,6 +292,7 @@ public class PorkChopPlot : MonoBehaviour {
     }
     public void EnablePorkChop(bool enableIntercept)
     {
+        Debug.Log("Enabled porkchop");
         triggerPork = true;
         intercept = enableIntercept;
     }
@@ -316,6 +319,7 @@ public class PorkChopPlot : MonoBehaviour {
     }
     void GeneratePorkChop()
     {
+        Debug.Log("Running GeneratePorkChop()");
         float maxHue = 1.0f;
         float minHue = 360.0f;
         //find longest period
@@ -371,12 +375,13 @@ public class PorkChopPlot : MonoBehaviour {
     }
     void Porkchop()
     {
+        Debug.Log("Porkchop thread started!");
         while (_threadRunning)
         {
             if (_triggerPork)
             {
                 _triggerPork = false;
-
+                Debug.Log("in separate thread, detected _triggerPork");
                 GeneratePorkChop();
                 porkDone = true;
             }

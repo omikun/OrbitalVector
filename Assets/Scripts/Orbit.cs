@@ -81,7 +81,7 @@ public class Orbit : MonoBehaviour
     IEnumerator AdjustOrbit(ManeuverEvent e)
     {
         float time = (float)e.GetTime();
-        
+
         while (time > 5)
         {
             Debug.Log("Waiting for " + time + " seconds");
@@ -90,7 +90,6 @@ public class Orbit : MonoBehaviour
         }
         Debug.Log("Waiting for " + time + " seconds");
         yield return new WaitForSeconds(time);
-
         Debug.Log("Name of source: " + e.GetSource().name);
         Debug.Log("Firing! " + e.velocity.magnitude);
         var odata = e.GetSource().GetComponent<OrbitData>();
@@ -150,6 +149,9 @@ public class Orbit : MonoBehaviour
         }
         var newObj = Instantiate(OrbitRenderer);
         newObj.transform.parent = transform;
+        newObj.transform.localPosition = Vector3.zero;
+        newObj.transform.localRotation = Quaternion.identity;
+        newObj.transform.localScale = transform.localScale;
         interceptLine = newObj.GetComponent<LineRenderer>();
         interceptLine.SetVertexCount(segments+1);
         interceptLine.material = new Material(Shader.Find("Particles/Additive"));
