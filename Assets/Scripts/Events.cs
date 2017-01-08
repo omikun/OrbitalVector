@@ -183,6 +183,7 @@ public class Events
 
         Debug.Log("Events queuing up new event");
         eventQueue.Enqueue(evt, evt.GetTime());
+		//create an entry to represent event on GUI event list
 		EventManager.instance.CreateNewEvent(evt);
         return true;
     }

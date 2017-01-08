@@ -22,6 +22,18 @@ public enum UXStates
     JAM,
     CONFIG
 }
+
+public class NationState
+{
+    static float million = 1000 * 1000;
+    static float billion = 1000 * million;
+    public float availableFunds = 10 * billion;
+    public float annualFunds = 4 * billion;
+    //launch sites:
+        //coordinates, rate of launch, max tonnage of vehicle
+        //fee per launch
+    //research, available, researched science/tech
+}
 public static class UXStateManager
 {
     public static GameObject selectionIcon;
@@ -29,6 +41,8 @@ public static class UXStateManager
     static SelectStates selectState;
     static UXStates uxState;
     static GameObject selectedSource, selectedTarget;
+    static public NationState player;
+    public static GameObject nationMenu;
     public static void ToggleTargetSelection()
     {
         switch (selectState)
@@ -48,6 +62,21 @@ public static class UXStateManager
     }
     public static void SelectUnit(GameObject unit)
     {
+        if (unit.tag == "planet")
+        {
+            if (player == null)
+            {
+                player = new NationState();
+            }
+            
+            //activate build menu, research menu
+            if (nationMenu == null)
+            {
+                nationMenu = GameObject.Find("PlayerMenu");
+            }
+            nationMenu.SetActive(true);
+            //show country menu (country shape, launch spots, available funds)
+        }
         switch (selectState)
         {
             case SelectStates.SELECT_SOURCE:
@@ -71,7 +100,7 @@ public static class UXStateManager
                 targetIcon.transform.localPosition = Vector3.zero;
                 targetIcon.SetActive(true);
                 //TODO this shouldn't happen until menu state change (cancel/escape from current mode)
-//TODO reset porkchop plot and intercept line on tgt or src change
+        //TODO reset porkchop plot and intercept line on tgt or src change
                 break;
         }
     }

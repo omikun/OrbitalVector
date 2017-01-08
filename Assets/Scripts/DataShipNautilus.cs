@@ -1,14 +1,13 @@
 using UnityEngine;
-
 public class DataShipNautilus : ScriptableObject {
     int cost = 300 * 1000 * 1000;
     public float health = 200;
-    float mass = 100; //Tons, dry mass
+    float mass = 40; //Tons, dry mass
     public int GetCost() {
         return cost; //TODO sum cost of components
         //also scailer? production bonus and what not
     }
-    float buildTime = 4 * 31 * 24 * 3600; //seconds
+    float buildTime = .3f * 365.24f * 24 * 3600; //seconds
     public float GetBuildTime() {
         return buildTime;
     }

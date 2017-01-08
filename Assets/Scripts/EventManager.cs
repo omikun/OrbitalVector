@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+//GUI Event manager
 public class EventManager : MonoBehaviour {
 	static EventManager instanceInternal = null;
 	public GameObject eventText;
@@ -22,6 +23,8 @@ public class EventManager : MonoBehaviour {
 		Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
         
 	}
+	
+    //create an entry to represent event on GUI event list
 	public void CreateNewEvent(GameEvent e)
 	{
 		if (eventText == null)
@@ -44,6 +47,27 @@ public class EventManager : MonoBehaviour {
 	}
     float WarpFactor = 1.0f;
     float simTime;
+
+    string FormatTime(float time)
+    {
+        string timeStr;
+        string suffix = "S";
+        float minute = 60;
+        float hour = 60 * minute;
+        float day = 24 * hour;
+        float week = 7 * day;
+        float year = 52 * week;
+        if (time < minute)    { }
+        else if (time < hour) { time /= minute; suffix = "M"; }
+        else if (time < day)  { time /= hour;   suffix = "H"; }
+        else if (time < week) { time /= day;    suffix = "D"; }
+        else if (time < year) { time /= week;   suffix = "W"; }
+
+        int integer = (int)time;
+        int tenth = (int)((time - integer) * 10);
+        timeStr = integer.ToString() + "." + tenth + suffix;
+        return timeStr;
+    }
 	// Update is called once per frame
 	void Update () {
 	
@@ -89,8 +113,10 @@ public class EventManager : MonoBehaviour {
                 eventText.transform.localRotation = Quaternion.identity;
 
                 //update tooltip text
+                float time = eGui.Current.Key;
+                var timeStr = FormatTime(time);
                 var tooltip = eventText.GetComponent<Tooltip>();
-                tooltip.displayText = e.GetSource().name + " " + e.GetAction() + " " + e.GetTarget().name + " @ " + eGui.Current.Key;
+                tooltip.displayText = e.GetSource().name + " " + e.GetAction() + " " + e.GetTarget().name + " @ " + timeStr;
                 tooltip.Reset();
                 //trigger when next to update text
                 index++;
