@@ -6,6 +6,7 @@ TagManager:
   tags:
   - ship
   - planet
+  - connector
   layers:
   - Default
   - TransparentFX

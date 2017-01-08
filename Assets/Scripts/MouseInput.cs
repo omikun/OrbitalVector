@@ -66,6 +66,7 @@ public class MouseInput : MonoBehaviour {
 			
 			if (intPlot != null && buttonEvent) 
 				intPlot.StartMouseUsing(hitInfo);
+
         }
 
 
