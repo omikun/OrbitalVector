@@ -43,7 +43,9 @@ public class DragMe : MonoBehaviour {
             transform.position = curPosition;
         } 
         amDragged = true;
-
+        SnapToMouseRay();
+    }
+    void SnapToMouseRay() {
         //get ray from mouse, if it strikes another collidable in another object, move transform.position to otherObject.pos - child.transform.localPosition
         RaycastHit[] hits;
         hits = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition), 30);
@@ -55,8 +57,9 @@ public class DragMe : MonoBehaviour {
             for (int i = 0; i < hits.Length; i++)
             {
                 var hit = hits[i];
+                Debug.Log(i + ": " + hit.transform.gameObject.tag);
                 if (hit.distance < minDist && 
-                    closestHit.transform.gameObject.tag == "connector")
+                    hit.transform.gameObject.tag == "connector")
                 {
                     closestHit = hit;
                     minDist = hit.distance;
