@@ -370,7 +370,9 @@ public class PorkChopPlot : MonoBehaviour {
 
         for (int index = 0; index < imgWidth * imgHeight; index++)
         {
-            porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[index]), 1f, 1.0f, 1f);
+            //porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[index]), 1f, 1.0f, 1f);
+            float value = (porkChopValues[index] - mindv) / (maxHue - mindv);
+            porkChopColors[index] = new Color(value, value, value);
         }
     }
     void Porkchop()
