@@ -60,18 +60,6 @@ public static class UXStateManager
                 break;
         }
     }
-    public static void ShowMenu(GameObject unit)
-    {
-        if        (unit.tag == "ship")
-        {
-            //show orbit maneuver menu
-        } else if (unit.tag == "planet")
-        {
-            //show build menu
-            //show research menu
-
-        }
-    }
     public static void SelectUnit(GameObject unit)
     {
         if (unit.tag == "planet")
@@ -115,7 +103,6 @@ public static class UXStateManager
         //TODO reset porkchop plot and intercept line on tgt or src change
                 break;
         }
-
     }
     public static void ClearSource() { selectedSource = null; uxState = UXStates.HIDDEN; }
     public static void ClearTarget() { selectedTarget = null; }

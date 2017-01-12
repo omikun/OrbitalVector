@@ -5,6 +5,20 @@ using UnityEngine;
 public class SnapMe : MonoBehaviour {
     static Transform otherParentTransform;
     static Vector3 otherPos;
+
+    //for linking connectors
+    SnapMe connectedTo = null;
+    public void SetConnection(SnapMe c)
+    {
+        connectedTo = c;
+    }
+    public SnapMe GetConnection()
+    {
+        return connectedTo;
+    }
+    public void ClearConnection() {
+        connectedTo = null;
+    }
     DragMe dm;
 	// Use this for initialization
 	void Start () {
@@ -15,7 +29,8 @@ public class SnapMe : MonoBehaviour {
 	}
 	void OnCollisionEnter()//Collision col)
     {
-        Debug.Log(gameObject.name + "part collided!");
+        Debug.Log(transform.parent.gameObject.name + "." + gameObject.name + " collided!");
+        return;
         if (dm.IsDragged())
         {
             Debug.Log("This part is being dragged also!");
@@ -25,6 +40,15 @@ public class SnapMe : MonoBehaviour {
         {
             otherParentTransform = transform.parent.transform;
             otherPos = transform.position;
+        }
+    }
+    void OnCollisionExit(Collision col)
+    {
+        Debug.Log(transform.parent.gameObject.name + "." + gameObject.name + " collision exit detected");
+        if (connectedTo != null)
+        {
+            connectedTo.ClearConnection();
+            ClearConnection();
         }
     }
     // Update is called once per frame
