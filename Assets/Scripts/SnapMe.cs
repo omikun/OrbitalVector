@@ -29,6 +29,7 @@ public class SnapMe : MonoBehaviour {
 	}
 	void OnCollisionEnter()//Collision col)
     {
+        return;
         Debug.Log(transform.parent.gameObject.name + "." + gameObject.name + " collided!");
         return;
         if (dm.IsDragged())
@@ -44,6 +45,7 @@ public class SnapMe : MonoBehaviour {
     }
     void OnCollisionExit(Collision col)
     {
+        return;
         Debug.Log(transform.parent.gameObject.name + "." + gameObject.name + " collision exit detected");
         if (connectedTo != null)
         {
@@ -53,6 +55,7 @@ public class SnapMe : MonoBehaviour {
     }
     // Update is called once per frame
     void Update () {
+        return;
         if (dm.IsDragged())
         {
             if (otherParentTransform != null)

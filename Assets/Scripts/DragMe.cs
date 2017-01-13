@@ -43,13 +43,11 @@ public class DragMe : MonoBehaviour {
 
         //RaycastAll to see what the next closest object is to the camera,
         //if that object is a connector, snap to it!
-        if (dragMe)
+        //if (dragMe)
         {
             transform.position = curPosition;
             // on drag, self part is always disconnected until snapToMouse connects
-        } else {
-            return;
-        }
+        } 
         amDragged = true;
         partIsConnected = SnapToMouseRay();
         //if SnapToMouseRay does not connect, then the part is disconnected;
@@ -59,28 +57,28 @@ public class DragMe : MonoBehaviour {
         RaycastHit[] hits;
         hits = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition), 30);
         RaycastHit closestHit;
-        float minDist = float.PositiveInfinity;
         if (hits.Length > 0)
         {
             closestHit = hits[0];
+            float minDist = float.PositiveInfinity;
             for (int i = 0; i < hits.Length; i++)
             {
                 var hit = hits[i];
+                Debug.Log(i + ": Hit " + hit.transform.parent.gameObject.name + "." + hit.collider.transform.gameObject.name + "." + hit.collider.transform.gameObject.name);
                 //Debug.Log(i + ": " + hit.transform.gameObject.tag);
-                if (hit.distance < minDist && 
+                if (hit.distance <= minDist && 
                     hit.transform.gameObject.tag == "connector")
                 {
                     closestHit = hit;
-                    minDist = hit.distance;
+                    minDist = closestHit.distance;
                 }
             }
             //Debug.Log("raycast hit " + i + ": " + hit.transform.gameObject.name);
             //found a connector, move self to it
             if (closestHit.transform.gameObject.tag == "connector"
             )
-            //TODO enabling SnapMe check causes collision enter/exit flicker
-            //&& closestHit.transform.gameObject.GetComponent<SnapMe>().GetConnection() == null)
             {
+                //TODO check if it is a valid connector (invalid ones are on parts not already attached to main ship)
                 //Debug.Log("Closest hit: " + closestHit.transform.parent.gameObject.name + "." + closestHit.transform.gameObject.name);
                 //my rotation is their rotation (parent) + their connector's rotation and my connector's rotation;
                 //except I need to invert one of the connector's rotation (undo it) so if they're both the same rotation, it's the same as their parent rotation
@@ -95,12 +93,6 @@ public class DragMe : MonoBehaviour {
 
 //move self into children of other connector
                 transform.parent = closestHit.transform;
-//redundant, task for removal
-                //link up connectors
-                var conn = connectors[0].GetComponent<SnapMe>();
-                var otherConn = closestHit.transform.gameObject.GetComponent<SnapMe>();
-                conn.SetConnection(otherConn);
-                otherConn.SetConnection(conn);
                 amDragged = false;
                 return true;
             }
