@@ -43,7 +43,7 @@ public class PorkChopPlot : MonoBehaviour {
     public GameObject durationTooltip, startTimeTooltip;
     public GameObject startTimeIndicator, travelTimeIndicator;
     public GameObject selectorIndicator;
-
+    float availDV = 5;
     double period;
     OrbitalTools.OrbitalElements oe1, oe2;
     public PCPoint minDV;
@@ -294,6 +294,8 @@ public class PorkChopPlot : MonoBehaviour {
     {
         Debug.Log("Enabled porkchop");
         triggerPork = true;
+        availDV = GetAvailableDV();
+        Debug.Log("availDV: " + availDV);
         intercept = enableIntercept;
     }
 
@@ -366,14 +368,32 @@ public class PorkChopPlot : MonoBehaviour {
         }//per column
 
         //convert to colors
-        Debug.Log("Max hue: " + maxHue);
+        Debug.Log("Max hue: " + maxHue + " availDV: " + availDV);
 
         for (int index = 0; index < imgWidth * imgHeight; index++)
         {
-            //porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[index]), 1f, 1.0f, 1f);
-            float value = (porkChopValues[index] - mindv) / (maxHue - mindv);
-            porkChopColors[index] = new Color(value, value, value);
+            if (porkChopValues[index] > availDV)
+            {
+                porkChopColors[index] = Color.black;
+            } else {
+                float value = (porkChopValues[index] - mindv) / (maxHue - mindv); //black/white
+                porkChopColors[index] = new Color(value, value, value);
+                porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[index]), 1f, 1.0f, 1f);
+            }
         }
+    }
+    float GetAvailableDV()
+    {
+        var src = UXStateManager.GetSource();
+        if (src == null)
+        {
+            Debug.Log("null src!");
+            return -1;
+        }
+        InteractableShip iship = src.GetComponent<InteractableShip>();
+        GameObject fs = iship.functionalShip;
+        //return fs.GetComponent<FunctionalShip>().GetDV();
+        return .5f;
     }
     void Porkchop()
     {

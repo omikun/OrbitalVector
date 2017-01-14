@@ -78,6 +78,7 @@ public class Orbit : MonoBehaviour
         StartCoroutine(AdjustOrbit(e));
         
     }
+    //specifies dv at this time
     IEnumerator AdjustOrbit(ManeuverEvent e)
     {
         float time = (float)e.GetTime();

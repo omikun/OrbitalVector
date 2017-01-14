@@ -8,6 +8,7 @@ public class InteractableShip : VRTK_InteractableObject {
     public GameObject controller;
     VRTK_ControllerTooltips debugToolTip;
     public GameObject triggerObj;
+    public GameObject functionalShip;
     public override void StartUsing(GameObject currentUsingObject)
     {
         base.StartUsing(currentUsingObject);

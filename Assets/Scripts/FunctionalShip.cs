@@ -85,6 +85,11 @@ public class FunctionalShip : MonoBehaviour {
 		dv = Mathf.Log(mass/(mass-fuelTankMass+dryMass)) * isp * 9.81f;
 		Debug.Log("Mass: " + mass + " cost: " + cost + " thrust: " + thrust + " isp: " + isp + " dv: " + dv);
 	}
+	public float GetDV()
+	{
+		UpdateShip();
+		return dv;
+	}
 	// Use this for initialization
 	void Start () {
 
