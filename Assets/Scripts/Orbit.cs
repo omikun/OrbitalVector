@@ -6,6 +6,7 @@ using OrbitalTools;
 using System;
  using System.Text;
  using System.IO;
+using UnityEditor;
 
 public class ManeuverEvent : GameEvent
 {
@@ -24,7 +25,6 @@ public class Orbit : MonoBehaviour
     LineRenderer interceptLine;
     public GameObject display;
     private Text textRef;
-    Vector3 initialOffset;
     public static Vector3 accelVector;
     public GameObject OrbitRenderer;
     public static List<String> output = new List<String>();
@@ -143,7 +143,6 @@ public class Orbit : MonoBehaviour
         accelVector = Vector3.zero;
         //HACK FIXME workaround line.SetPosition is relative to parent translation, but absolute to world initially
         //one time offset relative to intiial parent position
-        initialOffset = transform.parent.position;
         foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
         {
             AddOrbitRenderer(ship);
@@ -242,10 +241,6 @@ public class Orbit : MonoBehaviour
 
     void DrawOrbit(LineRenderer line, ref OrbitalElements oe)
     {
-#if false
-        Debug.Log("pos: " + Global.pos[0] + " " + Global.pos[2]);
-        Debug.Log("vel: " + Global.vel[0] + " " + Global.vel[2]);
-#endif
         //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
         //VectorD rv = calcNextStep(rv, params_);
 
@@ -267,9 +262,24 @@ public class Orbit : MonoBehaviour
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
         var rotq = incOffset * lan * inc * aop;
 
-        drawOrbitalPath(line, (float)oe.tra, (float)oe.sma, (float)oe.ecc, rotq);
+        var simSMA = (float)oe.sma*(float)HoloManager.SimZoomFactor;
+        //Debug.Log("SMA: " + oe.sma + "sim: " + simSMA);
+        drawOrbitalPath(line, (float)oe.tra, simSMA, (float)oe.ecc, rotq);
     }
 
+    [CustomEditor(typeof(Orbit))]
+    public class ObjectBuilderEditor : Editor{
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+            Orbit or = (Orbit)target;
+            if(GUILayout.Button("Draw Orbits"))
+            {
+                or.Start();
+                or.Update();
+            }
+        }
+    }
     bool writeOnce = true;
     //find closest point
     public GameObject intMarker1, intMarker2;

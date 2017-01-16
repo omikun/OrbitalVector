@@ -43,17 +43,11 @@ public class OrbitData : MonoBehaviour {
 
     public static float scale = 1;
     static double r = 4;
-    static double m = 7e9;
-    static double G = 6.673e-11;
+    static double m = 5.972e24;
+    static double G = 6.67408e-11;
     public static double parentGM = m * G;
 
 
-
-    public static class Global
-    {
-        public static double[] vel = new double[] { .1d, 0, Math.Sqrt(parentGM / r) };
-        public static double[] pos = new double[] { r+.2d, 0, .1d};
-    }
     public Vector3 getVel()
     {
         return new Vector3((float)rv[3], 
@@ -104,7 +98,7 @@ public class OrbitData : MonoBehaviour {
         //comput velocity assuming pos is in the origin
         //TODO use double operations?
         var vel = Vector3.Cross(transform.position, Vector3.up).normalized;
-        vel *= Mathf.Sqrt((float)parentGM / transform.position.magnitude);
+        vel *= Mathf.Sqrt((float)parentGM / (HoloManager.SolScaler * transform.position.magnitude));
         rv[3] = vel.x;
         rv[4] = vel.y;
         rv[5] = vel.z;
