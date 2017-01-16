@@ -20,7 +20,6 @@ public class ManeuverEvent : GameEvent
 public class Orbit : MonoBehaviour
 {
     public int segments = 360;
-    public static float timeScale = 1;
     List<LineRenderer> lines = new List<LineRenderer>();
     LineRenderer interceptLine;
     public GameObject display;
@@ -196,7 +195,7 @@ public class Orbit : MonoBehaviour
             //calculate next step
             if (odata.params_[4] != 0)
                 Debug.Log("acceleration detected!");
-            odata.rv = Util.rungeKutta4(0, timeScale * Time.deltaTime, odata.rv, odata.params_);
+            odata.rv = Util.rungeKutta4(0, HoloManager.SimTimeScale * Time.deltaTime, odata.rv, odata.params_);
             odata.params_[4] = 0;
             odata.params_[5] = 0;
             odata.params_[6] = 0;
@@ -262,7 +261,7 @@ public class Orbit : MonoBehaviour
         var lan = Quaternion.AngleAxis((float)oe.lan * Mathf.Rad2Deg, Vector3.up);
         var rotq = incOffset * lan * inc * aop;
 
-        var simSMA = (float)oe.sma*(float)HoloManager.SimZoomFactor;
+        var simSMA = (float)oe.sma*(float)HoloManager.SimZoomScale;
         //Debug.Log("SMA: " + oe.sma + "sim: " + simSMA);
         drawOrbitalPath(line, (float)oe.tra, simSMA, (float)oe.ecc, rotq);
     }

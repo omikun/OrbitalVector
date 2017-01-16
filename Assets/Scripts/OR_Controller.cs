@@ -64,7 +64,7 @@ public class OR_Controller : MonoBehaviour
         line.enabled = false;
         Orbit.accelVector = Vector3.zero;
 
-        Orbit.timeScale = 1;
+        HoloManager.SimTimeScale = 1;
     }
 
     private void DoGripPressed(object sender, ControllerInteractionEventArgs e)
@@ -143,7 +143,7 @@ public class OR_Controller : MonoBehaviour
         mov_origin.SetActive(true);
         line.enabled = true;
 
-        Orbit.timeScale = 0.1f;
+        HoloManager.SimTimeScale = 0.1f;
     }
     void OAccelerate()
     {
