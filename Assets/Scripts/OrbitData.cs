@@ -3,8 +3,12 @@ using System.Collections;
 using System;
 using OrbitalTools;
 
+public static class HoloManager
+{
+    public static float SolScaler = (6371f * 1000f); //radius of earth (m) == 1 Unity Unit
+    public static float SimZoomFactor = 1f / SolScaler;
+}
 public class OrbitData : MonoBehaviour {
-
     public VectorD rv;
     public VectorD params_;
     OrbitalElements oe = new OrbitalElements();
@@ -94,10 +98,11 @@ public class OrbitData : MonoBehaviour {
         rv.Resize(6);
 
         Debug.Log("position " + transform.position);
-        rv[0] = transform.position.x;
-        rv[1] = transform.position.y;
-        rv[2] = transform.position.z;
+        rv[0] = transform.position.x * HoloManager.SolScaler;
+        rv[1] = transform.position.y * HoloManager.SolScaler;
+        rv[2] = transform.position.z * HoloManager.SolScaler;
         //comput velocity assuming pos is in the origin
+        //TODO use double operations?
         var vel = Vector3.Cross(transform.position, Vector3.up).normalized;
         vel *= Mathf.Sqrt((float)parentGM / transform.position.magnitude);
         rv[3] = vel.x;
@@ -118,8 +123,9 @@ public class OrbitData : MonoBehaviour {
 
     void Update()
     {
-        var position = scale * new Vector3((float)rv[0], 
-                                         (float)rv[1], (float)rv[2]);
+        var position = scale * new Vector3((float)rv[0]*HoloManager.SimZoomFactor, 
+                                           (float)rv[1]*HoloManager.SimZoomFactor, 
+                                           (float)rv[2]*HoloManager.SimZoomFactor);
         transform.localPosition = position;
     }
 }
