@@ -74,12 +74,15 @@ public class Orbit : MonoBehaviour
     {
         //coroutine execute in x time?
         Debug.Log("ManeuverEvent fired");
-        StartCoroutine(AdjustOrbit(e));
+        //StartCoroutine(AdjustOrbit(e));
+        AdjustOrbit(e);
         
     }
     //specifies dv at this time
-    IEnumerator AdjustOrbit(ManeuverEvent e)
+    //IEnumerator AdjustOrbit(ManeuverEvent e)
+    void AdjustOrbit(ManeuverEvent e)
     {
+        /*
         float time = (float)e.GetTime();
 
         while (time > 5)
@@ -90,6 +93,7 @@ public class Orbit : MonoBehaviour
         }
         Debug.Log("Waiting for " + time + " seconds");
         yield return new WaitForSeconds(time);
+        */
         Debug.Log("Name of source: " + e.GetSource().name);
         Debug.Log("Firing! " + e.velocity.magnitude);
         var odata = e.GetSource().GetComponent<OrbitData>();
@@ -146,6 +150,7 @@ public class Orbit : MonoBehaviour
         {
             AddOrbitRenderer(ship);
         }
+        //just for intercept orbit renderer
         var newObj = Instantiate(OrbitRenderer);
         newObj.transform.parent = transform;
         newObj.transform.localPosition = Vector3.zero;
@@ -156,7 +161,7 @@ public class Orbit : MonoBehaviour
         interceptLine.material = new Material(Shader.Find("Particles/Additive"));
         interceptLine.SetColors(Color.white, Color.red);
         interceptLine.enabled = false;
-        //InvokeRepeating("prepFindIntercept", 5.0f, 2f);
+        //InvokeRepeating("prepFindIntercept", 5.0f, 2f); //debug
     }
     void AddOrbitRenderer(GameObject ship)
     {
@@ -172,7 +177,7 @@ public class Orbit : MonoBehaviour
     }
     static int FrameCount = 0;
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         int count = 0;
         foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
@@ -275,7 +280,7 @@ public class Orbit : MonoBehaviour
             if(GUILayout.Button("Draw Orbits"))
             {
                 or.Start();
-                or.Update();
+                or.FixedUpdate();
             }
         }
     }

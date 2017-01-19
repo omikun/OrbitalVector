@@ -242,18 +242,18 @@ public class PorkChopPlot : MonoBehaviour {
         //display required deltaV for intercept
         //TODO based on mode: display required deltaV for rendezvous
         var tooltip = trajectoryDeltaVTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Req dV: " + (initVel-v1).magnitude.ToString("G2");
+        tooltip.displayText = "Req dV: " + OVTools.FormatDistance((float)(initVel-v1).magnitude);//.ToString("G2");
         tooltip.Reset();
         tooltip = shipDeltaVTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Ship dV: " + UXStateManager.GetSource().GetComponent<OrbitData>().GetDV().ToString("G4");
+        tooltip.displayText = "Ship dV: " + OVTools.FormatDistance(UXStateManager.GetSource().GetComponent<OrbitData>().GetDV());//.ToString("G4");
         tooltip.Reset();
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + (curStartTime).ToString("G4");
+        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)curStartTime);//.ToString("G4");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Duration: " + travelTime.ToString("G4");
+        tooltip.displayText = "Duration: " + OVTools.FormatTime((float)travelTime);//.ToString("G4");
         tooltip.Reset();
 
         //set scrollers
@@ -372,7 +372,7 @@ public class PorkChopPlot : MonoBehaviour {
 
         for (int index = 0; index < imgWidth * imgHeight; index++)
         {
-            if (porkChopValues[index] > availDV)
+            if (false)//porkChopValues[index] > availDV)
             {
                 porkChopColors[index] = Color.black;
             } else {
@@ -392,8 +392,8 @@ public class PorkChopPlot : MonoBehaviour {
         }
         InteractableShip iship = src.GetComponent<InteractableShip>();
         GameObject fs = iship.functionalShip;
-        //return fs.GetComponent<FunctionalShip>().GetDV();
-        return .5f;
+        return fs.GetComponent<FunctionalShip>().GetDV();
+        //return .5f;
     }
     void Porkchop()
     {

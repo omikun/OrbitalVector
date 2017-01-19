@@ -16,6 +16,7 @@ public class GameEvent
 	public float GetTime() { return eventFireTime; }
     public GameObject GetSource() { return source; }
     public GameObject GetTarget() { return target; }
+	//public void UpdateTime(float dt) { eventFireTime -= dt; }
     public string GetAction() { return actionString; }
 	GameObject source, target;
 	float eventFireTime;
@@ -53,6 +54,14 @@ public class PriorityQueue<T> : IEnumerable<KeyValuePair<float, T>>
 			}
 			index++;
 		}
+	}
+	public bool isNotEmpty()
+	{
+		return Count() > 0;
+	}
+	public bool isEmpty()
+	{
+		return Count() == 0;
 	}
     public int Count()
     {
@@ -187,13 +196,15 @@ public class Events
         return true;
     }
 
-	
-
-    
-
-    void Update()
+    public void FixedUpdate()
 	{
-		
+		//iterate over all events and update time
+		var eEvent = eventQueue.GetEnumerator();
+		while (eEvent.MoveNext())
+		{
+			var e = eEvent.Current.Value;
+			//e.UpdateTime(HoloManager.SimTimeScale * Time.fixedDeltaTime);
+		}
 
     }
 }

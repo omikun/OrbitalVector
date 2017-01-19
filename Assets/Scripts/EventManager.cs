@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public class EventManager : MonoBehaviour {
 	static EventManager instanceInternal = null;
 	public GameObject eventText;
+    public GameObject simTimeObj;
 	EventManager() {}
 	public static EventManager instance{
 		get {
@@ -16,12 +17,14 @@ public class EventManager : MonoBehaviour {
 			return instanceInternal;
 		}
 	}
+    double SimTime;
 	bool EventFired = false;
 	// Use this for initialization
 	void Start () {
 		Debug.Log("EventManager start up");
 		Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
-        
+        SimTime = Time.time;
+        simTimeObj = GameObject.Find("SimTime");
 	}
 	
     //create an entry to represent event on GUI event list
@@ -45,39 +48,21 @@ public class EventManager : MonoBehaviour {
 		Debug.Log("EventManager got an event");
 		EventFired = true;
 	}
-    float WarpFactor = 1.0f;
-    float simTime;
 
-    string FormatTime(float time)
+    void FixedUpdate()
     {
-        string timeStr;
-        string suffix = "S";
-        float minute = 60;
-        float hour = 60 * minute;
-        float day = 24 * hour;
-        float week = 7 * day;
-        float year = 52 * week;
-        if (time < minute)    { }
-        else if (time < hour) { time /= minute; suffix = "M"; }
-        else if (time < day)  { time /= hour;   suffix = "H"; }
-        else if (time < week) { time /= day;    suffix = "D"; }
-        else if (time < year) { time /= week;   suffix = "W"; }
-
-        int integer = (int)time;
-        int tenth = (int)((time - integer) * 10);
-        timeStr = integer.ToString() + "." + tenth + suffix;
-        return timeStr;
+        SimTime += HoloManager.SimTimeScale * Time.fixedDeltaTime;
+        //Events.instance.FixedUpdate();
     }
 	// Update is called once per frame
-	void Update () {
-	
+	void Update () 
+    {
 		if (EventFired)
 		{
 			EventFired = false;
 			Debug.Log("EventManger got an event fired!");
 		}
         //get simulation time
-        simTime += WarpFactor * Time.deltaTime;
 		//check if top of queue is time
         if (Events.instance == null)
         {
@@ -88,15 +73,23 @@ public class EventManager : MonoBehaviour {
             Debug.Log("Events.instance.eventQueue not set??");
             return;
         }
-        if (Events.instance.eventQueue.Count() > 0)
+        var tt = simTimeObj.GetComponent<Tooltip>();
+        tt.displayText = "SimTime: " + OVTools.FormatTime((float)SimTime);
+        tt.Reset();
+        if (Events.instance.eventQueue.isNotEmpty()) 
         {
-            var nextTime = Events.instance.eventQueue.GetNextTime();
-            if (nextTime <= simTime)
-            {
+            Debug.Log("Next time: " 
+                + OVTools.FormatTime(Events.instance.eventQueue.GetNextTime()));
+
+            while (Events.instance.eventQueue.isNotEmpty() 
+                && Events.instance.eventQueue.GetNextTime() <= SimTime) {
                 //raise event and get 
                 var e = Events.instance.eventQueue.Dequeue();
+                Debug.Log("Raising event now: " + OVTools.FormatTime(e.GetTime()));
                 Events.instance.Raise(e);
-            }
+                var egui = Events.instance.GUIEventQueue.Dequeue();
+                egui.SetActive(false);
+            } 
 
             //update time in each event
             var eEvent = Events.instance.eventQueue.GetEnumerator();
@@ -113,8 +106,9 @@ public class EventManager : MonoBehaviour {
                 eventText.transform.localRotation = Quaternion.identity;
 
                 //update tooltip text
-                float time = eGui.Current.Key;
-                var timeStr = FormatTime(time);
+                //float time = eGui.Current.Key - (float)SimTime;
+                float time = e.GetTime() - (float)SimTime;
+                var timeStr = OVTools.FormatTime(time);
                 var tooltip = eventText.GetComponent<Tooltip>();
                 tooltip.displayText = e.GetSource().name + " " + e.GetAction() + " " + e.GetTarget().name + " @ " + timeStr;
                 tooltip.Reset();

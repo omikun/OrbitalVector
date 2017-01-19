@@ -9,16 +9,6 @@ public static class HoloManager
     public static float SimZoomScale = 1f / SolScale;
     public static float SimTimeScale = 128;
 }
-public class HoloTweaks {
-    public void increaseWarp() {
-        if (HoloManager.SimTimeScale < 1024 * 1024)
-            HoloManager.SimTimeScale *= 2;
-    }
-    public void decreaseWarp() {
-        if (HoloManager.SimTimeScale > 1)
-            HoloManager.SimTimeScale /= 2;
-    }
-}
 public class OrbitData : MonoBehaviour {
     public VectorD rv;
     public VectorD params_;
@@ -102,14 +92,14 @@ public class OrbitData : MonoBehaviour {
         rv = new VectorD();
         rv.Resize(6);
 
-        Debug.Log("position " + transform.position);
-        rv[0] = transform.position.x * HoloManager.SolScale;
-        rv[1] = transform.position.y * HoloManager.SolScale;
-        rv[2] = transform.position.z * HoloManager.SolScale;
+        Debug.Log("position " + transform.localPosition);
+        rv[0] = transform.localPosition.x * HoloManager.SolScale;
+        rv[1] = transform.localPosition.y * HoloManager.SolScale;
+        rv[2] = transform.localPosition.z * HoloManager.SolScale;
         //comput velocity assuming pos is in the origin
         //TODO use double operations?
-        var vel = Vector3.Cross(transform.position, Vector3.up).normalized;
-        vel *= Mathf.Sqrt((float)parentGM / (HoloManager.SolScale * transform.position.magnitude));
+        var vel = Vector3.Cross(transform.localPosition, Vector3.up).normalized;
+        vel *= Mathf.Sqrt((float)parentGM / (HoloManager.SolScale * transform.localPosition.magnitude));
         rv[3] = vel.x;
         rv[4] = vel.y;
         rv[5] = vel.z;
@@ -128,9 +118,8 @@ public class OrbitData : MonoBehaviour {
 
     void Update()
     {
-        var position = scale * new Vector3((float)rv[0]*HoloManager.SimZoomScale, 
-                                           (float)rv[1]*HoloManager.SimZoomScale, 
-                                           (float)rv[2]*HoloManager.SimZoomScale);
+        var position = new Vector3((float)rv[0], (float)rv[1], (float)rv[2])
+                           * HoloManager.SimZoomScale;
         transform.localPosition = position;
     }
 }
