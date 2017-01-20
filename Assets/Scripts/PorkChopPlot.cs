@@ -93,7 +93,7 @@ public class PorkChopPlot : MonoBehaviour {
                 Debug.Log("Something's not right, can't run prokchop: src: " + src + " tgt: " + tgt);
                 return;
             }
-            computeTime = Time.time;
+            computeTime = EventManager.instance.GetSimTime();
             oe1 = src.GetComponent<OrbitData>().getOE();
             oe2 = tgt.GetComponent<OrbitData>().getOE();
             _triggerPork = true;
@@ -201,7 +201,7 @@ public class PorkChopPlot : MonoBehaviour {
     }
     void PlotTrajectory(double startTime, double travelTime)
     {
-        var timeSinceCompute = Time.time - computeTime;
+        var timeSinceCompute = EventManager.instance.GetSimTime() - computeTime;
         var curStartTime = startTime - timeSinceCompute; //relative to now
         Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
         //recompute trajectory w/ those times
@@ -232,9 +232,9 @@ public class PorkChopPlot : MonoBehaviour {
         var interceptOE = Util.rv2oe(OrbitData.parentGM, rv);
         //initialize/update maneuver node/orbit w/ oe
         var marker1 = GameObject.Find("Marker1");
-        marker1.transform.localPosition = r1.ToFloat();
+        marker1.transform.localPosition = r1.ToFloat() * HoloManager.SimZoomScale;
         var marker2 = GameObject.Find("Marker2");
-        marker2.transform.localPosition = r2.ToFloat();
+        marker2.transform.localPosition = r2.ToFloat() * HoloManager.SimZoomScale;
         var orbitManager = GameObject.Find("OrbitManager").GetComponent<Orbit>();
         orbitManager.updateInterceptLine(ref interceptOE, true);
 
@@ -250,7 +250,8 @@ public class PorkChopPlot : MonoBehaviour {
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)curStartTime);//.ToString("G4");
+        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(startTime+computeTime));//.ToString("G4");
+        //tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)curStartTime);//.ToString("G4");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
         tooltip.displayText = "Duration: " + OVTools.FormatTime((float)travelTime);//.ToString("G4");
@@ -269,7 +270,7 @@ public class PorkChopPlot : MonoBehaviour {
     }
     public void TriggerIntercept()
     {
-        if (computeTime+startTime <= Time.time)
+        if (computeTime+startTime <= EventManager.instance.GetSimTime())
         {
             Debug.Log("Error: Intercept injection in the past");
             return;
@@ -278,7 +279,9 @@ public class PorkChopPlot : MonoBehaviour {
         var src = UXStateManager.GetSource();
         var tgt = UXStateManager.GetTarget();
         Debug.Log("InjVec: " + injectionVector);
-        var e = new ManeuverEvent(src, tgt, (float)(startTime-Time.time+computeTime), "intercepts", injectionVector);
+        var e = new ManeuverEvent(src, tgt, 
+            (float)(computeTime + startTime), 
+            "intercepts", injectionVector);
         Events.instance.Queue(e);
     }
 

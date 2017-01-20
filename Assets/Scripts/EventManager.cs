@@ -18,6 +18,10 @@ public class EventManager : MonoBehaviour {
 		}
 	}
     double SimTime;
+    public double GetSimTime()
+    {
+        return SimTime;
+    }
 	bool EventFired = false;
 	// Use this for initialization
 	void Start () {
