@@ -3,76 +3,72 @@ using System.Collections;
 using System.Collections.Generic;
 
 //GUI Event manager
-public class EventManager : MonoBehaviour {
-	static EventManager instanceInternal = null;
-	public GameObject eventText;
+public class EventManager : MonoBehaviour
+{
+    public GameObject eventText;
     public GameObject simTimeObj;
-	EventManager() {}
-	public static EventManager instance{
-		get {
-			if (instanceInternal == null)
-			{
-				instanceInternal = new EventManager();
-			}
-			return instanceInternal;
-		}
-	}
+    EventManager() { }
+
     double SimTime;
     public double GetSimTime()
     {
         return SimTime;
     }
-	bool EventFired = false;
-	// Use this for initialization
-	void Start () {
-		Debug.Log("EventManager start up");
-		Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
+    bool EventFired = false;
+    // Use this for initialization
+    void Start()
+    {
+        Debug.Log("EventManager start up");
+        Events.instance.AddListener<ManeuverEvent>(OnManeuverEvent);
         SimTime = Time.time;
         simTimeObj = GameObject.Find("SimTime");
-	}
-	
+    }
+
     //create an entry to represent event on GUI event list
-	public void CreateNewEvent(GameEvent e)
-	{
-		if (eventText == null)
-		{
+    public void CreateNewEvent(GameEvent e)
+    {
+        if (eventText == null)
+        {
             eventText = GameObject.Find("EventTitle");
             if (eventText == null)
                 Debug.Log("================eventText not found?!?!");
         }
         Debug.Log("EventManager got an event to enqueue");
-		var newObj = Instantiate(eventText);
-		newObj.transform.parent = eventText.transform.parent;
-		Events.instance.GUIEventQueue.Enqueue(newObj, e.GetTime());
-		//update position
-		//TODO signal eventmanager update? UpdateGUIPosition();
-	}
-	void OnManeuverEvent(ManeuverEvent e)
-	{
-		Debug.Log("EventManager got an event");
-		EventFired = true;
-	}
+        var newObj = Instantiate(eventText);
+        newObj.transform.parent = eventText.transform.parent;
+        Events.instance.GUIEventQueue.Enqueue(newObj, e.GetTime());
+        //update position
+        //TODO signal eventmanager update? UpdateGUIPosition();
+    }
+    void OnManeuverEvent(ManeuverEvent e)
+    {
+        Debug.Log("EventManager got an event");
+        EventFired = true;
+    }
 
     void FixedUpdate()
     {
-        SimTime += HoloManager.SimTimeScale * Time.fixedDeltaTime;
+        //moved to Update
         //Events.instance.FixedUpdate();
     }
-	// Update is called once per frame
-	void Update () 
+    // Update is called once per frame
+    void Update()
     {
-		if (EventFired)
-		{
-			EventFired = false;
-			Debug.Log("EventManger got an event fired!");
-		}
+        SimTime += HoloManager.SimTimeScale * Time.fixedDeltaTime;
+
+        if (EventFired)
+        {
+            EventFired = false;
+            Debug.Log("EventManger got an event fired!");
+        }
         //get simulation time
-		//check if top of queue is time
+        //check if top of queue is time
         if (Events.instance == null)
         {
             Debug.Log("Events not set??");
             return;
-        }else if (Events.instance.eventQueue == null)
+        }
+        else if (Events.instance.eventQueue == null)
         {
             Debug.Log("Events.instance.eventQueue not set??");
             return;
@@ -80,20 +76,19 @@ public class EventManager : MonoBehaviour {
         var tt = simTimeObj.GetComponent<Tooltip>();
         tt.displayText = "SimTime: " + OVTools.FormatTime((float)SimTime);
         tt.Reset();
-        if (Events.instance.eventQueue.isNotEmpty()) 
+        if (Events.instance.eventQueue.isNotEmpty())
         {
-            Debug.Log("Next time: " 
-                + OVTools.FormatTime(Events.instance.eventQueue.GetNextTime()));
 
-            while (Events.instance.eventQueue.isNotEmpty() 
-                && Events.instance.eventQueue.GetNextTime() <= SimTime) {
+            while (Events.instance.eventQueue.isNotEmpty()
+                && Events.instance.eventQueue.GetNextTime() <= SimTime)
+            {
                 //raise event and get 
                 var e = Events.instance.eventQueue.Dequeue();
                 Debug.Log("Raising event now: " + OVTools.FormatTime(e.GetTime()));
                 Events.instance.Raise(e);
                 var egui = Events.instance.GUIEventQueue.Dequeue();
                 egui.SetActive(false);
-            } 
+            }
 
             //update time in each event
             var eEvent = Events.instance.eventQueue.GetEnumerator();

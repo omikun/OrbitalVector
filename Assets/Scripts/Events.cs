@@ -192,7 +192,7 @@ public class Events
 
         Debug.Log("Events queuing up new event");
         eventQueue.Enqueue(evt, evt.GetTime());
-		EventManager.instance.CreateNewEvent(evt);
+		//TODO move this to EventManager eventManager.CreateNewEvent(evt);
         return true;
     }
 

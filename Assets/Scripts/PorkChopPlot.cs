@@ -5,12 +5,12 @@ using OrbitalTools;
 using UnityEditor;
 
 public class PCPoint
-    {
-        public float dv = Mathf.Infinity;
-        public double startTime, travelTime;
-        PCPoint() { dv = Mathf.Infinity; }
-    }
-    
+{
+    public float dv = Mathf.Infinity;
+    public double startTime, travelTime;
+    PCPoint() { dv = Mathf.Infinity; }
+}
+
 [CustomEditor(typeof(PorkChopPlot))]
 public class ObjectBuilderEditor : Editor
 {
@@ -18,13 +18,14 @@ public class ObjectBuilderEditor : Editor
     {
         DrawDefaultInspector();
         PorkChopPlot pcp = (PorkChopPlot)target;
-        if(GUILayout.Button("Build Object"))
+        if (GUILayout.Button("Build Object"))
         {
             pcp.CreatePlot();
         }
     }
 }
-public class PorkChopPlot : MonoBehaviour {
+public class PorkChopPlot : MonoBehaviour
+{
     const int imgWidth = 40;
     const int imgHeight = 30;
     Color[] porkChopColors = new Color[imgWidth * imgHeight];
@@ -50,6 +51,7 @@ public class PorkChopPlot : MonoBehaviour {
     float mindv = Mathf.Infinity;
     double mindvStarTime, mindvTravelTime;
 
+    EventManager eventManager;
     void InitTexture2D(Texture2D texture)
     {
         for (int i = 0; i < imgWidth; i++)
@@ -67,19 +69,22 @@ public class PorkChopPlot : MonoBehaviour {
         texture = new Texture2D(PorkChopPlot.imgWidth, PorkChopPlot.imgHeight, TextureFormat.RGB24, false);
 
         InitTexture2D(texture);
-        
-        var sprite = Sprite.Create(texture, new Rect(0,0, PorkChopPlot.imgWidth, PorkChopPlot.imgHeight), new Vector2(0.5f, 0.5f), 40);
+
+        var sprite = Sprite.Create(texture, new Rect(0, 0, PorkChopPlot.imgWidth, PorkChopPlot.imgHeight), new Vector2(0.5f, 0.5f), 40);
         renderer.sprite = sprite;
     }
-    void Start () {
+    void Start()
+    {
         CreatePlot();
 
         _thread = new Thread(Porkchop);
         _thread.Start();
-	}
+        eventManager = GameObject.Find("EventManager").GetComponent<EventManager>();
+    }
 
     // Update is called once per frame
-    void Update() {
+    void Update()
+    {
 
         //TODO should go in enable pork chop plot?
         if (triggerPork)
@@ -93,20 +98,23 @@ public class PorkChopPlot : MonoBehaviour {
                 Debug.Log("Something's not right, can't run prokchop: src: " + src + " tgt: " + tgt);
                 return;
             }
-            computeTime = EventManager.instance.GetSimTime();
+            computeTime = eventManager.GetSimTime();
+            Debug.Log("compute time: " + OVTools.FormatTime((float)eventManager.GetSimTime()));
             oe1 = src.GetComponent<OrbitData>().getOE();
             oe2 = tgt.GetComponent<OrbitData>().getOE();
             _triggerPork = true;
-        } 
+        }
 
         //TODO every .2 seconds?
-	    if (porkDone)
+        if (porkDone)
         {
             texture.SetPixels(porkChopColors);
             texture.Apply();
             porkDone = false;
             Debug.Log("Period of ppc: " + period);
             Debug.Log("mindv: " + mindv);
+
+            Debug.Log("mindv startTime: " + OVTools.FormatTime((float)mindvStarTime));
             PlotTrajectory(mindvStarTime, mindvTravelTime);
             //move selector
             MoveSelector(mindvStarTime, mindvTravelTime);
@@ -164,7 +172,8 @@ public class PorkChopPlot : MonoBehaviour {
         bool hit = Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hitInfo);
         _DragTravelTimeIndicator(hitInfo);
     }
-    public void _DragTravelTimeIndicator(RaycastHit hitInfo) { 
+    public void _DragTravelTimeIndicator(RaycastHit hitInfo)
+    {
         Debug.Log("loc: " + hitInfo.point.ToString());
         //move localPosition.y
         var oldLocalPosition = travelTimeIndicator.transform.localPosition;
@@ -201,22 +210,25 @@ public class PorkChopPlot : MonoBehaviour {
     }
     void PlotTrajectory(double startTime, double travelTime)
     {
-        var timeSinceCompute = EventManager.instance.GetSimTime() - computeTime;
+        var timeSinceCompute = eventManager.GetSimTime() - computeTime;
         var curStartTime = startTime - timeSinceCompute; //relative to now
-        Debug.Log("startTime: " + curStartTime.ToString("G3") + " travelTime: " + travelTime.ToString("G3"));
+        Debug.Log("curStartTime: " + OVTools.FormatTime((float)curStartTime)
+            + " startTime: " + OVTools.FormatTime((float)startTime)
+        + " travelTime: " + OVTools.FormatTime((float)travelTime));
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
         Vector3d r2, v2;
-        if (oe1 == null || oe2 == null) {
+        if (oe1 == null || oe2 == null)
+        {
             Debug.Log("OE1 or 2 not initialized");
             return;
         }
         {
             var tempOe1 = oe1.copyOE();
             var tempOe2 = oe2.copyOE();
-            var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime);
-            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, startTime + travelTime);
+            var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, curStartTime);
+            var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, curStartTime + travelTime);
             tempOe2.tra = tra2;
             tempOe1.tra = tra1;
 
@@ -242,7 +254,7 @@ public class PorkChopPlot : MonoBehaviour {
         //display required deltaV for intercept
         //TODO based on mode: display required deltaV for rendezvous
         var tooltip = trajectoryDeltaVTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Req dV: " + OVTools.FormatDistance((float)(initVel-v1).magnitude);//.ToString("G2");
+        tooltip.displayText = "Req dV: " + OVTools.FormatDistance((float)(initVel - v1).magnitude);//.ToString("G2");
         tooltip.Reset();
         tooltip = shipDeltaVTooltip.GetComponent<Tooltip>();
         tooltip.displayText = "Ship dV: " + OVTools.FormatDistance(UXStateManager.GetSource().GetComponent<OrbitData>().GetDV());//.ToString("G4");
@@ -250,7 +262,7 @@ public class PorkChopPlot : MonoBehaviour {
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(startTime+computeTime));//.ToString("G4");
+        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(startTime + computeTime));//.ToString("G4");
         //tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)curStartTime);//.ToString("G4");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
@@ -261,7 +273,7 @@ public class PorkChopPlot : MonoBehaviour {
         var localPos = startTimeIndicator.transform.localPosition;
         localPos.x = time2coord(startTime);
         startTimeIndicator.transform.localPosition = localPos;
-//
+        //
         localPos = travelTimeIndicator.transform.localPosition;
         localPos.y = time2coord(travelTime);
         travelTimeIndicator.transform.localPosition = localPos;
@@ -270,7 +282,7 @@ public class PorkChopPlot : MonoBehaviour {
     }
     public void TriggerIntercept()
     {
-        if (computeTime+startTime <= EventManager.instance.GetSimTime())
+        if (computeTime + startTime <= eventManager.GetSimTime())
         {
             Debug.Log("Error: Intercept injection in the past");
             return;
@@ -279,8 +291,10 @@ public class PorkChopPlot : MonoBehaviour {
         var src = UXStateManager.GetSource();
         var tgt = UXStateManager.GetTarget();
         Debug.Log("InjVec: " + injectionVector);
-        var e = new ManeuverEvent(src, tgt, 
-            (float)(computeTime + startTime), 
+        Debug.Log("TriggerIntercept at time: " + OVTools.FormatTime((float)(computeTime + startTime)));
+        Debug.Log("TriggerIntercept startTime: " + OVTools.FormatTime((float)(startTime)));
+        var e = new ManeuverEvent(src, tgt,
+            (float)(computeTime + startTime),
             "intercepts", injectionVector);
         Events.instance.Queue(e);
     }
@@ -300,6 +314,7 @@ public class PorkChopPlot : MonoBehaviour {
         availDV = GetAvailableDV();
         Debug.Log("availDV: " + availDV);
         intercept = enableIntercept;
+        Debug.Log("Enable porkchop, simtime: " + OVTools.FormatTime((float)eventManager.GetSimTime()));
     }
 
     void FindVel(double startTime, double travelTime, out Vector3d injectionVector, out Vector3d rendezvousVector)
@@ -348,9 +363,9 @@ public class PorkChopPlot : MonoBehaviour {
                 Vector3d injectionVector, rendezvousVector;
                 FindVel(startTime, travelTime, out injectionVector, out rendezvousVector);
 
-                int index = (int)(y-1) * (int)imgWidth + (int)x;
+                int index = (int)(y - 1) * (int)imgWidth + (int)x;
                 float diffMag = 0;
-                if (intercept) 
+                if (intercept)
                     diffMag = (float)injectionVector.magnitude;
                 else //rendezvous
                     diffMag = (float)injectionVector.magnitude + (float)rendezvousVector.magnitude;
@@ -378,7 +393,9 @@ public class PorkChopPlot : MonoBehaviour {
             if (false)//porkChopValues[index] > availDV)
             {
                 porkChopColors[index] = Color.black;
-            } else {
+            }
+            else
+            {
                 float value = (porkChopValues[index] - mindv) / (maxHue - mindv); //black/white
                 porkChopColors[index] = new Color(value, value, value);
                 porkChopColors[index] = MuMech.MuUtils.HSVtoRGB((360f / maxHue) * (porkChopValues[index]), 1f, 1.0f, 1f);
