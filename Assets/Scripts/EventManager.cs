@@ -24,6 +24,11 @@ public class EventManager : MonoBehaviour
         simTimeObj = GameObject.Find("SimTime");
     }
 
+    public bool Queue(GameEvent evt)
+    {
+        CreateNewEvent(evt);
+        return Events.instance.Queue(evt);
+    }
     //create an entry to represent event on GUI event list
     public void CreateNewEvent(GameEvent e)
     {

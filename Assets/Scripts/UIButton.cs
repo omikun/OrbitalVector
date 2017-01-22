@@ -49,7 +49,7 @@ public class UIButton : VRTK_InteractableObject {
     }
     bool clicked = false;
 	public void Clicked() {
-        Debug.Log("UIButton clicked received");
+        //Debug.Log("UIButton clicked received");
         clicked = true;
 	}
     public void Click()

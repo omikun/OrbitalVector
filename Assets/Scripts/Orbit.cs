@@ -95,7 +95,7 @@ public class Orbit : MonoBehaviour
         yield return new WaitForSeconds(time);
         */
         Debug.Log("Name of source: " + e.GetSource().name);
-        Debug.Log("Firing! " + e.velocity.magnitude);
+        Debug.Log("Firing! " + OVTools.FormatDistance((float)e.velocity.magnitude) + "/s");
         var odata = e.GetSource().GetComponent<OrbitData>();
         if (odata == null)
         {
@@ -140,6 +140,7 @@ public class Orbit : MonoBehaviour
 
     }
 
+    EventManager eventManager;
     void Start()
     {
         textRef = display.GetComponent<Text>();
@@ -162,6 +163,8 @@ public class Orbit : MonoBehaviour
         interceptLine.SetColors(Color.white, Color.red);
         interceptLine.enabled = false;
         //InvokeRepeating("prepFindIntercept", 5.0f, 2f); //debug
+
+        eventManager = GameObject.Find("EventManager").GetComponent<EventManager>();
     }
     void AddOrbitRenderer(GameObject ship)
     {
@@ -200,7 +203,7 @@ public class Orbit : MonoBehaviour
             //calculate next step
             if (odata.params_[4] != 0)
                 Debug.Log("acceleration detected!");
-            odata.rv = Util.rungeKutta4(0, HoloManager.SimTimeScale * Time.deltaTime, odata.rv, odata.params_);
+            odata.rv = Util.rungeKutta4(0, HoloManager.SimTimeScale * Time.fixedDeltaTime, odata.rv, odata.params_);
             odata.params_[4] = 0;
             odata.params_[5] = 0;
             odata.params_[6] = 0;
