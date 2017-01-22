@@ -42,7 +42,6 @@ public class MouseInput : MonoBehaviour {
         bool buttonDown = Input.GetButtonDown("Fire1");
 
         if (Input.GetButtonDown("Fire1")) lastMousePos = Input.mousePosition;
-        if (buttonEvent) rotateWorldMouse();
 
         if (hit)
         {
@@ -67,7 +66,7 @@ public class MouseInput : MonoBehaviour {
 			if (intPlot != null && buttonEvent) 
 				intPlot.StartMouseUsing(hitInfo);
 
-        }
+        } else if (buttonEvent) rotateWorldMouse();
 
 
         var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");
