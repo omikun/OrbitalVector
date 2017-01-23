@@ -5,9 +5,9 @@ using OrbitalTools;
 
 public static class HoloManager
 {
-    public static float SolScale = (6371f * 1000f); //radius of earth (m) == 1 Unity Unit
+    public static float SolScale = 1;//(6371f * 1000f); //radius of earth (m) == 1 Unity Unit
     public static float SimZoomScale = 1f / SolScale;
-    public static float SimTimeScale = 128;
+    public static float SimTimeScale = 1;
 }
 public class OrbitData : MonoBehaviour {
     public VectorD rv;
@@ -44,7 +44,7 @@ public class OrbitData : MonoBehaviour {
 
     public static float scale = 1;
     static double r = 4;
-    static double m = 5.972e24;
+    static double m = 5.972e7;//24; //testing much larger mass so time scale is just 1
     static double G = 6.67408e-11;
     public static double parentGM = m * G;
 
@@ -79,7 +79,7 @@ public class OrbitData : MonoBehaviour {
         oe = oe_;
     }
 
-    public double getPeriod()
+    public double getPeriod()// doesn't this just assume circular orbits only?
     {
         return 2 * Math.PI * Math.Sqrt(oe.sma / parentGM);
     }

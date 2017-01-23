@@ -14,7 +14,7 @@ public class TimeWarp : MonoBehaviour {
             HoloManager.SimTimeScale /= 2;
 	}
 	public void StopWarp() {
-		HoloManager.SimTimeScale = 0;
+		HoloManager.SimTimeScale = 1;
 	}
     
 	// Use this for initialization

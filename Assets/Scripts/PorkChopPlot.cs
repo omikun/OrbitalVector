@@ -195,31 +195,30 @@ public class PorkChopPlot : MonoBehaviour
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
         Debug.Log("coord: " + coord.ToString());
-        mStartTime = (coord.x + 0.5d) * period;// + mComputeTime; //absolute time
-        double travelTime = (coord.y + 0.5d) * period;
+        mStartTime = (coord.x + 0.5d) * period + mComputeTime; //absolute time
+        double travelTime = (coord.y + 0.5d) * period / 2;
         PlotTrajectory(mStartTime, travelTime);
     }
     float time2coord(double time)
     {
         return (float)(time / period - .5d);
     }
-    void testMarker(string markername, double startTime, double travelTime)
+    void testMarker(string markername, double startTime)
     {
-        return;// don't show extra markers of start path
-        Vector3d initVel, finalVel;
+        //return;// don't show extra markers of start path
         Vector3d r1, v1;
-        Vector3d r2, v2;
-        FindVel(startTime, travelTime, out initVel, out finalVel, 
-            out r1, out r2, out v1, out v2);
+        FindRV(oe1, startTime, out r1, out v1);
 
         var marker = GameObject.Find(markername);
         marker.transform.localPosition = r1.ToFloat() * HoloManager.SimZoomScale;
+        Debug.Log(markername + " " + OVTools.FormatTime((float)startTime));
     }
     bool PlotTrajectory(double startTime, double travelTime)
     {
-        //if (!GetOEs()) { return false; } //now OEs are at current time
+        if (!GetOEs()) { return false; } //now OEs are at current time
 
-        var curStartTime = startTime;// + mComputeTime;// - eventManager.GetSimTime(); //relative to now
+        var curStartTime = startTime - eventManager.GetSimTime(); //relative to now
+        //curStartTime *= 2;
         Debug.Log("curStartTime: " + OVTools.FormatTime((float)curStartTime)
             + " startTime: " + OVTools.FormatTime((float)startTime)
         + " travelTime: " + OVTools.FormatTime((float)travelTime));
@@ -229,7 +228,7 @@ public class PorkChopPlot : MonoBehaviour
         Vector3d r1, v1;
         Vector3d r2, v2;
 
-        FindVel(curStartTime*2, travelTime, out initVel, out finalVel, 
+        FindVel(curStartTime, travelTime, out initVel, out finalVel, 
             out r1, out r2, out v1, out v2);
         mInjectionVector = initVel;// - v1;
         var rendezvousVector = finalVel - v2;
@@ -239,10 +238,10 @@ public class PorkChopPlot : MonoBehaviour
         var interceptOE = Util.rv2oe(OrbitData.parentGM, rv);
         //initialize/update maneuver node/orbit w/ oe
         ////tests/////////////////////////
-        testMarker("Marker1-2", period/2 + startTime - mComputeTime, travelTime);
-        testMarker("Marker1-3", period/2 + startTime - eventManager.GetSimTime(), travelTime);
-        testMarker("Marker1-4", period/2 + startTime + mComputeTime, travelTime);
-        testMarker("Marker1-5", period/2 + startTime + mComputeTime + eventManager.GetSimTime(), travelTime);
+        testMarker("Marker1-2", startTime);
+        testMarker("Marker1-3", curStartTime + mComputeTime);
+       // testMarker("Marker1-4", eventManager.GetSimTime());
+       // testMarker("Marker1-5", startTime - eventManager.GetSimTime());
         
         var marker1 = GameObject.Find("Marker1");
         marker1.transform.localPosition = r1.ToFloat() * HoloManager.SimZoomScale;
@@ -276,7 +275,7 @@ public class PorkChopPlot : MonoBehaviour
         startTimeIndicator.transform.localPosition = localPos;
         //
         localPos = travelTimeIndicator.transform.localPosition;
-        localPos.y = time2coord(travelTime);
+        localPos.y = time2coord(travelTime)/2;
         travelTimeIndicator.transform.localPosition = localPos;
         //display time of arrival at intersect point
         //display start time at injection point
@@ -320,21 +319,20 @@ public class PorkChopPlot : MonoBehaviour
         Debug.Log("Enable porkchop, simtime: " + OVTools.FormatTime((float)eventManager.GetSimTime()));
     }
 
+    void FindRV(OrbitalElements oe, double time, out Vector3d r, out Vector3d v)
+    {
+        var tempOe = oe.copyOE();
+        tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, time);
+        OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe, out r, out v);
+    }
     //only to find speed for indicator; work repeated in PlotTrajectory
     void FindVel(double startTime, double travelTime, 
         out Vector3d initVel, out Vector3d finalVel,
         out Vector3d r1, out Vector3d r2,
         out Vector3d v1, out Vector3d v2)
     {
-        var tempOe1 = oe1.copyOE();
-        var tempOe2 = oe2.copyOE();
-        var tra1 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, startTime);
-        var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, startTime+travelTime);
-        tempOe2.tra = tra2;
-        tempOe1.tra = tra1;
-
-        OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe1, out r1, out v1);
-        OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe2, out r2, out v2);
+        FindRV(oe1, startTime, out r1, out v1);
+        FindRV(oe2, startTime+travelTime, out r2, out v2);
 
         MuMech.LambertSolver.Solve(r1, r2, travelTime, OrbitData.parentGM, true, out initVel, out finalVel);
         //Debug.Log("initVel " + initVel.magnitude);
@@ -347,6 +345,8 @@ public class PorkChopPlot : MonoBehaviour
         //find longest period
         var period1 = oe1.getPeriod();
         var period2 = oe2.getPeriod();
+        Debug.Log("Period1: " + OVTools.FormatTime((float)period1));
+        Debug.Log("Period2: " + OVTools.FormatTime((float)period2));
         period = System.Math.Max(period1, period2);
 
         //plot is always 1 period across and 1/2 period tall

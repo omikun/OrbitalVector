@@ -178,8 +178,8 @@ public class Orbit : MonoBehaviour
         newLineRenderer.SetVertexCount(segments+1);
         lines.Add(newLineRenderer);
     }
-    static int FrameCount = 0;
     // Update is called once per frame
+    bool first = true;
     void FixedUpdate()
     {
         int count = 0;
@@ -203,7 +203,7 @@ public class Orbit : MonoBehaviour
             //calculate next step
             if (odata.params_[4] != 0)
                 Debug.Log("acceleration detected!");
-            odata.rv = Util.rungeKutta4(0, HoloManager.SimTimeScale * Time.fixedDeltaTime, odata.rv, odata.params_);
+            odata.rv = Util.rungeKutta4(0, HoloManager.SimTimeScale /2* Time.fixedDeltaTime, odata.rv, odata.params_);
             odata.params_[4] = 0;
             odata.params_[5] = 0;
             odata.params_[6] = 0;
@@ -212,6 +212,12 @@ public class Orbit : MonoBehaviour
             var oe = odata.getOE();
             DrawOrbit(lines[count], ref oe);
 
+            if (first)
+            {
+                var period = oe.getPeriod();
+                Debug.Log("alt: " + OVTools.FormatDistance((float)odata.getR().magnitude)
+                    + " Period: " + OVTools.FormatTime((float)period));
+            }
     
             //draw icons for selected orbits
             if (ship == UXStateManager.GetSource())
@@ -223,6 +229,7 @@ public class Orbit : MonoBehaviour
             }
             count++;
         }
+        first = false;
     }
 
     public void updateInterceptLine(ref OrbitalElements oe, bool enable)
