@@ -238,8 +238,8 @@ public class PorkChopPlot : MonoBehaviour
         var interceptOE = Util.rv2oe(OrbitData.parentGM, rv);
         //initialize/update maneuver node/orbit w/ oe
         ////tests/////////////////////////
-        testMarker("Marker1-2", startTime);
-        testMarker("Marker1-3", curStartTime + mComputeTime);
+        //testMarker("Marker1-2", startTime);
+        //testMarker("Marker1-3", curStartTime + mComputeTime);
        // testMarker("Marker1-4", eventManager.GetSimTime());
        // testMarker("Marker1-5", startTime - eventManager.GetSimTime());
         
