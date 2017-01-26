@@ -51,6 +51,8 @@ public class PorkChopPlot : MonoBehaviour
     float mindv = Mathf.Infinity;
     double mMinDVStartTime, mMinDVTravelTime;
 
+    Vector3d mInjectionVector;
+    double mStartTime; //absolute time
     EventManager eventManager;
     void InitTexture2D(Texture2D texture)
     {
@@ -158,6 +160,10 @@ public class PorkChopPlot : MonoBehaviour
         localx = newLocalPosition.x;
 
         SelectedTrajectory(new Vector2(localx, localy));
+        var pos = selectorIndicator.transform.localPosition;
+        pos.x = localx;
+        pos.y = localy;
+        selectorIndicator.transform.localPosition = pos;
     }
     public void DragTravelTimeIndicator()
     {
@@ -185,18 +191,19 @@ public class PorkChopPlot : MonoBehaviour
         localy = newLocalPosition.y;
 
         SelectedTrajectory(new Vector2(localx, localy));
+        var pos = selectorIndicator.transform.localPosition;
+        pos.x = localx;
+        pos.y = localy;
+        selectorIndicator.transform.localPosition = pos;
     }
-    Vector3d mInjectionVector;
-    double mStartTime; //absolute time
     //update maneuver node w/ trajectory
     public void SelectedTrajectory(Vector2 coord)
     {
-        selectorIndicator.transform.localPosition = coord;
         //convert normalized coord to start times/transit times
         //[-.5,.5] = [0,period]
         Debug.Log("coord: " + coord.ToString());
-        mStartTime = (coord.x + 0.5d) * period + mComputeTime; //absolute time
-        double travelTime = (coord.y + 0.5d) * period / 2;
+        mStartTime = (coord.x + 0.5d) * period; //relative to compute time
+        double travelTime = (coord.y + 0.5d) * period;
         PlotTrajectory(mStartTime, travelTime);
     }
     float time2coord(double time)
@@ -215,9 +222,9 @@ public class PorkChopPlot : MonoBehaviour
     }
     bool PlotTrajectory(double startTime, double travelTime)
     {
-        if (!GetOEs()) { return false; } //now OEs are at current time
+        //if (!GetOEs()) { return false; } //now OEs are at current time
 
-        var curStartTime = startTime - eventManager.GetSimTime(); //relative to now
+        var curStartTime = startTime + mComputeTime - eventManager.GetSimTime(); //relative to now
         //curStartTime *= 2;
         Debug.Log("curStartTime: " + OVTools.FormatTime((float)curStartTime)
             + " startTime: " + OVTools.FormatTime((float)startTime)
@@ -228,7 +235,7 @@ public class PorkChopPlot : MonoBehaviour
         Vector3d r1, v1;
         Vector3d r2, v2;
 
-        FindVel(curStartTime, travelTime, out initVel, out finalVel, 
+        FindVel(startTime, travelTime, out initVel, out finalVel, 
             out r1, out r2, out v1, out v2);
         mInjectionVector = initVel;// - v1;
         var rendezvousVector = finalVel - v2;
@@ -262,7 +269,7 @@ public class PorkChopPlot : MonoBehaviour
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(startTime));//.ToString("G4");
+        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(startTime + mComputeTime));//.ToString("G4");
         //tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)curStartTime);//.ToString("G4");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
@@ -275,7 +282,7 @@ public class PorkChopPlot : MonoBehaviour
         startTimeIndicator.transform.localPosition = localPos;
         //
         localPos = travelTimeIndicator.transform.localPosition;
-        localPos.y = time2coord(travelTime)/2;
+        localPos.y = time2coord(travelTime);
         travelTimeIndicator.transform.localPosition = localPos;
         //display time of arrival at intersect point
         //display start time at injection point
@@ -283,7 +290,7 @@ public class PorkChopPlot : MonoBehaviour
     }
     public void TriggerIntercept()
     {
-        if (mStartTime <= eventManager.GetSimTime())
+        if (mStartTime + mComputeTime <= eventManager.GetSimTime())
         {
             Debug.Log("Error: Intercept injection in the past");
             return;
@@ -294,7 +301,7 @@ public class PorkChopPlot : MonoBehaviour
         Debug.Log("InjVec: " + mInjectionVector);
         Debug.Log("TriggerIntercept startTime: " + OVTools.FormatTime((float)(mStartTime)));
         var e = new ManeuverEvent(src, tgt,
-            (float)(mStartTime),
+            (float)(mStartTime-eventManager.GetSimTime()+mComputeTime),
             "intercepts", mInjectionVector);
         //Events.instance.Queue(e); //deprecated, should be made illegal
         eventManager.Queue(e);
@@ -322,7 +329,7 @@ public class PorkChopPlot : MonoBehaviour
     void FindRV(OrbitalElements oe, double time, out Vector3d r, out Vector3d v)
     {
         var tempOe = oe.copyOE();
-        tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe1, time);
+        tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe, time);
         OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe, out r, out v);
     }
     //only to find speed for indicator; work repeated in PlotTrajectory
@@ -351,7 +358,7 @@ public class PorkChopPlot : MonoBehaviour
 
         //plot is always 1 period across and 1/2 period tall
         double startTimeInc = period / imgWidth;
-        double travelTimeInc = (period / 2) / imgHeight;
+        double travelTimeInc = (period ) / imgHeight;
 
         mComputeTime = eventManager.GetSimTime();
         Debug.Log("Compute time: " + mComputeTime);
@@ -386,7 +393,7 @@ public class PorkChopPlot : MonoBehaviour
                     //minDV.dv = diffMag;
                     //minDV.startTime = startTime;
                     //minDV.travelTime = travelTime;
-                    mMinDVStartTime = startTime + mComputeTime;
+                    mMinDVStartTime = startTime;
                     mMinDVTravelTime = travelTime;
                 }
             }//per row
