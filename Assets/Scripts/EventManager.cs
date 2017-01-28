@@ -27,6 +27,7 @@ public class EventManager : MonoBehaviour
     public bool Queue(GameEvent evt)
     {
         CreateNewEvent(evt);
+        Debug.Log("Event time: " + evt.GetTime());
         return Events.instance.Queue(evt);
     }
     //create an entry to represent event on GUI event list

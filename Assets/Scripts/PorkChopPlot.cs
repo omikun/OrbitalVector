@@ -229,7 +229,7 @@ public class PorkChopPlot : MonoBehaviour
         Debug.Log("curStartTime: " + OVTools.FormatTime((float)curStartTime)
             + " startTime: " + OVTools.FormatTime((float)startTime)
         + " travelTime: " + OVTools.FormatTime((float)travelTime));
-
+        Debug.Log("injection time: " + (startTime+mComputeTime).ToString());
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
@@ -237,6 +237,9 @@ public class PorkChopPlot : MonoBehaviour
 
         FindVel(startTime, travelTime, out initVel, out finalVel, 
             out r1, out r2, out v1, out v2);
+            
+        OVDebug.projectedR1 = r1;
+        Debug.Log("Injection pos: " + r1.ToString());
         mInjectionVector = initVel;// - v1;
         var rendezvousVector = finalVel - v2;
         
@@ -298,10 +301,9 @@ public class PorkChopPlot : MonoBehaviour
         Debug.Log("Trigger intercept event");
         var src = UXStateManager.GetSource();
         var tgt = UXStateManager.GetTarget();
-        Debug.Log("InjVec: " + mInjectionVector);
-        Debug.Log("TriggerIntercept startTime: " + OVTools.FormatTime((float)(mStartTime)));
+        Debug.Log("InjVec: " + mInjectionVector.ToString());
         var e = new ManeuverEvent(src, tgt,
-            (float)(mStartTime-eventManager.GetSimTime()+mComputeTime),
+            (float)(mStartTime+mComputeTime),
             "intercepts", mInjectionVector);
         //Events.instance.Queue(e); //deprecated, should be made illegal
         eventManager.Queue(e);

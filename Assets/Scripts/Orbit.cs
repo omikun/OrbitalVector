@@ -8,6 +8,9 @@ using System;
  using System.IO;
 using UnityEditor;
 
+public static class OVDebug {
+    public static Vector3d projectedR1;
+}
 public class ManeuverEvent : GameEvent
 {
     public ManeuverEvent (GameObject src, GameObject tgt, float timeInFuture, string action, Vector3d v) : base(src, tgt, timeInFuture, action)
@@ -96,7 +99,13 @@ public class Orbit : MonoBehaviour
         */
         Debug.Log("Name of source: " + e.GetSource().name);
         Debug.Log("Firing! " + OVTools.FormatDistance((float)e.velocity.magnitude) + "/s");
+        Debug.Log("injection vector: " + e.velocity.ToString());
+        Debug.Log("Injection time: " + eventManager.GetSimTime());
+
         var odata = e.GetSource().GetComponent<OrbitData>();
+        Debug.Log("Injection pos: " + odata.getR().ToString());
+        var diff = odata.getR() - OVDebug.projectedR1;
+        Debug.Log("Difference: " + OVTools.FormatDistance((float)diff.magnitude));
         if (odata == null)
         {
             Debug.Log("no orbital data from ship!!");
