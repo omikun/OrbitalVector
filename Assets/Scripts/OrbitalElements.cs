@@ -16,7 +16,7 @@ namespace OrbitalTools
         public double tra;
         public void print()
         {
-            Debug.Log("sma: " + sma);
+            Debug.Log("sma: " + OVTools.FormatDistance((float)sma));
             Debug.Log("ecc: " + ecc);
             Debug.Log("inc: " + inc);
             Debug.Log("lan: " + lan);

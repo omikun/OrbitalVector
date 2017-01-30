@@ -74,9 +74,15 @@ public class OrbitData : MonoBehaviour {
         ret.aop = oe.aop;
         return ret;
     }
+    double setOETime;
+    public double GetOETime()
+    {
+        return setOETime;
+    }
     public void setOE(OrbitalElements oe_)
     {
         oe = oe_;
+        setOETime = eventManager.GetSimTime();
     }
 
     public double getPeriod()// doesn't this just assume circular orbits only?
@@ -87,8 +93,10 @@ public class OrbitData : MonoBehaviour {
     {
         Init();
     }
+    EventManager eventManager;
     public void Init()
     {
+        eventManager = GameObject.Find("EventManager").GetComponent<EventManager>();
         rv = new VectorD();
         rv.Resize(6);
 
@@ -104,6 +112,9 @@ public class OrbitData : MonoBehaviour {
         rv[4] = vel.y;
         rv[5] = vel.z;
 
+        //set oe
+        var tempoe = Util.rv2oe(parentGM, rv);
+        setOE(tempoe);
 
         params_ = new VectorD();
         params_.Resize(7);

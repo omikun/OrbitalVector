@@ -115,6 +115,10 @@ public class Orbit : MonoBehaviour
         odata.rv[4] = e.velocity.y;
         odata.rv[5] = e.velocity.z;
 
+        //update oe
+        var oe = Util.rv2oe(OrbitData.parentGM, odata.rv);
+        odata.setOE(oe);
+
         Debug.Log("InjVec: " + e.velocity);
         //disable intercept line render
         interceptLine.enabled = false;
@@ -187,6 +191,13 @@ public class Orbit : MonoBehaviour
         newLineRenderer.SetVertexCount(segments+1);
         lines.Add(newLineRenderer);
     }
+    void FindRV(OrbitalElements oe, double time, out Vector3d r, out Vector3d v)
+    {
+        var tempOe = oe.copyOE();
+        tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe, time);
+        OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe, out r, out v);
+    }
+    
     // Update is called once per frame
     bool first = true;
     void FixedUpdate()
@@ -212,18 +223,33 @@ public class Orbit : MonoBehaviour
             //calculate next step
             if (odata.params_[4] != 0)
                 Debug.Log("acceleration detected!");
-            odata.rv = Util.rungeKutta4(0, HoloManager.SimTimeScale /2* Time.fixedDeltaTime, odata.rv, odata.params_);
-            odata.params_[4] = 0;
-            odata.params_[5] = 0;
-            odata.params_[6] = 0;
 
-            odata.setOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
+            var simdeltatime = HoloManager.SimTimeScale /2 * Time.fixedDeltaTime;
+            bool integration = false;
+            if (integration)
+            {
+                odata.rv = Util.rungeKutta4(0, simdeltatime, odata.rv, odata.params_);
+
+                odata.params_[4] = 0;
+                odata.params_[5] = 0;
+                odata.params_[6] = 0;
+
+                odata.setOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
+
+            } else {
+                Vector3d r1, v1;
+                //var newOE = Util.rv2oe(OrbitData.parentGM, odata.rv);
+                FindRV(odata.getOE(), eventManager.GetSimTime() - odata.GetOETime(), out r1, out v1);
+                odata.rv = Util.convertToRv(ref r1, ref v1);
+            }
+
             var oe = odata.getOE();
             DrawOrbit(lines[count], ref oe);
 
             if (first)
             {
                 var period = oe.getPeriod();
+                oe.print();
                 Debug.Log("alt: " + OVTools.FormatDistance((float)odata.getR().magnitude)
                     + " Period: " + OVTools.FormatTime((float)period));
             }
