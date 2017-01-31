@@ -65,30 +65,25 @@ public class OrbitData : MonoBehaviour {
 
     public OrbitalElements getOE()
     {
-        OrbitalElements ret = new OrbitalElements();
-        ret.sma = oe.sma;
-        ret.lan = oe.lan;
-        ret.inc = oe.inc;
-        ret.ecc = oe.ecc;
-        ret.tra = oe.tra;
-        ret.aop = oe.aop;
-        return ret;
+        //TODO move this into OrbitalElements class as an overload assignment operator
+        return oe.CopyOE();
     }
     double setOETime;
     public double GetOETime()
     {
-        return setOETime;
+        return oe.computeTime;
     }
-    public void setOE(OrbitalElements oe_)
+    //the three places that should call this function are:
+    //init OrbitData
+    //adjust orbit
+    //in numerical integration/legacy code
+    public void SetOE(OrbitalElements oe_)
     {
+        //TODO check if OE is different, or that the intetion is to reset compute time
         oe = oe_;
-        setOETime = eventManager.GetSimTime();
+        oe.SetComputeTime(eventManager.GetSimTime());
     }
 
-    public double getPeriod()// doesn't this just assume circular orbits only?
-    {
-        return 2 * Math.PI * Math.Sqrt(oe.sma / parentGM);
-    }
     void Start()
     {
         Init();
@@ -114,7 +109,7 @@ public class OrbitData : MonoBehaviour {
 
         //set oe
         var tempoe = Util.rv2oe(parentGM, rv);
-        setOE(tempoe);
+        SetOE(tempoe);
 
         params_ = new VectorD();
         params_.Resize(7);

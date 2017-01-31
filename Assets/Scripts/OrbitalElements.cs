@@ -14,6 +14,7 @@ namespace OrbitalTools
         public double lan;
         public double aop;
         public double tra;
+        public double computeTime;
         public void print()
         {
             Debug.Log("sma: " + OVTools.FormatDistance((float)sma));
@@ -22,12 +23,18 @@ namespace OrbitalTools
             Debug.Log("lan: " + lan);
             Debug.Log("aop: " + aop);
             Debug.Log("tra: " + tra);
+            Debug.Log("compTime: " + OVTools.FormatDistance((float)computeTime));
         }
-        public double getPeriod()
+        
+        public double GetPeriod()
         {
             return 2 * Math.PI * Math.Sqrt(Math.Pow(sma, 3) / OrbitData.parentGM);
         }
-        public OrbitalElements copyOE()
+        public void SetComputeTime(double t)
+        {
+            computeTime = t;
+        }
+        public OrbitalElements CopyOE()
         {
             OrbitalElements ret = new OrbitalElements();
             ret.sma = sma;
@@ -36,6 +43,7 @@ namespace OrbitalTools
             ret.ecc = ecc;
             ret.tra = tra;
             ret.aop = aop;
+            ret.computeTime = computeTime;
             return ret;
         }
 

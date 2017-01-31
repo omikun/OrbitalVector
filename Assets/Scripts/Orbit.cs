@@ -117,7 +117,7 @@ public class Orbit : MonoBehaviour
 
         //update oe
         var oe = Util.rv2oe(OrbitData.parentGM, odata.rv);
-        odata.setOE(oe);
+        odata.SetOE(oe);
 
         Debug.Log("InjVec: " + e.velocity);
         //disable intercept line render
@@ -193,7 +193,7 @@ public class Orbit : MonoBehaviour
     }
     void FindRV(OrbitalElements oe, double time, out Vector3d r, out Vector3d v)
     {
-        var tempOe = oe.copyOE();
+        var tempOe = oe.CopyOE();
         tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe, time);
         OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe, out r, out v);
     }
@@ -234,7 +234,7 @@ public class Orbit : MonoBehaviour
                 odata.params_[5] = 0;
                 odata.params_[6] = 0;
 
-                odata.setOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
+                odata.SetOE(Util.rv2oe(OrbitData.parentGM, odata.rv));
 
             } else {
                 Vector3d r1, v1;
@@ -248,7 +248,7 @@ public class Orbit : MonoBehaviour
 
             if (first)
             {
-                var period = oe.getPeriod();
+                var period = oe.GetPeriod();
                 oe.print();
                 Debug.Log("alt: " + OVTools.FormatDistance((float)odata.getR().magnitude)
                     + " Period: " + OVTools.FormatTime((float)period));
@@ -351,7 +351,7 @@ public class Orbit : MonoBehaviour
         }
 
         double gm = OrbitData.parentGM;
-        double period = oe1.getPeriod();//use period of source ship Math.Max(oe1.getPeriod(), oe2.getPeriod());
+        double period = oe1.GetPeriod();//use period of source ship Math.Max(oe1.getPeriod(), oe2.getPeriod());
         if (first)
         {
             timeStep = period / 360;
@@ -365,8 +365,8 @@ public class Orbit : MonoBehaviour
         {
             tra1 = Program.anomalyAfterTime(OrbitData.parentGM, oe1, time);
             tra2 = Program.anomalyAfterTime(OrbitData.parentGM, oe2, time);
-            var tempoe1 = oe1.copyOE();
-            var tempoe2 = oe2.copyOE();
+            var tempoe1 = oe1.CopyOE();
+            var tempoe2 = oe2.CopyOE();
             tempoe1.tra = tra1;
             tempoe2.tra = tra2;
             var pos1 = Util.oe2r(OrbitData.parentGM, tempoe1);

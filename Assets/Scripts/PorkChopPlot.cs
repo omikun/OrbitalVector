@@ -220,22 +220,22 @@ public class PorkChopPlot : MonoBehaviour
         marker.transform.localPosition = r1.ToFloat() * HoloManager.SimZoomScale;
         Debug.Log(markername + " " + OVTools.FormatTime((float)startTime));
     }
-    bool PlotTrajectory(double startTime, double travelTime)
+    //times are relative
+    bool PlotTrajectory(double relStartTime, double relTravelTime)
     {
         //if (!GetOEs()) { return false; } //now OEs are at current time
 
-        var curStartTime = startTime + mComputeTime - eventManager.GetSimTime(); //relative to now
-        //curStartTime *= 2;
-        Debug.Log("curStartTime: " + OVTools.FormatTime((float)curStartTime)
-            + " startTime: " + OVTools.FormatTime((float)startTime)
-        + " travelTime: " + OVTools.FormatTime((float)travelTime));
-        Debug.Log("injection time: " + (startTime+mComputeTime).ToString());
+        var curStartTime = 0;//relStartTime + mComputeTime - eventManager.GetSimTime(); //relative to now
+        Debug.Log(//"curStartTime: " + OVTools.FormatTime((float)curStartTime)
+            " startTime: " + OVTools.FormatTime((float)relStartTime)
+        + " travelTime: " + OVTools.FormatTime((float)relTravelTime));
+        Debug.Log("injection time: " + (relStartTime+mComputeTime).ToString());
         //recompute trajectory w/ those times
         Vector3d initVel, finalVel;
         Vector3d r1, v1;
         Vector3d r2, v2;
 
-        FindVel(startTime, travelTime, out initVel, out finalVel, 
+        FindVel(relStartTime + mComputeTime, relTravelTime, out initVel, out finalVel, 
             out r1, out r2, out v1, out v2);
             
         OVDebug.projectedR1 = r1;
@@ -272,20 +272,20 @@ public class PorkChopPlot : MonoBehaviour
 
         //display start time/travel time
         tooltip = startTimeTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(startTime + mComputeTime));//.ToString("G4");
+        tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)(relStartTime + mComputeTime));//.ToString("G4");
         //tooltip.displayText = "Start Time: " + OVTools.FormatTime((float)curStartTime);//.ToString("G4");
         tooltip.Reset();
         tooltip = durationTooltip.GetComponent<Tooltip>();
-        tooltip.displayText = "Duration: " + OVTools.FormatTime((float)travelTime);//.ToString("G4");
+        tooltip.displayText = "Duration: " + OVTools.FormatTime((float)relTravelTime);//.ToString("G4");
         tooltip.Reset();
 
         //set scrollers
         var localPos = startTimeIndicator.transform.localPosition;
-        localPos.x = time2coord(startTime);
+        localPos.x = time2coord(relStartTime);
         startTimeIndicator.transform.localPosition = localPos;
         //
         localPos = travelTimeIndicator.transform.localPosition;
-        localPos.y = time2coord(travelTime);
+        localPos.y = time2coord(relTravelTime);
         travelTimeIndicator.transform.localPosition = localPos;
         //display time of arrival at intersect point
         //display start time at injection point
@@ -328,32 +328,45 @@ public class PorkChopPlot : MonoBehaviour
         Debug.Log("Enable porkchop, simtime: " + OVTools.FormatTime((float)eventManager.GetSimTime()));
     }
 
-    void FindRV(OrbitalElements oe, double time, out Vector3d r, out Vector3d v)
+    //assumes time is absolute
+    void FindRV(OrbitalElements oe, double absTime, out Vector3d r, out Vector3d v)
     {
-        var tempOe = oe.copyOE();
-        tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe, time);
+        var tempOe = oe.CopyOE();
+        //Note: SHOULD be oe.computeTime, not mComputeTime
+        tempOe.tra = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe, absTime-oe.computeTime);
         OrbitalTools.Util.oe2rv(OrbitData.parentGM, tempOe, out r, out v);
     }
-    //only to find speed for indicator; work repeated in PlotTrajectory
-    void FindVel(double startTime, double travelTime, 
+    /*
+     * takes relative absolute time startTime and relative travel time
+     */
+    void FindVel(double absStartTime, double relTravelTime, 
         out Vector3d initVel, out Vector3d finalVel,
         out Vector3d r1, out Vector3d r2,
         out Vector3d v1, out Vector3d v2)
     {
-        FindRV(oe1, startTime, out r1, out v1);
-        FindRV(oe2, startTime+travelTime, out r2, out v2);
+        //get position/velocity of source object at start time
+        //and pos/vel of target object at end time
+        FindRV(oe1, absStartTime, out r1, out v1);
+        FindRV(oe2, absStartTime+relTravelTime, out r2, out v2);
 
-        MuMech.LambertSolver.Solve(r1, r2, travelTime, OrbitData.parentGM, true, out initVel, out finalVel);
+        MuMech.LambertSolver.Solve(r1, r2, relTravelTime, OrbitData.parentGM, true, out initVel, out finalVel);
         //Debug.Log("initVel " + initVel.magnitude);
     }
+    /**
+     * Creates a 2D matrix of dV, relative to start time and travel time
+     * start time relative to current sim time
+     * travel time relative to start time
+     * HOWEVER: time given to FindVel must be in relative time
+
+     */
     void GeneratePorkChop()
     {
         Debug.Log("Running GeneratePorkChop()");
         float maxHue = 1.0f;
         float minHue = 360.0f;
         //find longest period
-        var period1 = oe1.getPeriod();
-        var period2 = oe2.getPeriod();
+        var period1 = oe1.GetPeriod();
+        var period2 = oe2.GetPeriod();
         Debug.Log("Period1: " + OVTools.FormatTime((float)period1));
         Debug.Log("Period2: " + OVTools.FormatTime((float)period2));
         period = System.Math.Max(period1, period2);
@@ -375,7 +388,7 @@ public class PorkChopPlot : MonoBehaviour
 
                 Vector3d r1, r2, v1, v2;
                 Vector3d injectionVector, rendezvousVector;
-                FindVel(startTime, travelTime, out injectionVector, out rendezvousVector, out r1, out r2, out v1, out v2);
+                FindVel(startTime+mComputeTime, travelTime, out injectionVector, out rendezvousVector, out r1, out r2, out v1, out v2);
                 injectionVector -= v1;
                 rendezvousVector -= v2;
 
@@ -402,6 +415,7 @@ public class PorkChopPlot : MonoBehaviour
         }//per column
 
         //convert to colors
+        mMinDVStartTime += mComputeTime;
         Debug.Log("Max hue: " + maxHue + " availDV: " + availDV);
         Debug.Log("MinDV StartTime (abs): " + OVTools.FormatTime((float)mMinDVStartTime));
 
