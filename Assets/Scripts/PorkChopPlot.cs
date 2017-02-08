@@ -52,7 +52,7 @@ public class PorkChopPlot : MonoBehaviour
     double mMinDVStartTime, mMinDVTravelTime;
 
     Vector3d mInjectionVector;
-    double mStartTime; //absolute time
+    double mStartTime, mTravelTime; //absolute time
     EventManager eventManager;
     void InitTexture2D(Texture2D texture)
     {
@@ -122,6 +122,7 @@ public class PorkChopPlot : MonoBehaviour
             //move selector
             MoveSelector(mMinDVStartTime, mMinDVTravelTime);
             mStartTime = mMinDVStartTime;
+            mTravelTime = mMinDVTravelTime;
         }
     }
     void MoveSelector(double startTime, double travelTime)
@@ -203,8 +204,8 @@ public class PorkChopPlot : MonoBehaviour
         //[-.5,.5] = [0,period]
         Debug.Log("coord: " + coord.ToString());
         mStartTime = (coord.x + 0.5d) * period; //relative to compute time
-        double travelTime = (coord.y + 0.5d) * period;
-        PlotTrajectory(mStartTime, travelTime);
+        mTravelTime = (coord.y + 0.5d) * period;
+        PlotTrajectory(mStartTime, mTravelTime);
     }
     float time2coord(double time)
     {
@@ -303,7 +304,7 @@ public class PorkChopPlot : MonoBehaviour
         var tgt = UXStateManager.GetTarget();
         Debug.Log("InjVec: " + mInjectionVector.ToString());
         var e = new ManeuverEvent(src, tgt,
-            (float)(mStartTime+mComputeTime),
+            (float)(mStartTime+mComputeTime), (float)mTravelTime,
             "intercepts", mInjectionVector);
         //Events.instance.Queue(e); //deprecated, should be made illegal
         eventManager.Queue(e);
@@ -415,9 +416,9 @@ public class PorkChopPlot : MonoBehaviour
         }//per column
 
         //convert to colors
-        mMinDVStartTime += mComputeTime;
+        //mMinDVStartTime += mComputeTime;
         Debug.Log("Max hue: " + maxHue + " availDV: " + availDV);
-        Debug.Log("MinDV StartTime (abs): " + OVTools.FormatTime((float)mMinDVStartTime));
+        Debug.Log("MinDV StartTime (abs): " + OVTools.FormatTime((float)(mComputeTime + mMinDVStartTime)));
 
         for (int index = 0; index < imgWidth * imgHeight; index++)
         {

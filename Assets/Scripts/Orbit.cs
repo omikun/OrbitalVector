@@ -13,10 +13,12 @@ public static class OVDebug {
 }
 public class ManeuverEvent : GameEvent
 {
-    public ManeuverEvent (GameObject src, GameObject tgt, float timeInFuture, string action, Vector3d v) : base(src, tgt, timeInFuture, action)
+    public ManeuverEvent (GameObject src, GameObject tgt, float timeInFuture, float travelTime, string action, Vector3d v) : base(src, tgt, timeInFuture, action)
     {
         velocity = v;
+        relTravelTime = timeInFuture;
     }
+    public float relTravelTime;
     public Vector3d velocity;
     public GameObject projectile;
 }
@@ -103,9 +105,25 @@ public class Orbit : MonoBehaviour
         Debug.Log("Injection time: " + eventManager.GetSimTime());
 
         var odata = e.GetSource().GetComponent<OrbitData>();
+#if false
+        //recompute firing solution
+        Vector3d r1, r2, v1, v2, initVel, finalVel;
+        //var oe1 = e.GetSource().GetComponent<OrbitData>().getOE();
+        var oe2 = e.GetTarget().GetComponent<OrbitData>().getOE();
+        //FindRV(oe1, eventManager.GetSimTime(), out r1, out v1);
+        r1 = e.GetSource().GetComponent<OrbitData>().getR();
+        FindRV(oe2, e.relTravelTime, out r2, out v2);
+        MuMech.LambertSolver.Solve(r1, r2, e.relTravelTime, OrbitData.parentGM, true, out initVel, out finalVel);
+
         Debug.Log("Injection pos: " + odata.getR().ToString());
-        var diff = odata.getR() - OVDebug.projectedR1;
-        Debug.Log("Difference: " + OVTools.FormatDistance((float)diff.magnitude));
+        var diff = (float)(odata.getR() - OVDebug.projectedR1).magnitude;
+        Debug.Log("Difference: " + OVTools.FormatDistance(diff));
+
+        Debug.Log("New injection vector: " + initVel.ToString());
+        var diff2 = (float)(e.velocity - initVel).magnitude;
+        Debug.Log("Diff: " + OVTools.FormatDistance(diff2));
+#endif
+
         if (odata == null)
         {
             Debug.Log("no orbital data from ship!!");
@@ -224,7 +242,7 @@ public class Orbit : MonoBehaviour
             if (odata.params_[4] != 0)
                 Debug.Log("acceleration detected!");
 
-            var simdeltatime = HoloManager.SimTimeScale /2 * Time.fixedDeltaTime;
+            var simdeltatime = HoloManager.SimTimeScale * Time.fixedDeltaTime;
             bool integration = false;
             if (integration)
             {
@@ -277,7 +295,10 @@ public class Orbit : MonoBehaviour
         var src = UXStateManager.GetSource();
         var tgt = UXStateManager.GetTarget();
         if (src == null || tgt == null)
+        {
+            Debug.Log("src and tgt must be set!");
             return;
+        }
         //show markers on closest approach
         var od1 = src.GetComponent<OrbitData>();
         var oe1 = Util.rv2oe(OrbitData.parentGM, od1.rv);
@@ -337,9 +358,10 @@ public class Orbit : MonoBehaviour
         int steps = 0;
         double time = 0;
         float prevDiff = float.MaxValue;
-        double tra1, tra2;
+        double tra1, tra2, minTra1, minTra2;
+        Vector3 minpos1 = Vector3.zero;
+        Vector3 minpos2 = Vector3.zero;
         bool first = true;
-        double timeStep = 0;
         bool forwardMode = true;
 
         if (steps >= 360)
@@ -351,49 +373,46 @@ public class Orbit : MonoBehaviour
         }
 
         double gm = OrbitData.parentGM;
-        double period = oe1.GetPeriod();//use period of source ship Math.Max(oe1.getPeriod(), oe2.getPeriod());
-        if (first)
-        {
-            timeStep = period / 360;
-            tra1 = oe1.tra;
-            tra2 = oe2.tra;
-        }
+        //period of the search (shrinks w/ each iteration)
+        double period = Math.Max(oe1.GetPeriod(), oe2.GetPeriod());
+        double maxSearchInterval = period + eventManager.GetSimTime();
+        double timeStep = period / 360;
+
         var debugLine = transform.Find("debug").GetComponent<LineRenderer>();
-        Vector3 minpos1 = new Vector3();
-        Vector3 minpos2 = new Vector3();
-        while (timeStep >= .01d && time < period && steps < 360)
+        double minTime = 0, max = period;
+        int itCount = 0;
+        //get approx closest approach
+        while (timeStep >= .0001d)
         {
-            tra1 = Program.anomalyAfterTime(OrbitData.parentGM, oe1, time);
-            tra2 = Program.anomalyAfterTime(OrbitData.parentGM, oe2, time);
-            var tempoe1 = oe1.CopyOE();
-            var tempoe2 = oe2.CopyOE();
-            tempoe1.tra = tra1;
-            tempoe2.tra = tra2;
-            var pos1 = Util.oe2r(OrbitData.parentGM, tempoe1);
-            var pos2 = Util.oe2r(OrbitData.parentGM, tempoe2);
-            float thisDiff = (pos1 - pos2).magnitude;
-            //Debug.Log(thisDiff);
-            //output.Add("C," + tra1 + "," + tra2 + "," + thisDiff + "\n");
-            if (thisDiff < prevDiff && forwardMode)
+            while (time < maxSearchInterval)// && steps < 360)
             {
-                prevDiff = thisDiff;
-                minpos1 = pos1;
-                minpos2 = pos2;
+                var pos1 = oe1.GetRAtTime(time);
+                var pos2 = oe2.GetRAtTime(time);
+                float thisDiff = (float)(pos1 - pos2).magnitude;
+                //Debug.Log(thisDiff);
+                if (thisDiff < prevDiff && forwardMode)
+                {
+                    prevDiff = thisDiff;
+                    minpos1 = pos1;
+                    minpos2 = pos2;
+                    minTime = time;
+                }
+                time += timeStep;
             }
-            time += timeStep;
-            //else {
-            if (false) {
-                forwardMode = false;
-                Debug.Log("time step halved!");
-                timeStep /= 2;
-                time -= timeStep;
-            }
-            steps++;
-            debugLine.SetPosition(0, pos1);
-            debugLine.SetPosition(1, pos2);
-            intMarker1.transform.localPosition = minpos1;// Util.oe2r(OrbitData.parentGM, oe1);
-            intMarker2.transform.localPosition = minpos2;// Util.oe2r(OrbitData.parentGM, oe2);
-        } 
+            period /= 10;
+            time = (minTime - period < 0) ? 0 : minTime - period ;
+            maxSearchInterval = time + period;
+            timeStep /= 10;
+            itCount++;
+        }
+        Debug.Log("Found closed approach is : " 
+            + OVTools.FormatDistance(prevDiff) 
+            + " after " + itCount + " iterations");
+
+        debugLine.SetPosition(0, minpos1*HoloManager.SimZoomScale);
+        debugLine.SetPosition(1, minpos2*HoloManager.SimZoomScale);
+        //intMarker1.transform.localPosition = minpos1;// Util.oe2r(OrbitData.parentGM, oe1);
+        //intMarker2.transform.localPosition = minpos2;// Util.oe2r(OrbitData.parentGM, oe2);
     }
     //find point of inclination, periapsis, apoapsis, etc
     //AN/DN - whatever points that are at y=0! :D

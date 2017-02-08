@@ -7,7 +7,7 @@ public static class HoloManager
 {
     public static float SolScale = (6371f * 1000f); //radius of earth (m) == 1 Unity Unit
     public static float SimZoomScale = 1f / SolScale;
-    public static float SimTimeScale = 1;
+    public static float SimTimeScale = 2;
 }
 public class OrbitData : MonoBehaviour {
     public VectorD rv;

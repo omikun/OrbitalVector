@@ -46,6 +46,19 @@ namespace OrbitalTools
             ret.computeTime = computeTime;
             return ret;
         }
+        public Vector3 GetRAtTime(double absTime)
+        {
+            var tempOE = CopyOE();
+            tempOE.tra = Program.anomalyAfterTime(OrbitData.parentGM, tempOE, absTime - computeTime);
+            return Util.oe2r(OrbitData.parentGM, tempOE);
+        }
+
+        public Vector3d GetRdAtTime(double absTime)
+        {
+            var tempOE = CopyOE();
+            tempOE.tra = Program.anomalyAfterTime(OrbitData.parentGM, tempOE, absTime - computeTime);
+            return Util.oe2rd(OrbitData.parentGM, tempOE);
+        }
 
 
     }
