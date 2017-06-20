@@ -51,7 +51,7 @@ public class PorkChopPlot : MonoBehaviour
     float mindv = Mathf.Infinity;
     double mMinDVStartTime, mMinDVTravelTime;
 
-    Vector3d mInjectionVector;
+    Vector3d mInjectionVector, mMinRendezvousVector;
     double mStartTime, mTravelTime; //absolute time
     EventManager eventManager;
     void InitTexture2D(Texture2D texture)
@@ -411,6 +411,12 @@ public class PorkChopPlot : MonoBehaviour
                     //minDV.travelTime = travelTime;
                     mMinDVStartTime = startTime;
                     mMinDVTravelTime = travelTime;
+                    if (!intercept)
+                    {
+                        //record velocity match burn 
+                        //burn = target.velocity - current.velocity
+                        mMinRendezvousVector = rendezvousVector;
+                    }
                 }
             }//per row
         }//per column

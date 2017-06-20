@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using UnityEngine.UI;
 //GUI Event manager
 public class EventManager : MonoBehaviour
 {
@@ -79,9 +79,8 @@ public class EventManager : MonoBehaviour
             Debug.Log("Events.instance.eventQueue not set??");
             return;
         }
-        var tt = simTimeObj.GetComponent<Tooltip>();
-        tt.displayText = "SimTime: " + OVTools.FormatTime((float)SimTime);
-        tt.Reset();
+        Text tt = simTimeObj.GetComponent<Text>();
+        tt.text = "SimTime: " + OVTools.FormatTime((float)SimTime);
         if (Events.instance.eventQueue.isNotEmpty())
         {
 

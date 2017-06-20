@@ -314,7 +314,7 @@ public class Orbit : MonoBehaviour
         //VectorD rv = Util.convertToRv(ref Global.pos, ref Global.vel);
         //VectorD rv = calcNextStep(rv, params_);
 
-#if true
+#if false
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.Append("Orbital Vector\n");
         sb.Append("aop: " + (oe.aop * Mathf.Rad2Deg).ToString("#.0") + "\n");
