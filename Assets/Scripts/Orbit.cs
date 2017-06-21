@@ -32,7 +32,7 @@ public class Orbit : MonoBehaviour
     public static Vector3 accelVector;
     public GameObject OrbitRenderer;
     public static List<String> output = new List<String>();
-
+    public GameObject holo;
     Vector3 apo, peri;
     //This is just a test, not actually used for anything
     void drawEllipse()
@@ -218,8 +218,15 @@ public class Orbit : MonoBehaviour
     
     // Update is called once per frame
     bool first = true;
+    [Range(0.0001f, 1)]
+    public float lineScale = .01f;
     void FixedUpdate()
     {
+        float scale = lineScale * holo.GetComponent<RenderScale>().scale;
+        foreach (var line in lines)
+        {
+            line.SetWidth(scale, scale);
+        }
         int count = 0;
         foreach (GameObject ship in GameObject.FindGameObjectsWithTag("ship"))
         {
