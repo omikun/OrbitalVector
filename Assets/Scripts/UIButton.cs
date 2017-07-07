@@ -36,7 +36,7 @@ public class UIButton : VRTK_InteractableObject {
 	// Use this for initialization
 	void Start () {
         base.Start();
-        tooltip = transform.Find("Tooltip").gameObject;
+        //tooltip = transform.Find("Tooltip").gameObject;
         if (tooltip)
             tooltip.SetActive(false);
 	}

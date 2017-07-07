@@ -1,13 +1,11 @@
-//adapted from https://www.shadertoy.com/view/4tdSWr
-//original shader by drift on shadertoy
-Shader "Custom/Clouds2D"
+Shader "Custom/Clouds3"
 {
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}
-		_TexSize("Texture Size", Float) = 512
-		_phase("_phase", Range(0.0, 100)) = 0
-		_cloudscale("_cloudscale", Range(0.5, 100)) = 1.1
+		_TexSize("Texture Size", Range(1, 512)) = 512
+		_phase("_phase", Range(0.0, 20)) = 0
+		_cloudscale("_cloudscale", Range(0.5, 10)) = 1.1
 		_speed("_speed", Range(0.0, 0.1)) = 0.03
 		_clouddark("_clouddark", Range(0, 1)) = 0.5
 		_cloudlight("_cloudlight", Range(0, 1)) = 0.3
@@ -16,50 +14,37 @@ Shader "Custom/Clouds2D"
 		_skytint("_skytint", Range(0, 1)) = 0.5
    	 	_SkyColour1("_SkyColour1", Color)= (0.2, 0.4, 0.6)
    	 	_SkyColour2("_SkyColour2", Color)= (0.4, 0.7, 1.0)
+	_Normals("Normal Map tl", 2D) = "black" {}
 	}
 		SubShader
 	{
 		//Tags { "RenderType" = "Opaque" "IgnoreProjector" = "True" }
 		Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
-		ZWrite off
-			Blend SrcAlpha OneMinusSrcAlpha
 		LOD 100
 
-		Pass
-		{
+//		Pass
+//		{
 			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag alpha
-			#pragma fragmentoption ARB_precision_hint_fastest
-
-			#include "UnityCG.cginc"
-
-			struct appdata
-			{
-				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
-			};
-
-			struct v2f
-			{
-				float4 pos : SV_POSITION;
-				float2 uv : TEXCOORD0;
-			};
+			#pragma surface surf Lambert alpha
+			#pragma target 3.0
 
 			float4 _MainTex_ST;
 			sampler2D _MainTex;
+			sampler2D _Normals;
 
-			v2f vert(appdata v)
-			{
-				v2f o;
-				//o.vertex = UnityObjectToClipPos(v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
-				//o.uv = o.pos;
-				//UNITY_TRANSFER_FOG(o,o.vertex);
-				return o;
-			}
-
+			struct EditorSurfaceOutput {
+				half3 Albedo;
+				half3 Normal;
+				half3 Emission;
+				half3 Gloss;
+				half Specular;
+				half Alpha;
+				half4 Custom;
+			};
+			struct Input {
+				float2 uv_Tex;
+				float2 uv_Normals;
+			};
 			float _TexSize;
 			float _phase;
 			float _cloudscale;
@@ -112,56 +97,39 @@ Shader "Custom/Clouds2D"
 			// -----------------------------------------------
 
 			//void mainImage( out fixed4 fragColor, in fixed2 fragCoord ) 
+			//fixed4 frag(v2f IN) : SV_Target
 
-		//	fixed4 frag(v2f input) : SV_Target
-		//	{
-		//		float acc = 0.0;
-		//		float amp = 1.0;
-		//		int i;
-
-		//		for (i = 0; i < layers; i++) {
-		//			float v = noise("perlin", scale*v2f.pos);
-		//			acc += v * amp;
-		//			amp *= .5;
-		//			scale *= 2.0;
-		//		}
-
-		//		// max(acc) = (2^n - 1) / 2^n
-		//		acc *= (float)(1 << (layers)) / (float)((1 << (layers)-1));
-		//		return acc * 0.5 + 0.5;
-		//	}
-				
-			fixed4 frag(v2f input) : SV_Target
+			void surf(Input IN, inout SurfaceOutput o)
 			{
-				fixed2 p = input.uv / _TexSize;
+				fixed2 p = IN.uv_Tex;// / _TexSize;
+				fixed2 uv_Tex = IN.uv_Tex / _TexSize;
 				//fixed2 p = fragCoord.xy / iResolution.xy;
-				//fixed2 uv = p*fixed2(iResolution.x / iResolution.y,1.0);
+				//fixed2 uv_Tex = p*fixed2(iResolution.x / iResolution.y,1.0);
 				float iGlobalTime = _phase;
 				float time = iGlobalTime * _speed;
-				fixed2 uv = input.uv;
-				float q = fbm(uv * _cloudscale * 0.5);
+				float q = fbm(uv_Tex * _cloudscale * 0.5);
 
 				//ridged noise shape
 				float r = 0.0;
-				uv *= _cloudscale;
-				uv -= q - time;
+				uv_Tex *= _cloudscale;
+				uv_Tex -= q - time;
 				float weight = 0.8;
 				for (int i = 0; i < 8; i++) {
-					r += abs(weight*noise(uv));
-					uv = mMul(uv) + time;
+					r += abs(weight*noise(uv_Tex));
+					uv_Tex = mMul(uv_Tex) + time;
 					weight *= 0.7;
 				}
 
 				//noise shape
 				float f = 0.0;
-				//uv = p*fixed2(iResolution.x / iResolution.y,1.0);
-				uv = input.uv;
-				uv *= _cloudscale;
-				uv -= q - time;
+				//uv_Tex = p*fixed2(iResolution.x / iResolution.y,1.0);
+				uv_Tex = IN.uv_Tex;
+				uv_Tex *= _cloudscale;
+				uv_Tex -= q - time;
 				weight = 0.7;
 				for (int i = 0; i < 8; i++) {
-					f += weight*noise(uv);
-					uv = mMul(uv) + time;
+					f += weight*noise(uv_Tex);
+					uv_Tex = mMul(uv_Tex) + time;
 					weight *= 0.6;
 				}
 
@@ -170,28 +138,28 @@ Shader "Custom/Clouds2D"
 				//noise colour
 				float c = 0.0;
 				time = iGlobalTime * _speed * 2.0;
-				//uv = p*fixed2(iResolution.x / iResolution.y,1.0);
-				uv = input.uv;
-				uv *= _cloudscale*2.0;
-				uv -= q - time;
+				//uv_Tex = p*fixed2(iResolution.x / iResolution.y,1.0);
+				uv_Tex = IN.uv_Tex;
+				uv_Tex *= _cloudscale*2.0;
+				uv_Tex -= q - time;
 				weight = 0.4;
 				for (int i = 0; i < 7; i++) {
-					c += weight*noise(uv);
-					uv = mMul(uv) + time;
+					c += weight*noise(uv_Tex);
+					uv_Tex = mMul(uv_Tex) + time;
 					weight *= 0.6;
 				}
 
 				//noise ridge colour
 				float c1 = 0.0;
 				time = iGlobalTime * _speed * 3.0;
-				//uv = p*fixed2(iResolution.x / iResolution.y,1.0);
-				uv = input.uv;
-				uv *= _cloudscale*3.0;
-				uv -= q - time;
+				//uv_Tex = p*fixed2(iResolution.x / iResolution.y,1.0);
+				uv_Tex = IN.uv_Tex;
+				uv_Tex *= _cloudscale*3.0;
+				uv_Tex -= q - time;
 				weight = 0.4;
 				for (int i = 0; i < 7; i++) {
-					c1 += abs(weight*noise(uv));
-					uv = mMul(uv) + time;
+					c1 += abs(weight*noise(uv_Tex));
+					uv_Tex = mMul(uv_Tex) + time;
 					weight *= 0.6;
 				}
 
@@ -205,13 +173,22 @@ Shader "Custom/Clouds2D"
 				fixed3 result = lerp(_SkyColour, clamp(_skytint * _SkyColour + cloudcolour, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
 
 				//fixed4 fragColor = fixed4(cloudcolour, clamp(f + c, 0.0, 1.0));
-				fixed4 fragColor = fixed4(result, clamp(f + c, 0.0, 1.0));
+				//fixed4 fragColor = fixed4(result, 0.5);
 				//fixed4 fragColor = fixed4(result, 1.0);
 				//fixed4 fragColor = fixed4(p.x, p.y, 0.0, 1.0);
-				return fragColor;
+				//return fragColor;
+				result = fixed3(uv_Tex.x, uv_Tex.y, 0);
+				//result = fixed3(p.x, p.y, 0);
+				o.Albedo = result;
+				o.Alpha = 1;// 1 - clamp(f + c, 0.0, 1.0);
+				float4 Sampled2D0 = tex2D(_Normals, IN.uv_Normals.xy);
+				float4 UnpackNormal0 = float4(UnpackNormal(Sampled2D0).xyz, 1.0);
+				UnpackNormal0.xy = UnpackNormal0.xy;
+				o.Normal = UnpackNormal0;
+				o.Normal = normalize(o.Normal);
 
 			}
 			ENDCG
-		}
+		//}
 	}
 }

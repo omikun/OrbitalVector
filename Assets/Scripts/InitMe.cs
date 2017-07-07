@@ -32,6 +32,8 @@ public class InitMe : MonoBehaviour {
         UnityEngine.VR.VRSettings.showDeviceView = ShowVRPreview;
         GameObject camera = GameObject.Find("Camera");
         camera.SetActive(!ShowVRPreview);
+        GameObject farCamera = GameObject.Find("FarCamera");
+        farCamera.SetActive(!ShowVRPreview);
         GameObject cameraRig = GameObject.Find("[CameraRig]");
         cameraRig.SetActive(EnableVR);
         GameObject steamVR = GameObject.Find("[SteamVR]");

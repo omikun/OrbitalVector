@@ -48,25 +48,29 @@ public class MouseInput : MonoBehaviour {
             var hitObj = hitInfo.transform.gameObject;
             var uiButton = hitObj.GetComponent<UIButton>();
             var uiDrag = hitObj.GetComponent<UIDraggable>();
-			var intShip = hitObj.GetComponent<InteractableShip>();
-			var intPlot = hitObj.GetComponent<InteractablePlot> ();
-            
-			if (uiButton != null && true)
-				uiButton.Hover();
-			
-			if (uiButton != null && buttonUp) 
-				uiButton.Clicked();
-			
-			if (uiDrag != null && buttonEvent) 
-				uiDrag.Drag();
-			
-			if (intShip != null && buttonDown) 
-				intShip.StartUsing(hitInfo.transform.gameObject);
-			
-			if (intPlot != null && buttonEvent) 
-				intPlot.StartMouseUsing(hitInfo);
+            var intShip = hitObj.GetComponent<InteractableShip>();
+            var intPlot = hitObj.GetComponent<InteractablePlot>();
 
-        } else if (buttonEvent) rotateWorldMouse();
+            if (uiButton != null && true)
+                uiButton.Hover();
+
+            if (uiButton != null && buttonUp)
+                uiButton.Clicked();
+
+            if (uiDrag != null && buttonEvent)
+                uiDrag.Drag();
+
+            if (intShip != null && buttonDown)
+                intShip.StartUsing(hitInfo.transform.gameObject);
+
+            if (intPlot != null && buttonEvent)
+                intPlot.StartMouseUsing(hitInfo);
+
+        }
+        else
+        {
+            if (buttonEvent) rotateWorldMouse();
+        }
 
 
         var deltaScroll = Input.GetAxis ("Mouse ScrollWheel");

@@ -58,6 +58,10 @@ public class OrbitData : MonoBehaviour {
     {
         return new Vector3d(rv[0], rv[1], rv[2]);
     }
+    public Vector3 getRFloat()
+    {
+        return new Vector3((float)rv[0], (float)rv[1], (float)rv[2]);
+    }
     public Vector3d getV()
     {
         return new Vector3d(rv[3], rv[4], rv[5]);
@@ -99,6 +103,7 @@ public class OrbitData : MonoBehaviour {
         rv[0] = transform.localPosition.x * HoloManager.SolScale;
         rv[1] = transform.localPosition.y * HoloManager.SolScale;
         rv[2] = transform.localPosition.z * HoloManager.SolScale;
+        Debug.Log(name + " real dist: " + OVTools.FormatDistance(getRFloat().magnitude));
         //comput velocity assuming pos is in the origin
         //TODO use double operations?
         var vel = Vector3.Cross(transform.localPosition, Vector3.up).normalized;

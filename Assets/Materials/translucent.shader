@@ -2,7 +2,7 @@ Shader "Custom/Blur"
 {
 	Properties
 	{
-		_Factor ("Factor", Range(0, 5)) = 1.0
+		_Factor ("Factor", Range(0, 50)) = 1.0
         _Backlit ("Backlit", Range(0, 1)) = .01
 	}
 	SubShader

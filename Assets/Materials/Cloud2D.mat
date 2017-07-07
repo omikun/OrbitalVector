@@ -52,6 +52,30 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - first:
+        name: _MainTex0
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MainTex1
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MainTex2
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MainTex3
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
         name: _MetallicGlossMap
       second:
         m_Texture: {fileID: 0}
@@ -71,6 +95,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     - first:
         name: _ParallaxMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _TexSize
       second:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -125,6 +155,9 @@ Material:
         name: _SrcBlend
       second: 1
     - first:
+        name: _TexSize
+      second: 1
+    - first:
         name: _UVSec
       second: 0
     - first:
@@ -144,16 +177,16 @@ Material:
       second: 0.231
     - first:
         name: _cloudscale
-      second: 0.769
+      second: 10
     - first:
         name: _phase
-      second: 3.7
+      second: 4000.9797
     - first:
         name: _skytint
       second: 0.133
     - first:
         name: _speed
-      second: 0.0119
+      second: 0.0266
     m_Colors:
     - first:
         name: _Color

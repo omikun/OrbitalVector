@@ -222,7 +222,7 @@ public class Orbit : MonoBehaviour
     public float lineScale = .01f;
     void FixedUpdate()
     {
-        float scale = lineScale * holo.GetComponent<RenderScale>().scale;
+        float scale = lineScale * holo.GetComponent<RenderScale>().realScale;
         foreach (var line in lines)
         {
             line.SetWidth(scale, scale);
