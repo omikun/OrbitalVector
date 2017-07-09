@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class KeepSameSizeRelativeToCamera : MonoBehaviour {
-
+    [Range(0.02f, 10)]
+    public float ScaleFactor = .1f;
 	GameObject camera;
 	GameObject holoRoot;
 	Vector3 actualScale;
@@ -24,7 +25,7 @@ public class KeepSameSizeRelativeToCamera : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		float scale = .01f * (camera.transform.position - transform.position).magnitude;
+		float scale = ScaleFactor * (camera.transform.position - transform.position).magnitude;
 		float diffScale = actualScale.magnitude / holoRoot.transform.localScale.magnitude;
 		transform.localScale = scale * diffScale * Vector3.one; 
 	}

@@ -11,13 +11,14 @@ public class GetRenderTransform : MonoBehaviour {
     public float rMax = 1000 * 1000 * 1000;
     float rMaxSqr, rMinSqr;
     public float EarthRadius = 12742 * 1000/2;
-    public GameObject target; //this is the source of the transform
+    public GameObject focus; //this is the source of the transform
     //assume UXManager.GetSource is the focus
 	// Use this for initialization
 	void Start () {
 		rMaxSqr = rMax * rMax;
         rMinSqr = rMin * rMin;
         transform.localScale = new Vector3(EarthRadius, EarthRadius, EarthRadius);
+        UXStateManager.SelectUnit(focus);
 	}
 
     // Update is called once per frame
@@ -43,7 +44,7 @@ public class GetRenderTransform : MonoBehaviour {
     void GetApparentScale()
     {
         //need to get distance to focus
-        var focus = UXStateManager.GetSource();
+        focus = UXStateManager.GetSource();
         if (focus == null)
             return;
         var focusPos = focus.GetComponent<OrbitData>().getRFloat();

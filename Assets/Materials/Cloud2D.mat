@@ -180,7 +180,7 @@ Material:
       second: 10
     - first:
         name: _phase
-      second: 4000.9797
+      second: 212.94359
     - first:
         name: _skytint
       second: 0.133
