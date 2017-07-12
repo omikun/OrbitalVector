@@ -5,39 +5,46 @@ using UnityEngine;
 public class TargetIndicatorLogic : MonoBehaviour {
     public GameObject camera;
     public GameObject target;
-    public GameObject marker;
-    public GameObject lineTop, lineRight;
 
     public GameObject topBound, bottomBound, leftBound, rightBound;
     GameObject canvas;
-    LineRenderer line;
-    LineRenderer debugTop, debugRight;
 	// Use this for initialization
 	void Start () {
-        line = GetComponent<LineRenderer>();
         canvas = topBound.transform.parent.gameObject;
-        debugTop = lineTop.GetComponent<LineRenderer>();
-        debugRight = lineRight.GetComponent<LineRenderer>();
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
+        if (target == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 		Vector3 v = target.transform.position - camera.transform.position;
         Vector3 d = Vector3.Project(v, camera.transform.forward);
         Vector3 projectedPoint = target.transform.position - d;
-        marker.transform.position = projectedPoint;
-        line.SetPosition(0, camera.transform.position);
-        line.SetPosition(1, projectedPoint);
         //transform.position = 
-        FindInterSection(projectedPoint);
+        //if target not in view
+        if (IsInViewFrustrum(target))
+        {
+            var distToCamera = canvas.transform.position - camera.transform.position;
+            var targetIconPos = distToCamera.magnitude * (target.transform.position - camera.transform.position).normalized;
+            transform.position = camera.transform.position + targetIconPos;
+        } else
+        {
+            FindInterSection(projectedPoint);
+        }
+    }
+    Plane[] planes;
+    bool IsInViewFrustrum(GameObject target)
+    {
+        bool ret = false;
+        planes = GeometryUtility.CalculateFrustumPlanes(camera.GetComponent<Camera>());
+        Collider objCol = target.GetComponent<Collider>();
+        return GeometryUtility.TestPlanesAABB(planes, objCol.bounds);
     }
     void FindInterSection(Vector3 point)
     {
-        debugTop.SetPosition(0, Vector3.zero);
-        debugRight.SetPosition(0, Vector3.zero);
-        debugTop.SetPosition(1, canvas.transform.up);
-        debugRight.SetPosition(1, canvas.transform.right);
 
         var topPlane = new Plane(canvas.transform.up, topBound.transform.position);
         var bottomPlane = new Plane(canvas.transform.up, bottomBound.transform.position);
@@ -61,12 +68,9 @@ public class TargetIndicatorLogic : MonoBehaviour {
             {
                 hitPoint = hits[j];     //use the smallest distance not zero
                 minDist = dists[j];
-                Debug.Log("found min: " + j);
             }
         }
-        Debug.Log("top: " + dists[0] + " bot: " + dists[1] + " left: " + dists[2] + " right: " + dists[3]);
-        Debug.Log("top: " + hits[0] + " bot: " + hits[1] + " left: " + hits[2] + " right: " + hits[3]);
-        marker.transform.position = hitPoint;
+        transform.position = hitPoint;
     }
     Vector3 HitPlane(Vector3 point, Plane plane, out float rayDistance)
     {

@@ -56,6 +56,7 @@ public class ShipPhysics : MonoBehaviour
         }
         if (XCI.GetButtonDown(XboxButton.X, controller))
         {
+            FireMissile();
         }
         if (XCI.GetButtonDown(XboxButton.Y, controller))
         {
@@ -93,6 +94,8 @@ public class ShipPhysics : MonoBehaviour
     public GameObject lEngine, rEngine;
     Transform leftEngine, rightEngine;
     public GameObject beam, gun;
+    public GameObject missile;
+    public GameObject target;
     // Use this for initialization
     void Start() {
         rb = GetComponent<Rigidbody>();
@@ -108,12 +111,31 @@ public class ShipPhysics : MonoBehaviour
 
         QueryControllers();
     }
-
+    void FireMissile()
+    {
+        var newMissile = Instantiate(missile);
+        //set rot and pos to gun
+        newMissile.SetActive(true);
+        newMissile.transform.position = gun.transform.position;
+        newMissile.transform.rotation = gun.transform.rotation;
+        //give speed
+        var speed = gun.transform.forward * 5;
+        newMissile.GetComponent<Rigidbody>().velocity = speed;
+        Debug.Log("missile velocity: " + speed.magnitude);
+        //sound!
+        //set die time
+        var missileLogic = newMissile.GetComponent<MissileLogic>();
+        missileLogic.BornTime = Time.time;
+        missileLogic.DieAfterTime = 5;
+        missileLogic.enabled = true;
+        missileLogic.target = target;
+    }
     void Fire()
     {
         //take a copy of the beam, 
         var newBeam = Instantiate(beam);
         //set rot and pos to gun
+        newBeam.SetActive(true);
         newBeam.transform.position = gun.transform.position;
         newBeam.transform.rotation = gun.transform.rotation;
         //give speed
