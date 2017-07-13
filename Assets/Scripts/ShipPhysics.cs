@@ -119,7 +119,7 @@ public class ShipPhysics : MonoBehaviour
         newMissile.transform.position = gun.transform.position;
         newMissile.transform.rotation = gun.transform.rotation;
         //give speed
-        var speed = gun.transform.forward * 5;
+        var speed = gun.transform.forward * 20;
         newMissile.GetComponent<Rigidbody>().velocity = speed;
         //sound!
         //set die time

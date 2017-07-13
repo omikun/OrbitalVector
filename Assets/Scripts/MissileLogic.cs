@@ -31,12 +31,13 @@ public class MissileLogic : MonoBehaviour {
 
     //PN algorithm
     public float N = 3;
-    Vector3 oldRTM;
+    public float Nt = 9.8f;
+    Vector3 oldRTM = Vector3.zero;
 	// Use this for initialization
 	void Start () {
         rb = GetComponent<Rigidbody>();
 	}
-    //first pass, doesn't work very well; must be firing within 5 degrees of a stationary target :(
+    //also http://www.moddb.com/members/blahdy/blogs/gamedev-introduction-to-proportional-navigation-part-i
 	Vector3 ProportionalNavigation()
     {
         Vector3 accel = Vector3.zero;
@@ -47,20 +48,23 @@ public class MissileLogic : MonoBehaviour {
 
         //to get LOS rate
         var newRTM = target.transform.position - transform.position;
-        if (oldRTM == null)
+        newRTM = newRTM.normalized;
+        if (oldRTM == Vector3.zero)
         {
             oldRTM = newRTM;
+            Debug.Log("no oldRtm");
             return Vector3.zero;
         }
         var LOSDelta = (newRTM - oldRTM);
         var LOSRate = LOSDelta.magnitude;
         oldRTM = newRTM;
 
-        var Vc = LOSRate;
-        accel = newRTM * N * Vc * LOSRate + LOSDelta * N;// t * (0.5 * N);
-        accel = accel.normalized * Mathf.Min(300, accel.magnitude);
+        var Vc = -LOSRate; //range closing rate
+        accel = newRTM * N * Vc * LOSRate + LOSDelta * Nt * (0.5f * N);
+        accel = accel.normalized * 20f;// Mathf.Min(300, accel.magnitude);
+        Debug.Log("LOSRate: " + LOSRate);
 
-        return accel;
+        return accel;//what if this is the steering vector?
     }
     //derived from Mariano Appendino
     //https://www.youtube.com/watch?v=yVtfD29WN9M
@@ -89,7 +93,7 @@ public class MissileLogic : MonoBehaviour {
     //Vm missile velocity
     //Pt0 target pos at t=0
     //Pm0 missile pos at t=0
-    GetMinOf getMin = new GetMinOf();
+    GetMinOf min = new GetMinOf();
     Vector3 SlowDogCurve()
     {
         var line = GetComponent<LineRenderer>();
@@ -106,19 +110,16 @@ public class MissileLogic : MonoBehaviour {
             var Pt = t * Vt + Pt0;
             var Pm = t * Vm + Pm0;
             var dist = (Pt - Pm).magnitude;
-            getMin.Update(dist, t, Vm);
+            min.Update(dist, t, Vm);
             line.SetPosition(i, new Vector3((float)i / 10, dist/10, 0));
             i++;
         }
-        //minum is
-        var minDist = getMin.index;
-        var minT = getMin.time;
-        var minVm = getMin.result;
-        Debug.Log("t=" + minT + " minDist: " + minDist + " minV: " + minVm);
+        Debug.Log("t=" + min.time + " minDist: " + min.index + " minV: " + min.result);
         //if too slow, use target velocity vector
-        var desiredVm = minVm;
+        //var desiredVm = (min.index > 1 ) ? min.result : Vt;
+        var desiredVm = min.result;
         var changeReq = desiredVm - rb.velocity;
-        changeReq = changeReq.normalized * Mathf.Min(changeReq.magnitude, 10); //cap change speed at 5, but still in direction of desired vel, not necessarily orthogonal to current Vm
+        changeReq = changeReq.normalized * Mathf.Min(changeReq.magnitude, 10); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
         //rb.velocity = minVm;
         return changeReq;
     }
@@ -145,18 +146,20 @@ public class MissileLogic : MonoBehaviour {
         {
             if (target == null)
                 return;
-            //accelerate towards target!
-            var dir = target.transform.position - transform.position;
-            transform.rotation = Quaternion.LookRotation(dir);
             //rb.AddForce(dir.normalized * Acceleration * Time.deltaTime);
             //rb.velocity += dir.normalized * Acceleration * Time.deltaTime;
             //rocket acceleration
-            var rocketAccel = rb.velocity.normalized * 10 * Time.deltaTime;
-            //rb.velocity += ProportionalNavigation() * Time.deltaTime * 1f + rocketAccel;
+            //accelerate towards target!
+            var rocketAccel = Vector3.zero;
+            rocketAccel += ProportionalNavigation(); 
+            rocketAccel += rocketAccel.normalized * 10;
             var changeAccel = SlowDogCurve();
             //var forwardAccel = rb.velocity.normalized * 10;
-
-            rb.velocity +=  (changeAccel ) * Time.deltaTime; //always accelerating at
+            Debug.Log("accel: " + rocketAccel);
+            rb.velocity +=  (rocketAccel ) * Time.deltaTime; 
+            Debug.Log("velocity: " + rb.velocity.magnitude);
+            //rb.velocity +=  (changeAccel ) * Time.deltaTime; 
+            transform.rotation = Quaternion.LookRotation(rb.velocity);
         }
 	}
 }
