@@ -121,12 +121,11 @@ public class ShipPhysics : MonoBehaviour
         //give speed
         var speed = gun.transform.forward * 5;
         newMissile.GetComponent<Rigidbody>().velocity = speed;
-        Debug.Log("missile velocity: " + speed.magnitude);
         //sound!
         //set die time
         var missileLogic = newMissile.GetComponent<MissileLogic>();
         missileLogic.BornTime = Time.time;
-        missileLogic.DieAfterTime = 5;
+        missileLogic.DieAfterTime = 30;
         missileLogic.enabled = true;
         missileLogic.target = target;
     }
