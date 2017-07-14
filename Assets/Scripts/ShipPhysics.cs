@@ -82,6 +82,7 @@ public class ShipPhysics : MonoBehaviour
 //{
     Rigidbody rb;
     public bool nullSpin = false;
+    public bool FireMissileFlag = false;
     public float Torque = 10;
     public float engineScalar = 6;
     public KeyCode kLeft = KeyCode.A;
@@ -119,7 +120,7 @@ public class ShipPhysics : MonoBehaviour
         newMissile.transform.position = gun.transform.position;
         newMissile.transform.rotation = gun.transform.rotation;
         //give speed
-        var speed = gun.transform.forward * 20;
+        var speed = gun.transform.forward * 5;
         newMissile.GetComponent<Rigidbody>().velocity = speed;
         //sound!
         //set die time
@@ -231,6 +232,11 @@ public class ShipPhysics : MonoBehaviour
         GetKeyboard();
         GetController();
         NullSpin();
+        if (FireMissileFlag)
+        {
+            FireMissileFlag = false;
+            FireMissile();
+        }
         /*
         Spin(ref SpinLeft, transform.up);
         Spin(ref SpinRight, -transform.up);
