@@ -26,12 +26,13 @@ public class MissileLogic : MonoBehaviour {
     public float FireDelay = 1;
     public GameObject target;
     public GameObject rbObj;
-    public float Acceleration = 10;
+    public float MaxAcceleration = 40;
+    public float MaxTurnRate = 40; //40 degrees per second
     public GameObject mainCamera;
     Rigidbody rb;
 
     //PN algorithm
-    public float N = 30000;
+    public float N = 3;
     public float Nt = 9.8f;
     Vector3 oldRTM = Vector3.zero;
 	// Use this for initialization
@@ -51,6 +52,8 @@ public class MissileLogic : MonoBehaviour {
 
         //to get LOS rate
         var newRTM = target.transform.position - transform.position;
+        //Vc m/s towards target; closing rate
+        var Vc = newRTM.magnitude / Time.deltaTime;
         newRTM = newRTM.normalized;
         if (oldRTM == Vector3.zero)
         {
@@ -58,23 +61,21 @@ public class MissileLogic : MonoBehaviour {
             Debug.Log("no oldRtm");
             return Vector3.zero;
         }
-        var perpLOS = Vector3.Cross(oldRTM, newRTM); //TODO might need to referse the order
         var LOSDelta = (newRTM - oldRTM);
-        var LOSRate = LOSDelta.magnitude;
+        //var LOSDelta = (oldRTM - newRTM);
         oldRTM = newRTM;
 
-        var Vc = -LOSRate; //range closing rate
-        accel = newRTM * N * Vc * LOSRate + LOSDelta * Nt * (0.5f * N);
-        accel = accel.normalized;// Mathf.Min(300, accel.magnitude);
-
-        accel = newRTM * N * Vc * LOSRate;
+        //accel = newRTM * N * Vc * LOSRate + LOSDelta * Nt * (0.5f * N);
+        //accel = accel.normalized;// Mathf.Min(300, accel.magnitude);
+        var LOSRate = Vector3.Angle(transform.forward, LOSDelta); //ideal
         var pn = N * LOSRate;
-        var turnQuat = Quaternion.FromToRotation(transform.forward, LOSDelta);
-        var angle = Vector3.Angle(transform.forward, LOSDelta);
-        var pnQuat = Quaternion.AngleAxis(pn, perpLOS);
-        //transform.rotation = Quaternion.RotateTowards(transform.rotation, pnQuat, 40 * Time.deltaTime);
-        transform.rotation = turnQuat * transform.rotation;
-        Debug.Log("losrate " + angle);
+        var turnRate = N * Vc * LOSRate;
+        turnRate = Mathf.Min(LOSRate, MaxTurnRate * Time.deltaTime); //overturn/realistic
+
+        var turnAxis = Vector3.Cross(transform.forward, LOSDelta); //TODO might need to referse the order
+        transform.Rotate(turnAxis.normalized * turnRate );
+        Debug.Log("LOSRate " + LOSRate);
+        Debug.Log("turnRate " + turnRate);
 
         return accel;//what if this is the steering vector?
     }
@@ -148,7 +149,7 @@ public class MissileLogic : MonoBehaviour {
         return accel;
     }
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
 		if (Time.time - BornTime > DieAfterTime)
         {
             Debug.Log("Born time: " + BornTime + " Now: " + Time.time);
@@ -168,7 +169,7 @@ public class MissileLogic : MonoBehaviour {
             if (true ) // proportional navigation
             {
                 ProportionalNavigation();
-                rocketAccel += transform.forward * 20;
+                rocketAccel += transform.forward * MaxAcceleration;
                 SlowDogCurve();
             } else {    // slow dog curve 
                 rocketAccel = SlowDogCurve();

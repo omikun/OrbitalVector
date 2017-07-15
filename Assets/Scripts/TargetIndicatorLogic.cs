@@ -14,7 +14,8 @@ public class TargetIndicatorLogic : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
+
         if (target == null)
         {
             Destroy(gameObject);
