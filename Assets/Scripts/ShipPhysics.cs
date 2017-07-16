@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XboxCtrlrInput;		// Be sure to include this if you want an object to have Xbox input
 //public class Controller
+
 public class ShipPhysics : MonoBehaviour 
 {
 	public XboxController controller;
@@ -75,13 +76,13 @@ public class ShipPhysics : MonoBehaviour
         float neg = 1;
         //just ship rotation, for show
         var rot = Quaternion.Euler(pitchAmt*20, 0, 0) * Quaternion.Euler(0, 0, rollAmt*20);
-        ship.transform.localRotation = rot;
+        _ship.transform.localRotation = rot;
     }
 //}
 //public class ShipPhysics : MonoBehaviour 
 //{
     Rigidbody rb;
-    public GameObject MainCamera;
+    public GameObject _camera;
     public bool nullSpin = false;
     public bool FireMissileFlag = false;
     public float Torque = 10;
@@ -92,12 +93,15 @@ public class ShipPhysics : MonoBehaviour
     public KeyCode kDown = KeyCode.S;
 
     public float SlowDown = 1;
-    public GameObject ship;
+    public GameObject _ship;
     public GameObject lEngine, rEngine;
     Transform leftEngine, rightEngine;
-    public GameObject beam, gun;
-    public GameObject missile;
-    public GameObject target;
+    public GameObject _beam, _gun;
+    public GameObject _missile;
+    public GameObject _target;
+    public GameObject _debugCameraLineObj;
+    LineRenderer _debugCameraLine;
+    public GameObject _debugMarker;
     // Use this for initialization
     void Start() {
         rb = GetComponent<Rigidbody>();
@@ -110,73 +114,120 @@ public class ShipPhysics : MonoBehaviour
             rightEngine = rEngine.transform;
             CheckNull();
         }
-
+        _debugCameraLine = _debugCameraLineObj.GetComponent<LineRenderer>();
         QueryControllers();
     }
+    GameObject CameraFollowMissile;
     void CameraFollow(GameObject missile)
     {
-        float fov = 40; //fov in degrees
-        var camera2missile = (missile.transform.position - MainCamera.transform.position);
-        //get dist camera2target
-        var camera2target = (target.transform.position - missile.transform.position);
-        var c = camera2target.magnitude;
-        var b = camera2missile.magnitude;
-
-        //quadratic solver to find length from camera to target
-        //using c^2 = a^2 + b^2 - 2abcos(fov); find a
-        var x = -2 * b * Mathf.Cos(Mathf.Deg2Rad * fov);
-        var y = b * b - c * c;
-        var determinant = x * x - 4 * y;
-        float sol = 0;
+        Debug.Log("Following!");
+        _camera.transform.parent = null;//
+        //_debugMarker.transform.parent = missile.transform;
+        CameraFollowMissile = missile;
+        CameraFollow();
+    }
+    float QuadraticSolver(float A, float B, float C)
+    {
+        float a = float.NaN;
+        var determinant = B * B - 4 * A * C;
+        var sqrtD = Mathf.Sqrt(determinant);
         if (determinant < 0)
         {
             Debug.Log("complex conjugates, give up camera follow for now");
         } else if (determinant == 0)
         {
             //only 1 root
-            sol = (-1 * x + determinant) / 2;
+            a = (-1 * B + sqrtD) / 2;
         } else
         {
             //2 roots, find larger root
-            var sol1 = (-1 * x + determinant) / 2;
-            var sol2 = (-1 * x - determinant) / 2;
-            sol = Mathf.Max(sol1, sol2);
+            var sol1 = (-1 * B + sqrtD) / (2 * A);
+            var sol2 = (-1 * B - sqrtD) / (2 * A);
+            a = Mathf.Max(sol1, sol2);
         }
-        var a = sol;
+        return a;
+    }
+    void CheckValidTriangle(float a, float b, float c)
+    {
+        Debug.Log("triangle sides a: " + a + " b: " + b + " c: " + c);
+        var largest = Mathf.Max(a, Mathf.Max(b, c));
+        if (largest > largest - a + b + c)
+        {
+            Debug.Log("invalid triangle");
+            return;
+        }
+    }
+    void CameraFollow()
+    {
+        if (CameraFollowMissile == null || !CameraFollowMissile.activeSelf
+            || _target == null || !_target.activeSelf)
+        {
+            return;
+        }
+        var missile = CameraFollowMissile;
+        float fov = 20; //fov in degrees
+        var camera2missile = (missile.transform.position - _camera.transform.position);
+        var missile2target = (_target.transform.position - missile.transform.position);
+        float a = 0; //camera2target need to find this first
+        var b = camera2missile.magnitude;
+        var c = missile2target.magnitude;
+
+        //for debug visualization
+        _debugCameraLine.SetPosition(0, _target.transform.position);
+        _debugCameraLine.SetPosition(1, missile.transform.position);
+        _debugCameraLine.SetPosition(2, _camera.transform.position);
+
+        //find a, camera2target
+        //using c^2 = a^2 + b^2 - 2abcos(fov); find a
+        var B = -2 * b * Mathf.Cos(Mathf.Deg2Rad * fov);
+        var C = b * b - c * c;
+        a = QuadraticSolver(1, B, C);
+        CheckValidTriangle(a, b, c);
 
         //now we know all sides of the triangle, time to find angle between target and camera relative to missile
-        var phi = Mathf.Acos((a * a + b * b - c * c) / (2 * a * b));
+        var phi = Mathf.Acos((b * b + c * c - a * a) / (2 * b * c)) * Mathf.Rad2Deg;
+        Debug.Log("phi: " + phi );
 
         //get axis orthogonal to a,b,c
-        var orthAxis = Vector3.Cross(camera2missile, camera2target);
+        var orthAxis = Vector3.Cross(camera2missile, missile2target).normalized;
+        _debugCameraLine.SetPosition(3, orthAxis*5 + _camera.transform.position);
+        _debugCameraLine.SetPosition(4, _camera.transform.position);
 
         //move camera to the right place by starting vector missile to target
-        var missile2target = target.transform.position - missile.transform.position;
-        var newCamera2Missile = (missile2target.normalized) * b;//camera2missile dist
+        var newCameraPos = (missile2target.normalized) * b;//camera2missile dist
+
         //then rotate by phi around axis
-        newCamera2Missile = Quaternion.AngleAxis(phi, orthAxis) * newCamera2Missile;
-        MainCamera.transform.position = newCamera2Missile + missile.transform.position;
+        newCameraPos = Quaternion.AngleAxis(phi, orthAxis) * newCameraPos + missile.transform.position;
+        _camera.transform.position = newCameraPos;
+        _debugMarker.transform.position = newCameraPos;
+        newCameraPos = missile.transform.position - _camera.transform.position;
+        var newCamera2Target = _target.transform.position - _camera.transform.position;
+        var newCamera2Missile = missile.transform.position - _camera.transform.position;
+        Debug.Log("fov from phi: " + Vector3.Angle(newCamera2Missile, newCamera2Target));
 
         //turn towards middle between missile and target
         //start w/ dir from camera to misisle, then turn half fov (might be other way)
-        var lookAtMissile = Quaternion.LookRotation( missile.transform.position - MainCamera.transform.position);
+        var lookAtMissile = Quaternion.LookRotation( missile.transform.position - _camera.transform.position);
         //turn back fov/2
-        var newCameraLook = Quaternion.AngleAxis(-fov / 2, orthAxis) * lookAtMissile;
-        MainCamera.transform.rotation = newCameraLook;
+        var newCameraLook = Quaternion.AngleAxis(fov / 2, orthAxis) * lookAtMissile;
+        _camera.transform.rotation = newCameraLook;
+        _debugCameraLine.SetPosition(5, _camera.transform.forward*30 + _camera.transform.position);
     }
     Vector3 RotateAroundPivot(Vector3 point, Vector3 pivot, Quaternion angle)
     {
         return angle * (point - pivot) + pivot;
     }
-    GameObject FireMissile()
+    [ContextMenu("Fire Missile!")]
+    public GameObject FireMissile()
     {
-        var newMissile = Instantiate(missile);
+        Debug.Log("Fire missile");
+        var newMissile = Instantiate(_missile);
         //set rot and pos to gun
         newMissile.SetActive(true);
-        newMissile.transform.position = gun.transform.position;
-        newMissile.transform.rotation = gun.transform.rotation;
+        newMissile.transform.position = _gun.transform.position;
+        newMissile.transform.rotation = _gun.transform.rotation;
         //give speed
-        var speed = gun.transform.forward * 5;
+        var speed = _gun.transform.forward * 5;
         newMissile.GetComponent<Rigidbody>().velocity = speed;
         //sound!
         //set die time
@@ -184,19 +235,20 @@ public class ShipPhysics : MonoBehaviour
         missileLogic.BornTime = Time.time;
         missileLogic.DieAfterTime = 30;
         missileLogic.enabled = true;
-        missileLogic.target = target;
+        missileLogic.target = _target;
+        CameraFollow(newMissile);
         return newMissile;
     }
     void Fire()
     {
         //take a copy of the beam, 
-        var newBeam = Instantiate(beam);
+        var newBeam = Instantiate(_beam);
         //set rot and pos to gun
         newBeam.SetActive(true);
-        newBeam.transform.position = gun.transform.position;
-        newBeam.transform.rotation = gun.transform.rotation;
+        newBeam.transform.position = _gun.transform.position;
+        newBeam.transform.rotation = _gun.transform.rotation;
         //give speed
-        var speed = gun.transform.forward * 100;
+        var speed = _gun.transform.forward * 100;
         newBeam.GetComponent<Rigidbody>().velocity = speed;
         Debug.Log("beam velocity: " + speed.magnitude);
         //sound!
@@ -226,7 +278,7 @@ public class ShipPhysics : MonoBehaviour
         //Debug.Log("pitching " + amt);
         var rot = Quaternion.Euler(amt*20, 0, 0);
         //ship.transform.Rotate(transform.forward, -amt);
-        ship.transform.localRotation = rot;
+        _ship.transform.localRotation = rot;
     }
     //spins engine to rotate by 1 engine rotation
     void PitchUpWithEngineSpin(float amt)
@@ -246,7 +298,7 @@ public class ShipPhysics : MonoBehaviour
         //Debug.Log("rolling " + amt);
         var rot = Quaternion.Euler(0, 0, amt*20);
         //ship.transform.Rotate(transform.forward, -amt);
-        ship.transform.localRotation = rot;
+        _ship.transform.localRotation = rot;
         /*
         leftEngine.Rotate(transform.right, neg * engineScalar * amt);
         rightEngine.Rotate(transform.right, -neg * engineScalar * amt);
@@ -285,16 +337,11 @@ public class ShipPhysics : MonoBehaviour
         }
     }
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
         GetKeyboard();
         GetController();
         NullSpin();
-        if (FireMissileFlag)
-        {
-            FireMissileFlag = false;
-            var missile = FireMissile();
-            CameraFollow(missile);
-        }
+        CameraFollow();
         /*
         Spin(ref SpinLeft, transform.up);
         Spin(ref SpinRight, -transform.up);

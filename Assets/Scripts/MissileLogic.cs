@@ -43,7 +43,6 @@ public class MissileLogic : MonoBehaviour {
     //http://www.moddb.com/members/blahdy/blogs/gamedev-introduction-to-proportional-navigation-part-i
 	Vector3 ProportionalNavigation()
     {
-
         Vector3 accel = Vector3.zero;
         //accel = N * Vc * LOS_rate
         //N = navigation gain/constant
@@ -53,24 +52,42 @@ public class MissileLogic : MonoBehaviour {
         //to get LOS rate
         var newRTM = target.transform.position - transform.position;
         //Vc m/s towards target; closing rate
-        var Vc = newRTM.magnitude / Time.deltaTime;
-        newRTM = newRTM.normalized;
+        newRTM = newRTM;
         if (oldRTM == Vector3.zero)
         {
             oldRTM = newRTM;
             Debug.Log("no oldRtm");
             return Vector3.zero;
         }
-        var LOSDelta = (newRTM - oldRTM);
+        var LOSDelta = (newRTM.normalized - oldRTM.normalized);
+        var Vc = -1 * (newRTM.magnitude - oldRTM.magnitude) / Time.deltaTime;
         //var LOSDelta = (oldRTM - newRTM);
         oldRTM = newRTM;
 
+        if (true) //from Desprez from Unity forum
+        {
+            Vector3 dirDelta = newRTM.normalized - oldRTM.normalized;
+            float pnGain = N;
+            dirDelta -= Vector3.Project(dirDelta, newRTM);
+            // basic pro nav
+             Vector3 a = dirDelta * pnGain;
+
+            // augmented pro nav
+            //Vector3 a = dirDelta * (pnGain + (dirDelta.magnitude * pnGain * .5f));
+
+            var aimLoc = transform.position + (newRTM.normalized * rb.velocity.magnitude ) + a;
+            transform.LookAt(aimLoc);
+
+            return Vector3.zero;
+        }
+        
         //accel = newRTM * N * Vc * LOSRate + LOSDelta * Nt * (0.5f * N);
         //accel = accel.normalized;// Mathf.Min(300, accel.magnitude);
         var LOSRate = Vector3.Angle(transform.forward, LOSDelta); //ideal
         var pn = N * LOSRate;
         var turnRate = N * Vc * LOSRate;
-        turnRate = Mathf.Min(LOSRate, MaxTurnRate * Time.deltaTime); //overturn/realistic
+        turnRate = Mathf.Min(turnRate, MaxTurnRate * Time.deltaTime); //overturn/realistic
+        turnRate = Mathf.Max(turnRate, -MaxTurnRate * Time.deltaTime); //overturn/realistic
 
         var turnAxis = Vector3.Cross(transform.forward, LOSDelta); //TODO might need to referse the order
         transform.Rotate(turnAxis.normalized * turnRate );
@@ -136,7 +153,7 @@ public class MissileLogic : MonoBehaviour {
         //var desiredVm = (min.index > 1 ) ? min.result : Vt;
         var desiredVm = min.result;
         var changeReq = desiredVm - rb.velocity;
-        changeReq = changeReq.normalized * Mathf.Min(changeReq.magnitude, 10); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
+        changeReq = changeReq.normalized * MaxAcceleration;// Mathf.Min(changeReq.magnitude, MaxAcceleration); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
         //rb.velocity = minVm;
         return changeReq;
     }
@@ -160,13 +177,9 @@ public class MissileLogic : MonoBehaviour {
         {
             if (target == null)
                 return;
-            //rb.AddForce(dir.normalized * Acceleration * Time.deltaTime);
-            //rb.velocity += dir.normalized * Acceleration * Time.deltaTime;
-            //rocket acceleration
-            //accelerate towards target!
             var rocketAccel = Vector3.zero;
             //rocketAccel += ProportionalNavigation(); 
-            if (true ) // proportional navigation
+            if (false ) // proportional navigation
             {
                 ProportionalNavigation();
                 rocketAccel += transform.forward * MaxAcceleration;
