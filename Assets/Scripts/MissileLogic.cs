@@ -35,6 +35,8 @@ public class MissileLogic : MonoBehaviour {
     public float MaxAcceleration = 40;
     public float MaxTurnRate = 40; //40 degrees per second
     public GameObject mainCamera;
+    [Range(0, 1)]
+    public float ManualThrottle = 1;
     Rigidbody rb;
 
     //PN algorithm
@@ -47,9 +49,9 @@ public class MissileLogic : MonoBehaviour {
 	}
     //don't use this, confusing as all hell
     //http://www.moddb.com/members/blahdy/blogs/gamedev-introduction-to-proportional-navigation-part-i
-	Vector3 ProportionalNavigation()
+    float LOSRateReal = 0;
+	void ProportionalNavigation()
     {
-        Vector3 accel = Vector3.zero;
         //accel = N * Vc * LOS_rate
         //N = navigation gain/constant
         //Vc = closing velocity
@@ -63,44 +65,48 @@ public class MissileLogic : MonoBehaviour {
         {
             oldRTM = newRTM;
             Debug.Log("no oldRtm");
-            return Vector3.zero;
+            return;
         }
         var LOSDelta = (newRTM.normalized - oldRTM.normalized);
         var Vc = -1 * (newRTM.magnitude - oldRTM.magnitude) / Time.deltaTime;
         //var LOSDelta = (oldRTM - newRTM);
-        oldRTM = newRTM;
 
+        LOSRateReal = Vector3.Angle(newRTM.normalized, oldRTM.normalized);// / Time.deltaTime;
+        Debug.Log("LOSDelta: " + LOSDelta.magnitude/Time.deltaTime + " LOSRate angle: " + LOSRateReal);
         if (true) //from Desprez from Unity forum
         {
             Vector3 dirDelta = newRTM.normalized - oldRTM.normalized;
             float pnGain = N;
             dirDelta -= Vector3.Project(dirDelta, newRTM);
             // basic pro nav
-             Vector3 a = dirDelta * pnGain;
+            //Vector3 a = dirDelta * pnGain;
 
             // augmented pro nav
-            //Vector3 a = dirDelta * (pnGain + (dirDelta.magnitude * pnGain * .5f));
+            Vector3 a = dirDelta * (pnGain + (dirDelta.magnitude * pnGain * .5f));
 
-            var aimLoc = transform.position + (newRTM.normalized * rb.velocity.magnitude ) + a;
+            var aimLoc = transform.position + (newRTM.normalized * rb.velocity.magnitude * Time.fixedDeltaTime ) + a;
             transform.LookAt(aimLoc);
+            
 
-            return Vector3.zero;
+            return;
         }
         
         //accel = newRTM * N * Vc * LOSRate + LOSDelta * Nt * (0.5f * N);
         //accel = accel.normalized;// Mathf.Min(300, accel.magnitude);
         var LOSRate = Vector3.Angle(transform.forward, LOSDelta); //ideal
         var pn = N * LOSRate;
+        Vc = 1;
+        LOSRate = N * LOSRateReal * Mathf.Rad2Deg;
         var turnRate = N * Vc * LOSRate;
+        var origTurnRate = turnRate;
         turnRate = Mathf.Min(turnRate, MaxTurnRate * Time.deltaTime); //overturn/realistic
         turnRate = Mathf.Max(turnRate, -MaxTurnRate * Time.deltaTime); //overturn/realistic
 
         var turnAxis = Vector3.Cross(transform.forward, LOSDelta); //TODO might need to referse the order
         transform.Rotate(turnAxis.normalized * turnRate );
-        Debug.Log("LOSRate " + LOSRate);
-        Debug.Log("turnRate " + turnRate);
+        Debug.Log("LOSRate " + LOSRate + " origTurn: " + origTurnRate + " turnRate " + turnRate + " Vc: " + Vc);
 
-        return accel;//what if this is the steering vector?
+        oldRTM = newRTM;
     }
     //derived from Mariano Appendino
     //https://www.youtube.com/watch?v=yVtfD29WN9M
@@ -139,7 +145,7 @@ public class MissileLogic : MonoBehaviour {
         var Vm0 = rb.velocity;
         var Pt0 = target.transform.position;
         var Pm0 = transform.position;
-        float Sm = 20;
+        float Sm = 20; //speed of missile, fixed constant
         //loop over all time t = [0, 100)
         line.SetWidth(.1f, 1f);
         line.SetPosition(0, new Vector3(40, 0, 0));
@@ -148,12 +154,22 @@ public class MissileLogic : MonoBehaviour {
         int i = 0;
         for (float t = 0.1f; t < 97; t += 0.1f)
         {
-            //assuming constant velocity
-            Vector3 Vm = (t * Vt + Pt0 - Pm0).normalized * Sm;
             //assuming constant acceleration
-            //Vector3 Pm = 2 * (Vt * t + Pt0 - Pm0 - Vm0 * t) / (t*t);
             var Pt = t * Vt + Pt0;
-            var Pm = t * Vm + Pm0;
+            //assuming constant velocity
+            Vector3 Vm, Pm;
+            if (false) //constant velocity
+            {
+                Vm = (Pt - Pm0).normalized * Sm;
+                Pm = t * Vm + Pm0;
+            } else
+            {
+                //a = 2 * (Vt * t + Pt0 - Pm0 - Vm0 * t) / (t*t);
+                var Pm1 = Vm0 * t;
+                Vm = Pt - Pm0 - Pm1;
+                var a = Vm.normalized * MaxAcceleration;
+                Pm = Pm0 + Pm1 + a * t * t / 2;
+            }
             var dist = (Pt - Pm).magnitude;
             min.Update(dist, t, Vm);
             line.SetPosition(i+3, new Vector3((float)i / 10, dist/10, 0));
@@ -163,7 +179,8 @@ public class MissileLogic : MonoBehaviour {
         //if too slow, use target velocity vector
         //var desiredVm = (min.index > 1 ) ? min.result : Vt;
         var desiredVm = min.result;
-        var changeReq = desiredVm - rb.velocity;
+        transform.LookAt(target.transform);
+        var changeReq = MaxAcceleration * desiredVm.normalized;// desiredVm - rb.velocity;
         //changeReq = changeReq.normalized * MaxAcceleration;// Mathf.Min(changeReq.magnitude, MaxAcceleration); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
         //rb.velocity = minVm;
         return changeReq;
@@ -193,7 +210,8 @@ public class MissileLogic : MonoBehaviour {
             if (false ) // proportional navigation
             {
                 ProportionalNavigation();
-                rocketAccel += transform.forward * MaxAcceleration;
+                var throttle = Mathf.Min(LOSRateReal*LOSRateReal/180f, 1);
+                rocketAccel += transform.forward * MaxAcceleration * (throttle) * ManualThrottle;
                 SlowDogCurve();
             } else {    // slow dog curve 
                 rocketAccel = SlowDogCurve();

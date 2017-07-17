@@ -159,6 +159,20 @@ public class ShipPhysics : MonoBehaviour
             return;
         }
     }
+    //camera chases the missile while keeping the target in view
+    //This function finds the camera position and angle that fits the following criteria:
+    // - Always some fixed distance from the missile
+    // - Has the missile and target within a specific field of view (FOV)
+    //camera, missile, target forms a triangle; camera2missile has a fixed distance, but we don't know the direction; we must angle it correctly such that the missile and target is within fov degrees from camera's perspective, so we know the interior angle from the camera corner, but we need to find the angle from the missile corner. All we have is the vector from from missile2target.
+    //but if we treat the this as an abstract triangle problem, we know the distance of two sides (missile2target and camera2missile) and we know one angle (from camera corner)
+    //So by using generalized pythagora's thm:
+    //c^2 = a^2 + b^2 - 2abcos(fov) 
+    //where a is camera2target, b is camera2missile, and c is missile2camera
+    //We know b, c and fov, so we just solve for a
+    //then we can solve for the angle, phi, in the missile corner
+    //and since we know the missile2target vector, we can start there and rotate by angle phi and get the desired camera position
+    //but the camera needs to be pointing the right way. Since we know the missile and target are fov degrees apart (a given), we just need to rotate the camera fov/2 degrees in the correct direction.
+    //all of this assumes a 2D environment. Since we are working with a 3 points, the problem is natively a 2D problem as all three are always on some plane. We just need to rotate along the right axis (orthogonal to the plane). We can get that axis by the cross product of any two vectors along that plane
     void CameraFollow()
     {
         if (CameraFollowMissile == null || !CameraFollowMissile.activeSelf
@@ -171,13 +185,13 @@ public class ShipPhysics : MonoBehaviour
         var camera2missile = (missile.transform.position - _camera.transform.position);
         var missile2target = (_target.transform.position - missile.transform.position);
         float a = 0; //camera2target need to find this first
-        //float b = camera2missile.magnitude;
+        //float b = camera2missile.magnitude; this is a global
         float c = missile2target.magnitude;
 
         //for debug visualization
-        _debugCameraLine.SetPosition(0, _target.transform.position);
-        _debugCameraLine.SetPosition(1, missile.transform.position);
-        _debugCameraLine.SetPosition(2, _camera.transform.position);
+        //_debugCameraLine.SetPosition(0, _target.transform.position);
+        //_debugCameraLine.SetPosition(1, missile.transform.position);
+        //_debugCameraLine.SetPosition(2, _camera.transform.position);
 
         //find a, camera2target
         //using c^2 = a^2 + b^2 - 2abcos(fov); find a
@@ -186,34 +200,30 @@ public class ShipPhysics : MonoBehaviour
         a = QuadraticSolver(1, B, C);
         CheckValidTriangle(a, b, c);
 
-        //now we know all sides of the triangle, time to find angle between target and camera relative to missile
+        //now we know all sides of the triangle, time to find angle between target and camera relative to missile using pythagorean thm
         var phi = Mathf.Acos((b * b + c * c - a * a) / (2 * b * c)) * Mathf.Rad2Deg;
-        Debug.Log("phi: " + phi );
+        //Debug.Log("phi: " + phi );
 
         //get axis orthogonal to a,b,c
         var orthAxis = Vector3.Cross(camera2missile, missile2target).normalized;
-        _debugCameraLine.SetPosition(3, orthAxis*5 + _camera.transform.position);
-        _debugCameraLine.SetPosition(4, _camera.transform.position);
-
+        //_debugCameraLine.SetPosition(3, orthAxis*5 + _camera.transform.position);
+        //_debugCameraLine.SetPosition(4, _camera.transform.position);
         //move camera to the right place by starting vector missile to target
         var newCameraPos = (missile2target.normalized) * b;//camera2missile dist
-
         //then rotate by phi around axis
         newCameraPos = Quaternion.AngleAxis(phi, orthAxis) * newCameraPos + missile.transform.position;
-        _debugMarker.transform.position = missile2target + missile.transform.position;
+        //_debugMarker.transform.position = missile2target + missile.transform.position;
         _camera.transform.position = newCameraPos;
-        newCameraPos = missile.transform.position - _camera.transform.position;
-        var newCamera2Target = _target.transform.position - _camera.transform.position;
-        var newCamera2Missile = missile.transform.position - _camera.transform.position;
-        Debug.Log("fov from phi: " + Vector3.Angle(newCamera2Missile, newCamera2Target));
+        //var newCamera2Target = _target.transform.position - _camera.transform.position;
+        //var newCamera2Missile = missile.transform.position - _camera.transform.position;
+        //Debug.Log("fov from phi: " + Vector3.Angle(newCamera2Missile, newCamera2Target));
 
         //turn towards middle between missile and target
         //start w/ dir from camera to misisle, then turn half fov (might be other way)
         var lookAtMissile = Quaternion.LookRotation( missile.transform.position - _camera.transform.position);
         //turn back fov/2
-        var newCameraLook = Quaternion.AngleAxis(fov / 2, orthAxis) * lookAtMissile;
-        _camera.transform.rotation = newCameraLook;
-        _debugCameraLine.SetPosition(5, _camera.transform.forward*30 + _camera.transform.position);
+        _camera.transform.rotation = Quaternion.AngleAxis(fov / 2, orthAxis) * lookAtMissile;
+        //_debugCameraLine.SetPosition(5, _camera.transform.forward*30 + _camera.transform.position);
     }
     Vector3 RotateAroundPivot(Vector3 point, Vector3 pivot, Quaternion angle)
     {
