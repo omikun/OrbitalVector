@@ -118,12 +118,14 @@ public class ShipPhysics : MonoBehaviour
         QueryControllers();
     }
     GameObject CameraFollowMissile;
+    float b;
     void CameraFollow(GameObject missile)
     {
         Debug.Log("Following!");
         _camera.transform.parent = null;//
         //_debugMarker.transform.parent = missile.transform;
         CameraFollowMissile = missile;
+        b = (missile.transform.position - _camera.transform.position).magnitude;
         CameraFollow();
     }
     float QuadraticSolver(float A, float B, float C)
@@ -169,8 +171,8 @@ public class ShipPhysics : MonoBehaviour
         var camera2missile = (missile.transform.position - _camera.transform.position);
         var missile2target = (_target.transform.position - missile.transform.position);
         float a = 0; //camera2target need to find this first
-        var b = camera2missile.magnitude;
-        var c = missile2target.magnitude;
+        //float b = camera2missile.magnitude;
+        float c = missile2target.magnitude;
 
         //for debug visualization
         _debugCameraLine.SetPosition(0, _target.transform.position);
@@ -198,8 +200,8 @@ public class ShipPhysics : MonoBehaviour
 
         //then rotate by phi around axis
         newCameraPos = Quaternion.AngleAxis(phi, orthAxis) * newCameraPos + missile.transform.position;
+        _debugMarker.transform.position = missile2target + missile.transform.position;
         _camera.transform.position = newCameraPos;
-        _debugMarker.transform.position = newCameraPos;
         newCameraPos = missile.transform.position - _camera.transform.position;
         var newCamera2Target = _target.transform.position - _camera.transform.position;
         var newCamera2Missile = missile.transform.position - _camera.transform.position;

@@ -8,6 +8,12 @@ public class GetMinOf
     public float time = 0;
     public Vector3 result = Vector3.zero;
     public GetMinOf() { }
+    public void Clear()
+    {
+        index = float.PositiveInfinity;
+        time = 0;
+        result = Vector3.zero;
+    }
     public void Update(float i, float t, Vector3 d)
     {
         if (i < index)
@@ -126,12 +132,14 @@ public class MissileLogic : MonoBehaviour {
     GetMinOf min = new GetMinOf();
     Vector3 SlowDogCurve()
     {
+        min.Clear();
         var line = GetComponent<LineRenderer>();
         //find desired velocity vector
         var Vt = target.GetComponent<Rigidbody>().velocity;
+        var Vm0 = rb.velocity;
         var Pt0 = target.transform.position;
         var Pm0 = transform.position;
-        float Sm = 10;
+        float Sm = 20;
         //loop over all time t = [0, 100)
         line.SetWidth(.1f, 1f);
         line.SetPosition(0, new Vector3(40, 0, 0));
@@ -140,7 +148,10 @@ public class MissileLogic : MonoBehaviour {
         int i = 0;
         for (float t = 0.1f; t < 97; t += 0.1f)
         {
+            //assuming constant velocity
             Vector3 Vm = (t * Vt + Pt0 - Pm0).normalized * Sm;
+            //assuming constant acceleration
+            //Vector3 Pm = 2 * (Vt * t + Pt0 - Pm0 - Vm0 * t) / (t*t);
             var Pt = t * Vt + Pt0;
             var Pm = t * Vm + Pm0;
             var dist = (Pt - Pm).magnitude;
@@ -148,12 +159,12 @@ public class MissileLogic : MonoBehaviour {
             line.SetPosition(i+3, new Vector3((float)i / 10, dist/10, 0));
             i++;
         }
-        Debug.Log("t=" + min.time + " minDist: " + min.index + " minV: " + min.result);
+        Debug.Log("t=" + min.time + " minDist: " + min.index + " minV: " + min.result.magnitude);
         //if too slow, use target velocity vector
         //var desiredVm = (min.index > 1 ) ? min.result : Vt;
         var desiredVm = min.result;
         var changeReq = desiredVm - rb.velocity;
-        changeReq = changeReq.normalized * MaxAcceleration;// Mathf.Min(changeReq.magnitude, MaxAcceleration); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
+        //changeReq = changeReq.normalized * MaxAcceleration;// Mathf.Min(changeReq.magnitude, MaxAcceleration); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
         //rb.velocity = minVm;
         return changeReq;
     }
