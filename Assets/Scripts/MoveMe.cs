@@ -14,6 +14,7 @@ public class MoveMe : MonoBehaviour {
 
     // Update is called once per frame
     Vector3 lastPos;
+    Vector3 lastVel;
     [Range(1,10)]
     public float TimeScale = 3;
     [Range(1,10)]
@@ -23,8 +24,11 @@ public class MoveMe : MonoBehaviour {
         var y =  SpaceScale * 30 * Mathf.Cos(Time.time/10);
         var z =  SpaceScale * 20 * Mathf.Sin(Mathf.PI * Time.time/10);
         transform.position = new Vector3(x, y, z);
-        var speed = (transform.position - lastPos).magnitude / Time.deltaTime;
+        var velocity = (transform.position - lastPos);
+        var speed = velocity.magnitude / Time.deltaTime;
         lastPos = transform.position;
-        Debug.Log("target speed: " + speed);
+        Logdump.Log("target speed: " + speed);
+        var accel = (velocity - lastVel).magnitude / Time.deltaTime;
+        Logdump.Log("target accel: " + accel);
 	}
 }

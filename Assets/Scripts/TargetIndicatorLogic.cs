@@ -42,19 +42,29 @@ public class TargetIndicatorLogic : MonoBehaviour {
             sr.enabled = false;
             arrowIcon.SetActive(true);
             FindInterSection(projectedPoint);
-            //arrowIcon.transform.up = (projectedPoint).normalized;
-            //arrowIcon.transform.up = (target.transform.position - transform.position).normalized;
-            //arrowIcon.transform.forward = camera.transform.position;
-            //var angle = Vector3.Angle(transform.up, projectedPoint);
-            var angle = AngleSigned(transform.up, projectedPoint, transform.forward);
-            var diffAngle = angle - oldAngle;
-            oldAngle = angle;
-            arrowIcon.transform.Rotate(transform.forward.normalized, diffAngle);
-            //arrowIcon.transform.rotation.SetLookRotation(camera.transform.position, projectedPoint);
-            //arrowIcon.transform.rotation.SetFromToRotation(Vector3.up, projectedPoint.normalized);
-            Debug.Log("angle: " + diffAngle);
+            if (false) //TODO simpler method, but can't get it to work atm
+            {
+                //arrowIcon.transform.up = (projectedPoint).normalized;
+                //arrowIcon.transform.up = (target.transform.position - transform.position).normalized;
+                //arrowIcon.transform.forward = camera.transform.position;
+                //var angle = Vector3.Angle(transform.up, projectedPoint);
+                arrowIcon.transform.rotation.SetLookRotation(camera.transform.forward, projectedPoint - transform.position);
+                forward.transform.localPosition = camera.transform.forward.normalized * 18;
+                up.transform.localPosition = (projectedPoint - transform.position).normalized * 18;
+            }
+            else
+            {
+                var angle = AngleSigned(transform.up, projectedPoint, transform.forward);
+                var diffAngle = angle - oldAngle;
+                oldAngle = angle;
+                arrowIcon.transform.Rotate(transform.forward.normalized, diffAngle);
+                //arrowIcon.transform.rotation.SetLookRotation(camera.transform.position, projectedPoint);
+                //arrowIcon.transform.rotation.SetFromToRotation(Vector3.up, projectedPoint.normalized);
+                Debug.Log("angle: " + diffAngle);
+            }
         }
     }
+    public GameObject up, forward;
     float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
     {
         return Mathf.Atan2(

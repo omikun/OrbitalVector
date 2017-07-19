@@ -2,6 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public static class Logdump
+{
+    public static bool DebugFlag = true;
+    public static void Log(string str)
+    {
+        if (DebugFlag)
+        {
+            Debug.Log(str);
+        }
+    }
+}
 public class GetMinOf
 {
     public float index = float.PositiveInfinity;
@@ -59,23 +70,17 @@ public class MissileLogic : MonoBehaviour {
 
         //to get LOS rate
         var newRTM = target.transform.position - transform.position;
-        //Vc m/s towards target; closing rate
-        newRTM = newRTM;
         if (oldRTM == Vector3.zero)
         {
             oldRTM = newRTM;
-            Debug.Log("no oldRtm");
+            Logdump.Log("no oldRtm");
             return;
         }
-        var LOSDelta = (newRTM.normalized - oldRTM.normalized);
-        var Vc = -1 * (newRTM.magnitude - oldRTM.magnitude) / Time.deltaTime;
-        //var LOSDelta = (oldRTM - newRTM);
 
-        LOSRateReal = Vector3.Angle(newRTM.normalized, oldRTM.normalized);// / Time.deltaTime;
-        Debug.Log("LOSDelta: " + LOSDelta.magnitude/Time.deltaTime + " LOSRate angle: " + LOSRateReal);
-        if (true) //from Desprez from Unity forum
-            //check out his Unit assets at: http://mobfarmgames.weebly.com/
+        Vector3 aimLoc;
         {
+            //thanks to Desprez from Unity forum for the pro nav implementation!
+            //check out his Unity assets at: http://mobfarmgames.weebly.com/
             float pnGain = N;
             Vector3 dirDelta = newRTM - oldRTM;
             dirDelta -= Vector3.Project(dirDelta, newRTM);
@@ -84,28 +89,16 @@ public class MissileLogic : MonoBehaviour {
 
             // augmented pro nav
             Vector3 a = dirDelta * (pnGain + (dirDelta.magnitude * pnGain * .5f));
-
-            var aimLoc = transform.position + (newRTM.normalized * rb.velocity.magnitude * Time.fixedDeltaTime ) + a;
-            transform.LookAt(aimLoc);
-
-            oldRTM = newRTM;
-            return;
+            aimLoc = (newRTM.normalized * rb.velocity.magnitude * Time.fixedDeltaTime) + a;
         }
-        
-        //accel = newRTM * N * Vc * LOSRate + LOSDelta * Nt * (0.5f * N);
-        //accel = accel.normalized;// Mathf.Min(300, accel.magnitude);
-        var LOSRate = Vector3.Angle(transform.forward, LOSDelta); //ideal
-        var pn = N * LOSRate;
-        Vc = 1;
-        LOSRate = N * LOSRateReal * Mathf.Rad2Deg;
-        var turnRate = N * Vc * LOSRate;
-        var origTurnRate = turnRate;
-        turnRate = Mathf.Min(turnRate, MaxTurnRate * Time.deltaTime); //overturn/realistic
-        turnRate = Mathf.Max(turnRate, -MaxTurnRate * Time.deltaTime); //overturn/realistic
 
-        var turnAxis = Vector3.Cross(transform.forward, LOSDelta); //TODO might need to referse the order
-        transform.Rotate(turnAxis.normalized * turnRate );
-        Debug.Log("LOSRate " + LOSRate + " origTurn: " + origTurnRate + " turnRate " + turnRate + " Vc: " + Vc);
+        //limit turn rate
+        var turnRate = Vector3.Angle(transform.forward, aimLoc);
+        Logdump.Log("Turn rate: " + turnRate);
+        turnRate = Mathf.Min(turnRate, MaxTurnRate * Time.deltaTime);
+        var aimLocQuat = Quaternion.LookRotation(aimLoc);
+        transform.rotation = Quaternion.Slerp(transform.rotation, aimLocQuat, turnRate / MaxTurnRate);
+        //transform.LookAt(aimLoc + transform.position);
 
         oldRTM = newRTM;
     }

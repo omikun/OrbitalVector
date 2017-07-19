@@ -216,13 +216,15 @@ public class ShipPhysics : MonoBehaviour
         //then rotate by phi around axis
         newCameraPos = Quaternion.AngleAxis(phi, orthAxis) * newCameraPos + missile.transform.position;
         //_debugMarker.transform.position = missile2target + missile.transform.position;
+        if (float.IsNaN(newCameraPos.x))
+            return;
         _camera.transform.position = newCameraPos;
         //var newCamera2Target = _target.transform.position - _camera.transform.position;
         //var newCamera2Missile = missile.transform.position - _camera.transform.position;
         //Debug.Log("fov from phi: " + Vector3.Angle(newCamera2Missile, newCamera2Target));
 
         //turn towards middle between missile and target
-        //start w/ dir from camera to misisle, then turn half fov (might be other way)
+        //start w/ dir from camera to misisle
         var lookAtMissile = Quaternion.LookRotation( missile.transform.position - _camera.transform.position);
         //turn back fov/2
         _camera.transform.rotation = Quaternion.AngleAxis(fov / 2, orthAxis) * lookAtMissile;
