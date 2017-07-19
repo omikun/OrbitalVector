@@ -74,9 +74,10 @@ public class MissileLogic : MonoBehaviour {
         LOSRateReal = Vector3.Angle(newRTM.normalized, oldRTM.normalized);// / Time.deltaTime;
         Debug.Log("LOSDelta: " + LOSDelta.magnitude/Time.deltaTime + " LOSRate angle: " + LOSRateReal);
         if (true) //from Desprez from Unity forum
+            //check out his Unit assets at: http://mobfarmgames.weebly.com/
         {
-            Vector3 dirDelta = newRTM.normalized - oldRTM.normalized;
             float pnGain = N;
+            Vector3 dirDelta = newRTM - oldRTM;
             dirDelta -= Vector3.Project(dirDelta, newRTM);
             // basic pro nav
             //Vector3 a = dirDelta * pnGain;
@@ -86,8 +87,8 @@ public class MissileLogic : MonoBehaviour {
 
             var aimLoc = transform.position + (newRTM.normalized * rb.velocity.magnitude * Time.fixedDeltaTime ) + a;
             transform.LookAt(aimLoc);
-            
 
+            oldRTM = newRTM;
             return;
         }
         
@@ -136,6 +137,15 @@ public class MissileLogic : MonoBehaviour {
     //Pt0 target pos at t=0
     //Pm0 missile pos at t=0
     GetMinOf min = new GetMinOf();
+    InterceptUtil InterceptHelper = new InterceptUtil();
+    Vector3 DogCurve()
+    {
+        InterceptHelper.Init(target.transform.position, target.GetComponent<Rigidbody>().velocity, transform.position);
+        var dir = InterceptHelper.GetProjectileVelocity();
+        transform.LookAt(dir.normalized + transform.position);
+        return dir;
+    }
+    public GameObject InterceptionMarker;
     Vector3 SlowDogCurve()
     {
         min.Clear();
@@ -176,10 +186,12 @@ public class MissileLogic : MonoBehaviour {
             i++;
         }
         Debug.Log("t=" + min.time + " minDist: " + min.index + " minV: " + min.result.magnitude);
+        //InterceptionMarker.transform.position = min.time * Vt + Pt0;
         //if too slow, use target velocity vector
         //var desiredVm = (min.index > 1 ) ? min.result : Vt;
         var desiredVm = min.result;
-        transform.LookAt(target.transform);
+        transform.LookAt(desiredVm.normalized + transform.position);
+        //InterceptionMarker.transform.position = desiredVm.normalized * 5 + transform.position;
         var changeReq = MaxAcceleration * desiredVm.normalized;// desiredVm - rb.velocity;
         //changeReq = changeReq.normalized * MaxAcceleration;// Mathf.Min(changeReq.magnitude, MaxAcceleration); //cap change speed, but still in direction of desired vel, not necessarily orthogonal to current Vm though...
         //rb.velocity = minVm;
@@ -207,12 +219,12 @@ public class MissileLogic : MonoBehaviour {
                 return;
             var rocketAccel = Vector3.zero;
             //rocketAccel += ProportionalNavigation(); 
-            if (false ) // proportional navigation
+            if (true ) // proportional navigation
             {
                 ProportionalNavigation();
-                var throttle = Mathf.Min(LOSRateReal*LOSRateReal/180f, 1);
+                var throttle = 1;// Mathf.Min(LOSRateReal*LOSRateReal/180f, 1);
                 rocketAccel += transform.forward * MaxAcceleration * (throttle) * ManualThrottle;
-                SlowDogCurve();
+                //SlowDogCurve();
             } else {    // slow dog curve 
                 rocketAccel = SlowDogCurve();
             }

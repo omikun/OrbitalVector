@@ -151,11 +151,11 @@ public class ShipPhysics : MonoBehaviour
     }
     void CheckValidTriangle(float a, float b, float c)
     {
-        Debug.Log("triangle sides a: " + a + " b: " + b + " c: " + c);
+        //Debug.Log("triangle sides a: " + a + " b: " + b + " c: " + c);
         var largest = Mathf.Max(a, Mathf.Max(b, c));
         if (largest > largest - a + b + c)
         {
-            Debug.Log("invalid triangle");
+            //Debug.Log("invalid triangle");
             return;
         }
     }
@@ -167,17 +167,20 @@ public class ShipPhysics : MonoBehaviour
     //but if we treat the this as an abstract triangle problem, we know the distance of two sides (missile2target and camera2missile) and we know one angle (from camera corner)
     //So by using generalized pythagora's thm:
     //c^2 = a^2 + b^2 - 2abcos(fov) 
-    //where a is camera2target, b is camera2missile, and c is missile2camera
+    //where a is camera2target, b is camera2missile, and c is missile2target
     //We know b, c and fov, so we just solve for a
     //then we can solve for the angle, phi, in the missile corner
     //and since we know the missile2target vector, we can start there and rotate by angle phi and get the desired camera position
     //but the camera needs to be pointing the right way. Since we know the missile and target are fov degrees apart (a given), we just need to rotate the camera fov/2 degrees in the correct direction.
     //all of this assumes a 2D environment. Since we are working with a 3 points, the problem is natively a 2D problem as all three are always on some plane. We just need to rotate along the right axis (orthogonal to the plane). We can get that axis by the cross product of any two vectors along that plane
+    public GameObject cameraDummy;
     void CameraFollow()
     {
         if (CameraFollowMissile == null || !CameraFollowMissile.activeSelf
             || _target == null || !_target.activeSelf)
         {
+            _camera.transform.position = cameraDummy.transform.position;
+            _camera.transform.rotation = cameraDummy.transform.rotation;
             return;
         }
         var missile = CameraFollowMissile;

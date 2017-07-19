@@ -7,13 +7,18 @@ public class TargetIndicatorLogic : MonoBehaviour {
     public GameObject target;
 
     public GameObject topBound, bottomBound, leftBound, rightBound;
+    public GameObject arrowIcon;
+    Plane[] planes;
     GameObject canvas;
+    SpriteRenderer sr;
 	// Use this for initialization
 	void Start () {
         canvas = topBound.transform.parent.gameObject;
+        sr = GetComponent<SpriteRenderer>();
 	}
-	
-	// Update is called once per frame
+
+    // Update is called once per frame
+    float oldAngle = 0;
 	void FixedUpdate () {
 
         if (target == null)
@@ -24,19 +29,38 @@ public class TargetIndicatorLogic : MonoBehaviour {
 		Vector3 v = target.transform.position - camera.transform.position;
         Vector3 d = Vector3.Project(v, camera.transform.forward);
         Vector3 projectedPoint = target.transform.position - d;
-        //transform.position = 
         //if target not in view
         if (IsInViewFrustrum(target))
         {
+            sr.enabled = true;
+            arrowIcon.SetActive(false);
             var distToCamera = canvas.transform.position - camera.transform.position;
             var targetIconPos = distToCamera.magnitude * (target.transform.position - camera.transform.position).normalized;
             transform.position = camera.transform.position + targetIconPos;
         } else
         {
+            sr.enabled = false;
+            arrowIcon.SetActive(true);
             FindInterSection(projectedPoint);
+            //arrowIcon.transform.up = (projectedPoint).normalized;
+            //arrowIcon.transform.up = (target.transform.position - transform.position).normalized;
+            //arrowIcon.transform.forward = camera.transform.position;
+            //var angle = Vector3.Angle(transform.up, projectedPoint);
+            var angle = AngleSigned(transform.up, projectedPoint, transform.forward);
+            var diffAngle = angle - oldAngle;
+            oldAngle = angle;
+            arrowIcon.transform.Rotate(transform.forward.normalized, diffAngle);
+            //arrowIcon.transform.rotation.SetLookRotation(camera.transform.position, projectedPoint);
+            //arrowIcon.transform.rotation.SetFromToRotation(Vector3.up, projectedPoint.normalized);
+            Debug.Log("angle: " + diffAngle);
         }
     }
-    Plane[] planes;
+    float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
+    {
+        return Mathf.Atan2(
+            Vector3.Dot(n, Vector3.Cross(v1, v2)),
+            Vector3.Dot(v1, v2)) * Mathf.Rad2Deg;
+    }
     bool IsInViewFrustrum(GameObject target)
     {
         bool ret = false;
@@ -76,7 +100,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
     Vector3 HitPlane(Vector3 point, Plane plane, out float rayDistance)
     {
         Vector3 intersectPoint = Vector3.zero;
-        var ray = new Ray(canvas.transform.position, point - canvas.transform.position);
+        var ray = new Ray(canvas.transform.position, point);// - canvas.transform.position);
         if (plane.Raycast(ray, out rayDistance))
         {
             intersectPoint = ray.GetPoint(rayDistance);
