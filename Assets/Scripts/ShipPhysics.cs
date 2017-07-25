@@ -57,7 +57,7 @@ public class ShipPhysics : MonoBehaviour
         }
         if (XCI.GetButtonDown(XboxButton.X, controller))
         {
-            FireMissile();
+            FireMissileFlag = true;
         }
         if (XCI.GetButtonDown(XboxButton.Y, controller))
         {
@@ -67,12 +67,13 @@ public class ShipPhysics : MonoBehaviour
 		float axisY = XCI.GetAxis(XboxAxis.LeftStickY, controller);
         //if (axisY != 0) Debug.Log("axisY: " + axisY);
         float axisX = -XCI.GetAxis(XboxAxis.LeftStickX, controller);
-        float rotScalar = 0.2f;
+        //if (axisX != 0) Debug.Log("axisX: " + axisX);
+        float rotScalar = Torque;
         float pitchAmt = Mathf.Sign(axisY) * Mathf.Sqrt(Mathf.Abs(axisY)) * rotScalar;
         float rollAmt = Mathf.Sign(axisX) * Mathf.Sqrt(Mathf.Abs(axisX)) * rotScalar;
         //actual camera+ship rotation
-        PitchUp(-pitchAmt, true);
-        RollLeft(-rollAmt, true);
+        PitchUp(pitchAmt, false);
+        RollLeft(rollAmt, false);
         float neg = 1;
         //just ship rotation, for show
         var rot = Quaternion.Euler(pitchAmt*20, 0, 0) * Quaternion.Euler(0, 0, rollAmt*20);
@@ -121,6 +122,7 @@ public class ShipPhysics : MonoBehaviour
     float b;
     void CameraFollow(GameObject missile)
     {
+        return;
         Debug.Log("Following!");
         _camera.transform.parent = null;//
         //_debugMarker.transform.parent = missile.transform;
@@ -176,6 +178,7 @@ public class ShipPhysics : MonoBehaviour
     public GameObject cameraDummy;
     void CameraFollow()
     {
+        //TODO reuse somewhere else, on hold A?
         if (CameraFollowMissile == null || !CameraFollowMissile.activeSelf
             || _target == null || !_target.activeSelf)
         {
@@ -234,9 +237,44 @@ public class ShipPhysics : MonoBehaviour
     {
         return angle * (point - pivot) + pivot;
     }
+    int numMissilesAtOnce = 6;
+    int numMissilesFiredThisVolley = 0;
+    float delayBetweenMissileFire = .2f;
+    float delayBetweenVolley = 5f;
+    float timeSinceLastVolley = 0f;
+    float timeSinceLastMissileFire = 0f;
     [ContextMenu("Fire Missile!")]
     public GameObject FireMissile()
     {
+        if (FireMissileFlag)
+        {
+            if (numMissilesFiredThisVolley < numMissilesAtOnce)
+            {
+                if (numMissilesFiredThisVolley == 0 )
+                {
+                    if (Time.time < timeSinceLastVolley + delayBetweenVolley)
+                        return null;
+                    timeSinceLastVolley = Time.time;
+                }
+                if (Time.time > timeSinceLastMissileFire + delayBetweenMissileFire)
+                {
+                    timeSinceLastMissileFire = Time.time;
+                    numMissilesFiredThisVolley++;
+                }
+                else
+                {
+                    return null;
+                }
+            } else
+            {
+                FireMissileFlag = false;
+                numMissilesFiredThisVolley = 0;
+                return null;
+            }
+        } else
+        {
+            return null;
+        }
         Debug.Log("Fire missile");
         var newMissile = Instantiate(_missile);
         //set rot and pos to gun
@@ -244,8 +282,13 @@ public class ShipPhysics : MonoBehaviour
         newMissile.transform.position = _gun.transform.position;
         newMissile.transform.rotation = _gun.transform.rotation;
         //give speed
-        var speed = _gun.transform.forward * 5;
-        newMissile.GetComponent<Rigidbody>().velocity = speed;
+        var upGain = Random.Range(-1.0f, 1f);
+        var rightGain = Random.Range(-1f, 1f);
+        var forwardGain = Random.Range(1f, 3f);
+        var velocity = _gun.transform.forward * forwardGain
+                    + _gun.transform.up * upGain
+                    + _gun.transform.right * rightGain;
+        newMissile.GetComponent<Rigidbody>().velocity = velocity.normalized * 3;
         //sound!
         //set die time
         var missileLogic = newMissile.GetComponent<MissileLogic>();
@@ -292,8 +335,8 @@ public class ShipPhysics : MonoBehaviour
         rb.AddTorque(transform.right * amt);
 
         //var rot = Quaternion.Euler(-transform.right * neg * torque*200);
-        //Debug.Log("pitching " + amt);
-        var rot = Quaternion.Euler(amt*20, 0, 0);
+        //if (amt != 0) Debug.Log("pitching " + amt);
+        var rot = Quaternion.Euler(amt, 0, 0);
         //ship.transform.Rotate(transform.forward, -amt);
         _ship.transform.localRotation = rot;
     }
@@ -312,8 +355,8 @@ public class ShipPhysics : MonoBehaviour
         var amt = neg * torque;
         rb.AddTorque(transform.forward * amt);
         //var rot = Quaternion.Euler(-transform.right * neg * torque*200);
-        //Debug.Log("rolling " + amt);
-        var rot = Quaternion.Euler(0, 0, amt*20);
+        //if (amt != 0) Debug.Log("rolling " + amt);
+        var rot = Quaternion.Euler(0, 0, amt);
         //ship.transform.Rotate(transform.forward, -amt);
         _ship.transform.localRotation = rot;
         /*
@@ -359,6 +402,7 @@ public class ShipPhysics : MonoBehaviour
         GetController();
         NullSpin();
         CameraFollow();
+        FireMissile();
         /*
         Spin(ref SpinLeft, transform.up);
         Spin(ref SpinRight, -transform.up);

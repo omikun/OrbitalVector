@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Logdump
 {
-    public static bool DebugFlag = true;
+    public static bool DebugFlag = false;
     public static void Log(string str)
     {
         if (DebugFlag)
@@ -49,14 +49,20 @@ public class MissileLogic : MonoBehaviour {
     [Range(0, 1)]
     public float ManualThrottle = 1;
     Rigidbody rb;
-
+    public AudioClip explosion, missile;
+    AudioSource audioSource;
+    float lowPitch = .75f;
+    float highPitch = 1.75f;
     //PN algorithm
     public float N = 3;
-    public float Nt = 9.8f;
+    public GameObject particles;
     Vector3 oldRTM = Vector3.zero;
 	// Use this for initialization
 	void Start () {
         rb = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
+        audioSource.pitch = Random.Range(lowPitch, highPitch);
+        audioSource.PlayOneShot(explosion, 1f);
 	}
     //don't use this, confusing as all hell
     //http://www.moddb.com/members/blahdy/blogs/gamedev-introduction-to-proportional-navigation-part-i
@@ -178,7 +184,7 @@ public class MissileLogic : MonoBehaviour {
             line.SetPosition(i+3, new Vector3((float)i / 10, dist/10, 0));
             i++;
         }
-        Debug.Log("t=" + min.time + " minDist: " + min.index + " minV: " + min.result.magnitude);
+        Logdump.Log("t=" + min.time + " minDist: " + min.index + " minV: " + min.result.magnitude);
         //InterceptionMarker.transform.position = min.time * Vt + Pt0;
         //if too slow, use target velocity vector
         //var desiredVm = (min.index > 1 ) ? min.result : Vt;
@@ -202,14 +208,18 @@ public class MissileLogic : MonoBehaviour {
 	void FixedUpdate () {
 		if (Time.time - BornTime > DieAfterTime)
         {
-            Debug.Log("Born time: " + BornTime + " Now: " + Time.time);
+            Logdump.Log("Born time: " + BornTime + " Now: " + Time.time);
             Destroy(gameObject);
             return;
         }
 		if (Time.time - BornTime > FireDelay)
         {
             if (target == null)
+            {
+                particles.SetActive(false);
                 return;
+            }
+            particles.SetActive(true);
             var rocketAccel = Vector3.zero;
             //rocketAccel += ProportionalNavigation(); 
             if (true ) // proportional navigation
@@ -221,9 +231,12 @@ public class MissileLogic : MonoBehaviour {
             } else {    // slow dog curve 
                 rocketAccel = SlowDogCurve();
             }
-            Debug.Log("accel: " + rocketAccel.magnitude);
-            Debug.Log("velocity: " + rb.velocity.magnitude);
+            Logdump.Log("accel: " + rocketAccel.magnitude);
+            Logdump.Log("velocity: " + rb.velocity.magnitude);
             rb.velocity += rocketAccel * Time.deltaTime;
+            //tail chase
+            //rb.velocity += (target.transform.position - transform.position).normalized * MaxAcceleration;
+            //rb.velocity = rocketAccel;
             //transform.rotation = Quaternion.LookRotation(rb.velocity);
         }
 	}

@@ -60,7 +60,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
                 arrowIcon.transform.Rotate(transform.forward.normalized, diffAngle);
                 //arrowIcon.transform.rotation.SetLookRotation(camera.transform.position, projectedPoint);
                 //arrowIcon.transform.rotation.SetFromToRotation(Vector3.up, projectedPoint.normalized);
-                Debug.Log("angle: " + diffAngle);
+                Logdump.Log("angle: " + diffAngle);
             }
         }
     }
