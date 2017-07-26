@@ -21,11 +21,14 @@ public class TargetIndicatorLogic : MonoBehaviour {
     float oldAngle = 0;
 	void FixedUpdate () {
 
+        target = UXStateManager.GetTarget();
         if (target == null)
         {
-            Destroy(gameObject);
+            sr.enabled = false;
             return;
         }
+        sr.enabled = true;
+
 		Vector3 v = target.transform.position - camera.transform.position;
         Vector3 d = Vector3.Project(v, camera.transform.forward);
         Vector3 projectedPoint = target.transform.position - d;

@@ -222,6 +222,8 @@ public class Orbit : MonoBehaviour
     public float lineScale = .01f;
     void FixedUpdate()
     {
+        //FIXME depends on ship tag
+        return;
         float scale = lineScale * holo.GetComponent<RenderScale>().realScale;
         foreach (var line in lines)
         {

@@ -60,6 +60,10 @@ public static class UXStateManager
                 break;
         }
     }
+    public static void SelectTarget(GameObject unit)
+    {
+        selectedTarget = unit;
+    }
     public static void SelectUnit(GameObject unit)
     {
         if (unit.tag == "planet")
@@ -112,8 +116,8 @@ public static class UXStateManager
     }
     public static GameObject GetTarget()
     {
-        if (selectedTarget == null)
-            Debug.Log("No target set");
+        //if (selectedTarget == null)
+        //    Debug.Log("No target set");
         return selectedTarget;
     }
     public static UXStates getUXState() { return uxState; }

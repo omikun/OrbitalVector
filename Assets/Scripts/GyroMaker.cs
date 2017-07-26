@@ -12,6 +12,7 @@ public class GyroMaker : MonoBehaviour {
         line.SetVertexCount(segments+1);
         drawCircle(line);
 	}
+    [ContextMenu("Draw line!")]
 	void drawCircle(LineRenderer line)
     {
         float semiMajor = 2;
