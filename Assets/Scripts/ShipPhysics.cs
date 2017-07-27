@@ -117,6 +117,7 @@ public class ShipPhysics : MonoBehaviour
         }
         _debugCameraLine = _debugCameraLineObj.GetComponent<LineRenderer>();
         QueryControllers();
+        missileFFSM = new WeaponFiringFSM(FireMissile);
     }
     GameObject CameraFollowMissile;
     float b;
@@ -237,6 +238,7 @@ public class ShipPhysics : MonoBehaviour
     {
         return angle * (point - pivot) + pivot;
     }
+    WeaponFiringFSM missileFFSM;
     int numMissilesAtOnce = 6;
     int numMissilesFiredThisVolley = 0;
     float delayBetweenMissileFire = .2f;
@@ -246,6 +248,7 @@ public class ShipPhysics : MonoBehaviour
     [ContextMenu("Fire Missile!")]
     public GameObject FireMissile()
     {
+#if false
         if (FireMissileFlag)
         {
             if (numMissilesFiredThisVolley < numMissilesAtOnce)
@@ -275,6 +278,7 @@ public class ShipPhysics : MonoBehaviour
         {
             return null;
         }
+#endif
         Debug.Log("Fire missile");
         var newMissile = Instantiate(_missile);
         //set rot and pos to gun
@@ -402,7 +406,8 @@ public class ShipPhysics : MonoBehaviour
         GetController();
         NullSpin();
         CameraFollow();
-        FireMissile();
+        //FireMissile();
+        missileFFSM.Tick(ref FireMissileFlag);
         /*
         Spin(ref SpinLeft, transform.up);
         Spin(ref SpinRight, -transform.up);
