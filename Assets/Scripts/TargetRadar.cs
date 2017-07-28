@@ -34,6 +34,8 @@ public class TargetRadar : MonoBehaviour {
         int i = 0;
         foreach (var target in targets)
         {
+            if (target == null)
+                continue; //TODO remove destroyed targets from list, or rebuild list?
             var targetDir = target.transform.position - transform.position;
             var angle = Vector3.Angle(targetDir, transform.forward);
             if (angle < minAngle)

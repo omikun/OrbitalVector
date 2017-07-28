@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using XboxCtrlrInput;		// Be sure to include this if you want an object to have Xbox input
 //public class Controller
 
@@ -103,6 +104,8 @@ public class ShipPhysics : MonoBehaviour
     public GameObject _debugCameraLineObj;
     LineRenderer _debugCameraLine;
     public GameObject _debugMarker;
+    public GameObject _missileCount;
+    Text missileText;
     // Use this for initialization
     void Start() {
         rb = GetComponent<Rigidbody>();
@@ -118,6 +121,7 @@ public class ShipPhysics : MonoBehaviour
         _debugCameraLine = _debugCameraLineObj.GetComponent<LineRenderer>();
         QueryControllers();
         missileFFSM = new WeaponFiringFSM(FireMissile);
+        missileText = _missileCount.GetComponent<Text>();
     }
     GameObject CameraFollowMissile;
     float b;
@@ -238,7 +242,7 @@ public class ShipPhysics : MonoBehaviour
     {
         return angle * (point - pivot) + pivot;
     }
-    WeaponFiringFSM missileFFSM;
+    public WeaponFiringFSM missileFFSM;
     int numMissilesAtOnce = 6;
     int numMissilesFiredThisVolley = 0;
     float delayBetweenMissileFire = .2f;
@@ -299,7 +303,7 @@ public class ShipPhysics : MonoBehaviour
         missileLogic.BornTime = Time.time;
         missileLogic.DieAfterTime = 30;
         missileLogic.enabled = true;
-        missileLogic.target = _target;
+        missileLogic.target = UXStateManager.GetTarget();
         CameraFollow(newMissile);
         return newMissile;
     }
@@ -400,6 +404,7 @@ public class ShipPhysics : MonoBehaviour
             }
         }
     }
+
 	// Update is called once per frame
 	void FixedUpdate () {
         GetKeyboard();
@@ -408,6 +413,7 @@ public class ShipPhysics : MonoBehaviour
         CameraFollow();
         //FireMissile();
         missileFFSM.Tick(ref FireMissileFlag);
+        missileText.text = "Missiles: " + missileFFSM.Ammo;
         /*
         Spin(ref SpinLeft, transform.up);
         Spin(ref SpinRight, -transform.up);

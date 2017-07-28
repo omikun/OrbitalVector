@@ -10,9 +10,9 @@ public class WeaponFiringFSM {
     Timer ReloadTimer;
     Timer VolleyTimer;
     Timer UnitTimer;
-    public float ReloadRate = 2;
+    public float ReloadRate = 5;
     public int ReloadAmount = 1;
-    public float VolleyInterval = 5;
+    public float VolleyInterval = 6;
     public float MissileInterval = .2f;
     public int NumPerVolley = 4;
     public int NumPerUnit = 1;
@@ -33,7 +33,7 @@ public class WeaponFiringFSM {
         Ammo = StartingAmmo;
         NumFired = 0;
         ReloadTimer = new Timer(ReloadRate);
-        VolleyTimer = new Timer(VolleyInterval);
+        VolleyTimer = new Timer(VolleyInterval, true); //defaults to ready
         UnitTimer = new Timer(MissileInterval);
     }
 

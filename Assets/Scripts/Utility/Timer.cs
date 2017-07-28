@@ -6,7 +6,7 @@ public class Timer {
     public float StartTime;
     public float Duration;
     bool Idle;
-    public Timer(float d, bool i = true)
+    public Timer(float d, bool i = false)
     {
         Idle = i;
         Duration = d;
