@@ -53,7 +53,7 @@ public class TargetRadar : MonoBehaviour {
                 debugString.Append(angle.ToString());
                 debugString.Append(" ");
             }
-            Debug.Log(debugString);
+            //Debug.Log(debugString);
             if (selectedTarget)
                 Debug.Log("target: " + selectedTarget.name + " minAngle: " + minAngle);
             printDebugFlag = false;

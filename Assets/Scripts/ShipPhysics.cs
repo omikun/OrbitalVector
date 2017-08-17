@@ -64,25 +64,40 @@ public class ShipPhysics : MonoBehaviour
         {
         }
 
-        // Left stick movement
-		float axisY = XCI.GetAxis(XboxAxis.LeftStickY, controller);
-        //if (axisY != 0) Debug.Log("axisY: " + axisY);
-        float axisX = -XCI.GetAxis(XboxAxis.LeftStickX, controller);
-        //if (axisX != 0) Debug.Log("axisX: " + axisX);
-        float rotScalar = Torque;
-        float pitchAmt = Mathf.Sign(axisY) * Mathf.Sqrt(Mathf.Abs(axisY)) * rotScalar;
-        float rollAmt = Mathf.Sign(axisX) * Mathf.Sqrt(Mathf.Abs(axisX)) * rotScalar;
-        //actual camera+ship rotation
-        PitchUp(pitchAmt, false);
-        RollLeft(rollAmt, false);
-        float neg = 1;
-        //just ship rotation, for show
-        var rot = Quaternion.Euler(pitchAmt*20, 0, 0) * Quaternion.Euler(0, 0, rollAmt*20);
-        _ship.transform.localRotation = rot;
+        {
+            // Left stick movement
+            float axisY = XCI.GetAxis(XboxAxis.LeftStickY, controller);
+            //if (axisY != 0) Debug.Log("axisY: " + axisY);
+            float axisX = -XCI.GetAxis(XboxAxis.LeftStickX, controller);
+            //if (axisX != 0) Debug.Log("axisX: " + axisX);
+            float rotScalar = Torque;
+            float pitchAmt = Mathf.Sign(axisY) * Mathf.Sqrt(Mathf.Abs(axisY)) * rotScalar;
+            float rollAmt = Mathf.Sign(axisX) * Mathf.Sqrt(Mathf.Abs(axisX)) * rotScalar;
+            //actual camera+ship rotation
+            PitchUp(pitchAmt, false);
+            RollLeft(rollAmt, false);
+            float neg = 1;
+            //just ship rotation, for show
+            var rot = Quaternion.Euler(pitchAmt * 20, 0, 0) * Quaternion.Euler(0, 0, rollAmt * 20);
+            _ship.transform.localRotation = rot;
+        }
+        {
+            // Right stick movement
+            float axisY = XCI.GetAxis(XboxAxis.RightStickY, controller);
+            if (axisY != 0) Debug.Log("axisY: " + axisY);
+            float axisX = -XCI.GetAxis(XboxAxis.RightStickX, controller);
+            if (axisX != 0) Debug.Log("axisX: " + axisX);
+            //rotate from default pos by up to 180 degrees on each axis
+            float maxRotDegrees = 180;
+            _camera.transform.localPosition = Quaternion.Euler(maxRotDegrees * axisY, maxRotDegrees * axisX, 0) * localCameraPosition;
+            _camera.transform.localRotation = Quaternion.LookRotation(-_camera.transform.localPosition);
+        }
+
     }
-//}
-//public class ShipPhysics : MonoBehaviour 
-//{
+    Vector3 localCameraPosition; //at start of game; default local pos
+    //}
+    //public class ShipPhysics : MonoBehaviour 
+    //{
     Rigidbody rb;
     public GameObject _camera;
     public bool nullSpin = false;
@@ -122,6 +137,7 @@ public class ShipPhysics : MonoBehaviour
         QueryControllers();
         missileFFSM = new WeaponFiringFSM(FireMissile);
         missileText = _missileCount.GetComponent<Text>();
+        localCameraPosition = _camera.transform.localPosition;
     }
     GameObject CameraFollowMissile;
     float b;
@@ -410,8 +426,7 @@ public class ShipPhysics : MonoBehaviour
         GetKeyboard();
         GetController();
         NullSpin();
-        CameraFollow();
-        //FireMissile();
+        //CameraFollow();//HACK put me back in somehow; conflicts with camera rotate part
         missileFFSM.Tick(ref FireMissileFlag);
         missileText.text = "Missiles: " + missileFFSM.Ammo;
         /*
