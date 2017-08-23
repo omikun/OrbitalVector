@@ -60,7 +60,6 @@ public class TargetIndicatorLogic : MonoBehaviour {
                 var diffAngle = angle - oldAngle;
                 oldAngle = angle;
                 var localRot = arrowIcon.transform.localRotation;
-                Debug.Log("localRot: " + localRot);
                 arrowIcon.transform.localRotation *= Quaternion.Euler(0, 0, diffAngle);
 
                 //arrowIcon.transform.Rotate(camera.transform.forward.normalized, diffAngle);
