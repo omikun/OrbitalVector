@@ -32,7 +32,6 @@ public class TargetIndicatorLogic : MonoBehaviour {
 		Vector3 v = target.transform.position - camera.transform.position;
         Vector3 d = Vector3.Project(v, camera.transform.forward);
         Vector3 projectedPoint = target.transform.position - d;
-        //if target not in view
         if (IsInViewFrustrum(target))
         {
             sr.enabled = true;
@@ -60,10 +59,15 @@ public class TargetIndicatorLogic : MonoBehaviour {
                 var angle = AngleSigned(transform.up, projectedPoint, transform.forward);
                 var diffAngle = angle - oldAngle;
                 oldAngle = angle;
-                arrowIcon.transform.Rotate(transform.forward.normalized, diffAngle);
+                var localRot = arrowIcon.transform.localRotation;
+                Debug.Log("localRot: " + localRot);
+                arrowIcon.transform.localRotation *= Quaternion.Euler(0, 0, diffAngle);
+
+                //arrowIcon.transform.Rotate(camera.transform.forward.normalized, diffAngle);
+
                 //arrowIcon.transform.rotation.SetLookRotation(camera.transform.position, projectedPoint);
                 //arrowIcon.transform.rotation.SetFromToRotation(Vector3.up, projectedPoint.normalized);
-                Logdump.Log("angle: " + diffAngle);
+                //Logdump.Log("angle: " + diffAngle);
             }
         }
     }

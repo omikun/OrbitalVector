@@ -84,17 +84,28 @@ public class ShipPhysics : MonoBehaviour
         {
             // Right stick movement
             float axisY = XCI.GetAxis(XboxAxis.RightStickY, controller);
-            if (axisY != 0) Debug.Log("axisY: " + axisY);
+            //if (axisY != 0) Debug.Log("axisY: " + axisY);
             float axisX = -XCI.GetAxis(XboxAxis.RightStickX, controller);
-            if (axisX != 0) Debug.Log("axisX: " + axisX);
+            //if (axisX != 0) Debug.Log("axisX: " + axisX);
             //rotate from default pos by up to 180 degrees on each axis
-            float maxRotDegrees = 180;
-            _camera.transform.localPosition = Quaternion.Euler(maxRotDegrees * axisY, maxRotDegrees * axisX, 0) * localCameraPosition;
+            float maxRotDegrees = 160;
+            float pitch = 0;
+            if (axisY > 0)
+            {
+                pitch = Mathf.Lerp(0, 80f - localCameraAngleX, axisY);
+            } else if (axisY < 0)
+            {
+                pitch = Mathf.Lerp(0, -80 - localCameraAngleX, -axisY);
+            }
+            //var pitch = Mathf.Min(90f * axisY, 90f - localCameraAngleX);
+            if (axisY != 0) Debug.Log("pitch: " + pitch);
+            _camera.transform.localPosition = Quaternion.Euler(pitch, maxRotDegrees * axisX, 0) * localCameraPosition;
             _camera.transform.localRotation = Quaternion.LookRotation(-_camera.transform.localPosition);
         }
 
     }
     Vector3 localCameraPosition; //at start of game; default local pos
+    float localCameraAngleX;
     //}
     //public class ShipPhysics : MonoBehaviour 
     //{
@@ -137,7 +148,10 @@ public class ShipPhysics : MonoBehaviour
         QueryControllers();
         missileFFSM = new WeaponFiringFSM(FireMissile);
         missileText = _missileCount.GetComponent<Text>();
+
         localCameraPosition = _camera.transform.localPosition;
+        localCameraAngleX = 20.722f;//hack _camera.transform.localRotation.x;
+        Debug.Log("initial angle: " + localCameraAngleX);
     }
     GameObject CameraFollowMissile;
     float b;

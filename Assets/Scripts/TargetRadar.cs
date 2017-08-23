@@ -54,8 +54,7 @@ public class TargetRadar : MonoBehaviour {
                 debugString.Append(" ");
             }
             //Debug.Log(debugString);
-            if (selectedTarget)
-                Debug.Log("target: " + selectedTarget.name + " minAngle: " + minAngle);
+            //if (selectedTarget) Debug.Log("target: " + selectedTarget.name + " minAngle: " + minAngle);
             printDebugFlag = false;
         }
         //print every delay
