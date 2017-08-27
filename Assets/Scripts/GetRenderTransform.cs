@@ -10,7 +10,7 @@ public class GetRenderTransform : MonoBehaviour {
     public float rMin = 1000;
     public float rMax = 1000 * 1000 * 1000;
     float rMaxSqr, rMinSqr;
-    public float EarthRadius = 12742 * 1000/2;
+    public float EarthRadius = 12742 * 1000/2; //earth model is 2m wide at scale=1
     public GameObject focus; //this is the source of the transform
     //assume UXManager.GetSource is the focus
 	// Use this for initialization
