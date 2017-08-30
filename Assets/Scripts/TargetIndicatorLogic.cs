@@ -8,6 +8,10 @@ public class TargetIndicatorLogic : MonoBehaviour {
 
     public GameObject topBound, bottomBound, leftBound, rightBound;
     public GameObject arrowIcon;
+    public GameObject sphericalTargetIcon;
+    public GameObject stiBase;
+    public GameObject center;
+    LineRenderer stiLR;
     Plane[] planes;
     GameObject canvas;
     SpriteRenderer sr;
@@ -15,8 +19,19 @@ public class TargetIndicatorLogic : MonoBehaviour {
 	void Start () {
         canvas = topBound.transform.parent.gameObject;
         sr = GetComponent<SpriteRenderer>();
+        stiLR = sphericalTargetIcon.GetComponent<LineRenderer>();
 	}
+    void SetSphericalTargetIcon()
+    {
+        var basePos = target.transform.position.normalized * 2;
+        var pos = basePos * 1.1f;
+        sphericalTargetIcon.transform.position = pos;
+        stiLR.SetPosition(0, pos);
+        stiLR.SetPosition(1, basePos);
+        stiBase.transform.position = basePos;
+        stiBase.transform.forward = pos;
 
+    }
     // Update is called once per frame
     float oldAngle = 0;
 	void FixedUpdate () {
@@ -28,7 +43,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
             return;
         }
         sr.enabled = true;
-
+        SetSphericalTargetIcon();
 		Vector3 v = target.transform.position - camera.transform.position;
         Vector3 d = Vector3.Project(v, camera.transform.forward);
         Vector3 projectedPoint = target.transform.position - d;

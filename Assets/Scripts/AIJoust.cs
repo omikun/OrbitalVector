@@ -35,9 +35,9 @@ public class AIJoust : MonoBehaviour {
                     continue;
                 }
             }
-            if (toTarget.magnitude < 20)
+            if (toTarget.magnitude < 20 && angle < 60)
             {
-                var newDir = Vector3.RotateTowards(transform.forward, transform.right, .5f * Time.fixedDeltaTime, 1).normalized;
+                var newDir = Vector3.RotateTowards(transform.forward, transform.right, Time.fixedDeltaTime, 1).normalized;
                 transform.forward = newDir;
                 midway = true;
             } else if (toTarget.magnitude > 50 || Mathf.Abs(angle) > 25)
