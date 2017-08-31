@@ -58,16 +58,16 @@ public class AIJoust : MonoBehaviour {
             {
                 rb.velocity = rb.velocity.normalized * 10;
             }
-            Debug.Log("angle: " + angle + " newVel: " + rb.velocity.magnitude + " dist: " + toTarget.magnitude);
+            //Debug.Log("angle: " + angle + " newVel: " + rb.velocity.magnitude + " dist: " + toTarget.magnitude);
             yield return fixedDelay;
-            //fire when in range and in fov
-            //yield return null;
-            //if out of range, turn back
-            //yield return null;
         }
     }
 	// Update is called once per frame
 	void Update () {
         //Joust();
 	}
+    void LateUpdate()
+    {
+        //take velocity from player and subtract it from self
+    }
 }

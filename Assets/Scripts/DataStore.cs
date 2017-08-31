@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public static class DataStore { 
 
@@ -43,6 +44,8 @@ public static class UXStateManager
     static GameObject selectedSource, selectedTarget;
     static public NationState player;
     public static GameObject nationMenu;
+    public static List<GameObject> targets = new List<GameObject>();
+
     public static void ToggleTargetSelection()
     {
         switch (selectState)
@@ -63,6 +66,10 @@ public static class UXStateManager
     public static void SelectTarget(GameObject unit)
     {
         selectedTarget = unit;
+    }
+    public static void AddTarget(GameObject unit)
+    {
+        targets.Add(unit);
     }
     public static void SelectUnit(GameObject unit)
     {

@@ -16,6 +16,10 @@ public class TargetRadar : MonoBehaviour {
         lastTime = Time.time;
         Initialize();
         targets = GameObject.FindGameObjectsWithTag("ship");
+        foreach(var target in targets)
+        {
+            UXStateManager.AddTarget(target);
+        }
         angles = new float[targets.Length];
         //get list of targetable gameobjects
         Debug.Log("num targets: " + targets.Length);
@@ -27,9 +31,16 @@ public class TargetRadar : MonoBehaviour {
     // Update is called once per frame
 
     bool printDebugFlag = true;
-	void Update () {
-        //if a targetable game object is within fov (really fov/2) of camera.forward
+    void Update() {
+        var target = IsInFOV();
+        //DebugPrint(target);
+        if ( target )
+            UXStateManager.SelectTarget(target);
+    }
+    GameObject IsInFOV()
+    {
         GameObject selectedTarget = null;
+        //if a targetable game object is within fov (really fov/2) of camera.forward
         float minAngle = fov;
         int i = 0;
         foreach (var target in targets)
@@ -45,6 +56,10 @@ public class TargetRadar : MonoBehaviour {
             }
             angles[i++] = angle;
         }
+        return selectedTarget;
+    }
+    void DebugPrint()
+    { 
         if (printDebugFlag)
         {
             StringBuilder debugString = new StringBuilder("angle: ");
@@ -53,7 +68,8 @@ public class TargetRadar : MonoBehaviour {
                 debugString.Append(angle.ToString());
                 debugString.Append(" ");
             }
-            //Debug.Log(debugString);
+            Debug.Log(debugString);
+
             //if (selectedTarget) Debug.Log("target: " + selectedTarget.name + " minAngle: " + minAngle);
             printDebugFlag = false;
         }
@@ -63,8 +79,6 @@ public class TargetRadar : MonoBehaviour {
             lastTime = Time.time;
             printDebugFlag = true;
         }
-        if (selectedTarget)
-            UXStateManager.SelectTarget(selectedTarget);
 
     }
 }

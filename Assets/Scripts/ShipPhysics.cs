@@ -100,7 +100,7 @@ public class ShipPhysics : MonoBehaviour
             //var pitch = Mathf.Min(90f * axisY, 90f - localCameraAngleX);
             if (axisY != 0) Debug.Log("pitch: " + pitch);
             _camera.transform.localPosition = Quaternion.Euler(pitch, maxRotDegrees * axisX, 0) * localCameraPosition;
-            _camera.transform.localRotation = Quaternion.LookRotation(-_camera.transform.localPosition);
+            _camera.transform.localRotation = Quaternion.LookRotation(-_camera.transform.localPosition + new Vector3(0, 1, 0));
         }
 
     }
@@ -150,7 +150,7 @@ public class ShipPhysics : MonoBehaviour
         missileText = _missileCount.GetComponent<Text>();
 
         localCameraPosition = _camera.transform.localPosition;
-        localCameraAngleX = 20.722f;//hack _camera.transform.localRotation.x;
+        localCameraAngleX = 10.722f;//hack _camera.transform.localRotation.x;
         Debug.Log("initial angle: " + localCameraAngleX);
     }
     GameObject CameraFollowMissile;
