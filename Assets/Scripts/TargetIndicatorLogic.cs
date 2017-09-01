@@ -4,21 +4,26 @@ using UnityEngine;
 
 public class TargetIndicatorLogic : MonoBehaviour {
     public GameObject camera;
-    public GameObject target;
+    public GameObject target; //this needs to be set on each new object
+    public GameObject center; //center of player (origin)
 
+    public GameObject squareIcon;
+    //screen space bounds for arrow icon
     public GameObject topBound, bottomBound, leftBound, rightBound;
     public GameObject arrowIcon;
-    public GameObject sphericalTargetIcon;
-    public GameObject stiBase;
-    public GameObject center;
-    LineRenderer stiLR;
     Plane[] planes;
     GameObject canvas;
     SpriteRenderer sr;
-	// Use this for initialization
+
+    //icon for sphere UI
+    public GameObject sphericalTargetIcon; //sti
+    //base if spherical target icon
+    public GameObject stiBase;
+    LineRenderer stiLR; //line extending from sti to stiBase
+
 	void Start () {
         canvas = topBound.transform.parent.gameObject;
-        sr = GetComponent<SpriteRenderer>();
+        sr = squareIcon.GetComponent<SpriteRenderer>();
         stiLR = sphericalTargetIcon.GetComponent<LineRenderer>();
 	}
     void SetSphericalTargetIcon()
@@ -36,7 +41,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
     float oldAngle = 0;
 	void FixedUpdate () {
 
-        target = UXStateManager.GetTarget();
+        //target = UXStateManager.GetTarget();
         if (target == null)
         {
             sr.enabled = false;
@@ -53,7 +58,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
             arrowIcon.SetActive(false);
             var distToCamera = canvas.transform.position - camera.transform.position;
             var targetIconPos = distToCamera.magnitude * (target.transform.position - camera.transform.position).normalized;
-            transform.position = camera.transform.position + targetIconPos;
+            squareIcon.transform.position = camera.transform.position + targetIconPos;
         } else
         {
             sr.enabled = false;
@@ -66,8 +71,8 @@ public class TargetIndicatorLogic : MonoBehaviour {
                 //arrowIcon.transform.forward = camera.transform.position;
                 //var angle = Vector3.Angle(transform.up, projectedPoint);
                 arrowIcon.transform.rotation.SetLookRotation(camera.transform.forward, projectedPoint - transform.position);
-                forward.transform.localPosition = camera.transform.forward.normalized * 18;
-                up.transform.localPosition = (projectedPoint - transform.position).normalized * 18;
+                //forward.transform.localPosition = camera.transform.forward.normalized * 18;
+                //up.transform.localPosition = (projectedPoint - transform.position).normalized * 18;
             }
             else
             {
@@ -85,7 +90,6 @@ public class TargetIndicatorLogic : MonoBehaviour {
             }
         }
     }
-    public GameObject up, forward;
     float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
     {
         return Mathf.Atan2(
@@ -99,6 +103,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
         Collider objCol = target.GetComponent<Collider>();
         return GeometryUtility.TestPlanesAABB(planes, objCol.bounds);
     }
+    //find bounds of the screen
     void FindInterSection(Vector3 point)
     {
 
@@ -126,7 +131,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
                 minDist = dists[j];
             }
         }
-        transform.position = hitPoint;
+        squareIcon.transform.position = hitPoint;
     }
     Vector3 HitPlane(Vector3 point, Plane plane, out float rayDistance)
     {

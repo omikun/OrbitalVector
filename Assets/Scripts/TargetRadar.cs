@@ -7,6 +7,8 @@ using UnityEngine;
 public class TargetRadar : MonoBehaviour {
     public float fov = 20;
     GameObject[] targets; //targets that are in range and targetable
+    public GameObject targetIndicatorPrefab;
+    List<GameObject> stis = new List<GameObject>();
 
     float[] angles;
     float lastTime;
@@ -18,7 +20,12 @@ public class TargetRadar : MonoBehaviour {
         targets = GameObject.FindGameObjectsWithTag("ship");
         foreach(var target in targets)
         {
+            Debug.Log("found target: " + target.name);
             UXStateManager.AddTarget(target);
+            var temp = Instantiate(targetIndicatorPrefab);
+            temp.transform.parent = transform; //camera.transform
+            temp.GetComponent<TargetIndicatorLogic>().target = target;
+            stis.Add(temp);
         }
         angles = new float[targets.Length];
         //get list of targetable gameobjects
