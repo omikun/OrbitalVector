@@ -52,7 +52,7 @@ public class TargetRadar : MonoBehaviour {
         foreach (var target in targets)
         {
             var dist = target.transform.position.magnitude;
-            if (dist < minDist && prevMinDist < dist)
+            if (dist < minDist && prevMinDist < dist && IsInFOV(target))
             {
                 minDist = dist;
                 ret = target;
@@ -65,7 +65,7 @@ public class TargetRadar : MonoBehaviour {
         //sort targets by distance
         //get currently selected target
         var target = UXStateManager.GetTarget();
-        GameObject nextTarget = null;
+        GameObject nextTarget = target;
         if (target != null)
         {
             nextTarget = FindClosestTarget(target, target.transform.position.magnitude);
@@ -85,20 +85,24 @@ public class TargetRadar : MonoBehaviour {
     {
         GameObject selectedTarget = null;
         //if a targetable game object is within fov (really fov/2) of camera.forward
-        float minAngle = fov;
-        int i = 0;
         foreach (var target in targets)
         {
-            if (target == null)
-                continue; //TODO remove destroyed targets from list, or rebuild list?
-            var targetDir = target.transform.position - transform.position;
-            var angle = Vector3.Angle(targetDir, transform.forward);
-            if (angle < minAngle)
-            {
-                minAngle = angle;
-                selectedTarget = target;
-            }
-            angles[i++] = angle;
+            selectedTarget = IsInFOV(target);
+        }
+        return selectedTarget;
+    }
+    GameObject IsInFOV(GameObject target)
+    {
+        float minAngle = fov;
+        if (target == null)
+            return null;
+        GameObject selectedTarget = null;
+        var targetDir = target.transform.position - transform.position;
+        var angle = Vector3.Angle(targetDir, transform.forward);
+        if (angle < minAngle)
+        {
+            minAngle = angle;
+            selectedTarget = target;
         }
         return selectedTarget;
     }
