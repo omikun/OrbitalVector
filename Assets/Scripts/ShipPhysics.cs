@@ -50,11 +50,11 @@ public class ShipPhysics : MonoBehaviour
         }
         if (XCI.GetButtonDown(XboxButton.A, controller))
         {
-            //fire!
-            Fire();
+            cameraRadar.SelectNextTarget();
         }
         if (XCI.GetButtonDown(XboxButton.B, controller))
         {
+            Fire();
         }
         if (XCI.GetButtonDown(XboxButton.X, controller))
         {
@@ -111,6 +111,7 @@ public class ShipPhysics : MonoBehaviour
     //{
     Rigidbody rb;
     public GameObject _camera;
+    TargetRadar cameraRadar;
     public bool nullSpin = false;
     public bool FireMissileFlag = false;
     public float Torque = 10;
@@ -152,6 +153,8 @@ public class ShipPhysics : MonoBehaviour
         localCameraPosition = _camera.transform.localPosition;
         localCameraAngleX = 10.722f;//hack _camera.transform.localRotation.x;
         Debug.Log("initial angle: " + localCameraAngleX);
+
+        cameraRadar = _camera.GetComponent<TargetRadar>();
     }
     GameObject CameraFollowMissile;
     float b;
@@ -337,6 +340,7 @@ public class ShipPhysics : MonoBehaviour
         CameraFollow(newMissile);
         return newMissile;
     }
+    
     void Fire()
     {
         //take a copy of the beam, 

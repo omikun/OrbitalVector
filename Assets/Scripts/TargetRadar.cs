@@ -20,7 +20,7 @@ public class TargetRadar : MonoBehaviour {
         targets = GameObject.FindGameObjectsWithTag("ship");
         foreach(var target in targets)
         {
-            Debug.Log("found target: " + target.name);
+            Debug.Log("found target: " + target.name + " dist: " + target.transform.position.magnitude);
             UXStateManager.AddTarget(target);
             var temp = Instantiate(targetIndicatorPrefab);
             temp.transform.parent = transform; //camera.transform
@@ -39,10 +39,47 @@ public class TargetRadar : MonoBehaviour {
 
     bool printDebugFlag = true;
     void Update() {
-        var target = IsInFOV();
+        //var target = IsInFOV();
         //DebugPrint(target);
-        if ( target )
-            UXStateManager.SelectTarget(target);
+        //if ( target )
+        //    UXStateManager.SelectTarget(target);
+    }
+    //find next smallest dist that is larger than prevMinDist
+    GameObject FindClosestTarget(GameObject ret=null, float prevMinDist=0f)
+    {
+        //GameObject ret = null;
+        var minDist = float.PositiveInfinity;
+        foreach (var target in targets)
+        {
+            var dist = target.transform.position.magnitude;
+            if (dist < minDist && prevMinDist < dist)
+            {
+                minDist = dist;
+                ret = target;
+            }
+        }
+        return ret;
+    }
+    public void SelectNextTarget()
+    {
+        //sort targets by distance
+        //get currently selected target
+        var target = UXStateManager.GetTarget();
+        GameObject nextTarget = null;
+        if (target != null)
+        {
+            nextTarget = FindClosestTarget(target, target.transform.position.magnitude);
+        }
+        if (target == null || target == nextTarget)
+        {
+            //pick closest target
+            var unit = FindClosestTarget();
+            UXStateManager.SelectTarget(unit);
+        } else
+        {
+            //pick next closest target
+            UXStateManager.SelectTarget(nextTarget);
+        }
     }
     GameObject IsInFOV()
     {

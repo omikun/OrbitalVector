@@ -18,8 +18,12 @@ public class GetRenderTransform : MonoBehaviour {
 		rMaxSqr = rMax * rMax;
         rMinSqr = rMin * rMin;
         transform.localScale = new Vector3(EarthRadius, EarthRadius, EarthRadius);
-        UXStateManager.SelectUnit(focus);
-	}
+        if (focus != null)
+        {
+            Debug.Log("focus: " + focus.name);
+            UXStateManager.SelectUnit(focus);
+        }
+    }
 
     // Update is called once per frame
     void Update() {

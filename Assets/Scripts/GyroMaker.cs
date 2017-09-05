@@ -16,9 +16,9 @@ public class GyroMaker : MonoBehaviour {
         line.numPositions = (segments+1);
         drawCircle(2f, 0f, line);
 
-        line = linePrefabMini1.GetComponent<LineRenderer>();
-        line.numPositions = (segments+1);
-        drawCircle(1f, 1.71f, line);
+        var line2 = linePrefabMini1.GetComponent<LineRenderer>();
+        line2.numPositions = (segments+1);
+        drawCircle(1f, 1.71f, line2);
 
         line = linePrefabMini2.GetComponent<LineRenderer>();
         line.numPositions = (segments+1);

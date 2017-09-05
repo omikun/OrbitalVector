@@ -15,6 +15,9 @@ public class TargetIndicatorLogic : MonoBehaviour {
     GameObject canvas;
     SpriteRenderer sr;
 
+    public GameObject lockedIcon;
+    SpriteRenderer lsr;
+
     //icon for sphere UI
     public GameObject sphericalTargetIcon; //sti
     //base if spherical target icon
@@ -24,6 +27,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
 	void Start () {
         canvas = topBound.transform.parent.gameObject;
         sr = squareIcon.GetComponent<SpriteRenderer>();
+        lsr = lockedIcon.GetComponent<SpriteRenderer>();
         stiLR = sphericalTargetIcon.GetComponent<LineRenderer>();
 	}
     void SetSphericalTargetIcon()
@@ -46,6 +50,9 @@ public class TargetIndicatorLogic : MonoBehaviour {
         {
             sr.enabled = false;
             return;
+        } else
+        {
+            lsr.enabled = (target == UXStateManager.GetTarget());
         }
         sr.enabled = true;
         SetSphericalTargetIcon();
