@@ -15,6 +15,9 @@ public class TargetIndicatorLogic : MonoBehaviour {
     GameObject canvas;
     SpriteRenderer sr;
 
+    public GameObject selectedTargetIcon;
+    SpriteRenderer stsr;
+
     public GameObject lockedIcon;
     SpriteRenderer lsr;
 
@@ -28,6 +31,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
         canvas = topBound.transform.parent.gameObject;
         sr = squareIcon.GetComponent<SpriteRenderer>();
         lsr = lockedIcon.GetComponent<SpriteRenderer>();
+        stsr = selectedTargetIcon.GetComponent<SpriteRenderer>();
         stiLR = sphericalTargetIcon.GetComponent<LineRenderer>();
 	}
     void SetSphericalTargetIcon()
@@ -43,17 +47,56 @@ public class TargetIndicatorLogic : MonoBehaviour {
     }
     // Update is called once per frame
     float oldAngle = 0;
+    //know when a target is first locked
+    float BeginTargetLockTime = 0;
+    float TimeToLock = 2f;
+    bool TargetLocked = false;
+    bool BeginTargetLock = false;
 	void FixedUpdate () {
 
         //target = UXStateManager.GetTarget();
         if (target == null)
         {
             sr.enabled = false;
+            lsr.enabled = false;
+            stsr.enabled = false;
             return;
+        }
+        stsr.enabled = (target == UXStateManager.GetTarget());
+        lsr.enabled = (target == UXStateManager.GetTarget());
+        if (lsr.enabled && IsInFOV(target))
+        {
+            if (stsr.enabled )
+            {
+                if (BeginTargetLock == false)
+                {
+                    BeginTargetLock = true;
+                    BeginTargetLockTime = Time.time;
+                    lsr.enabled = true;
+                }
+                else
+                {
+                    //move targetLockIcon from center screen to targetIcon position
+                    var startingPos = camera.transform.position;
+                    var endingPos = startingPos + startingPos.magnitude/2 * (target.transform.position - camera.transform.position).normalized;
+                    var t = Mathf.Min(1, (Time.time - BeginTargetLockTime) / TimeToLock);
+                    lockedIcon.transform.position = Vector3.Lerp(startingPos, endingPos, t);
+                    if (t == 1)
+                    {
+                        TargetLocked = true;
+                        lsr.enabled = TargetLocked;
+                    } else 
+                    Debug.Log("t: " + t);
+                }
+            }
         } else
         {
-            lsr.enabled = (target == UXStateManager.GetTarget());
+            TargetLocked = false;
+            BeginTargetLock = false;
+            stsr.enabled = false;
+            lsr.enabled = false;
         }
+
         sr.enabled = true;
         SetSphericalTargetIcon();
 		Vector3 v = target.transform.position - camera.transform.position;
@@ -96,6 +139,13 @@ public class TargetIndicatorLogic : MonoBehaviour {
                 //Logdump.Log("angle: " + diffAngle);
             }
         }
+    }
+    bool IsInFOV(GameObject target)
+    {
+        float minAngle = 20;
+        var targetDir = target.transform.position - camera.transform.position;
+        var angle = Vector3.Angle(targetDir, camera.transform.forward);
+        return (angle < minAngle);
     }
     float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
     {
