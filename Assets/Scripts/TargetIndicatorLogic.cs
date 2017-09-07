@@ -23,16 +23,27 @@ public class TargetIndicatorLogic : MonoBehaviour {
 
     //icon for sphere UI
     public GameObject sphericalTargetIcon; //sti
+    SpriteRenderer ssr;
     //base if spherical target icon
     public GameObject stiBase;
+    SpriteRenderer sbsr;
     LineRenderer stiLR; //line extending from sti to stiBase
 
+    public AudioClip lockedAudio;
+    public AudioClip unlockedAudio; //falling out of fov
+    public AudioClip lockingAudio;
+    public AudioClip selectedAudio;
+    public AudioClip inFOVAudio;
+    AudioSource audio;
 	void Start () {
+        audio = GetComponent<AudioSource>();
         canvas = topBound.transform.parent.gameObject;
         sr = squareIcon.GetComponent<SpriteRenderer>();
         lsr = lockedIcon.GetComponent<SpriteRenderer>();
         stsr = selectedTargetIcon.GetComponent<SpriteRenderer>();
         stiLR = sphericalTargetIcon.GetComponent<LineRenderer>();
+        ssr = sphericalTargetIcon.GetComponent<SpriteRenderer>();
+        sbsr = stiBase.GetComponent<SpriteRenderer>();
 	}
     void SetSphericalTargetIcon()
     {
@@ -52,54 +63,37 @@ public class TargetIndicatorLogic : MonoBehaviour {
     float TimeToLock = 2f;
     bool TargetLocked = false;
     bool BeginTargetLock = false;
-	void FixedUpdate () {
 
+
+	void FixedUpdate ()
+    {
         //target = UXStateManager.GetTarget();
         if (target == null)
         {
             sr.enabled = false;
             lsr.enabled = false;
             stsr.enabled = false;
+            ssr.enabled = false;
+            stiLR.enabled = false;
+            sbsr.enabled = false;
             return;
         }
+        ssr.enabled = true;
+        sbsr.enabled = true;
+        stiLR.enabled = true;
         stsr.enabled = (target == UXStateManager.GetTarget());
         lsr.enabled = (target == UXStateManager.GetTarget());
-        if (lsr.enabled && IsInFOV(target))
-        {
-            if (stsr.enabled )
-            {
-                if (BeginTargetLock == false)
-                {
-                    BeginTargetLock = true;
-                    BeginTargetLockTime = Time.time;
-                    lsr.enabled = true;
-                }
-                else
-                {
-                    //move targetLockIcon from center screen to targetIcon position
-                    var startingPos = camera.transform.position;
-                    var endingPos = startingPos + startingPos.magnitude/2 * (target.transform.position - camera.transform.position).normalized;
-                    var t = Mathf.Min(1, (Time.time - BeginTargetLockTime) / TimeToLock);
-                    lockedIcon.transform.position = Vector3.Lerp(startingPos, endingPos, t);
-                    if (t == 1)
-                    {
-                        TargetLocked = true;
-                        lsr.enabled = TargetLocked;
-                    } else 
-                    Debug.Log("t: " + t);
-                }
-            }
-        } else
-        {
-            TargetLocked = false;
-            BeginTargetLock = false;
-            stsr.enabled = false;
-            lsr.enabled = false;
-        }
+
+        LockAnimation();
 
         sr.enabled = true;
         SetSphericalTargetIcon();
-		Vector3 v = target.transform.position - camera.transform.position;
+        SetSquareAndArrowIcon();
+    }
+
+    private void SetSquareAndArrowIcon()
+    {
+        Vector3 v = target.transform.position - camera.transform.position;
         Vector3 d = Vector3.Project(v, camera.transform.forward);
         Vector3 projectedPoint = target.transform.position - d;
         if (IsInViewFrustrum(target))
@@ -109,7 +103,8 @@ public class TargetIndicatorLogic : MonoBehaviour {
             var distToCamera = canvas.transform.position - camera.transform.position;
             var targetIconPos = distToCamera.magnitude * (target.transform.position - camera.transform.position).normalized;
             squareIcon.transform.position = camera.transform.position + targetIconPos;
-        } else
+        }
+        else
         {
             sr.enabled = false;
             arrowIcon.SetActive(true);
@@ -140,6 +135,68 @@ public class TargetIndicatorLogic : MonoBehaviour {
             }
         }
     }
+
+    //only perform lock if in fov and target is selected (stsr.enabled)
+    private void LockAnimation()
+    {
+        if (lsr.enabled && IsInFOV(target))
+        {
+            if (stsr.enabled)
+            {
+                if (TargetLocked == true)
+                {
+                    var startingPos = camera.transform.position;
+                    var endingPos = startingPos + startingPos.magnitude / 2 * (target.transform.position - camera.transform.position).normalized;
+                    lockedIcon.transform.position = endingPos;
+                }
+                else if (BeginTargetLock == false)
+                {
+                    BeginTargetLock = true;
+                    BeginTargetLockTime = Time.time;
+                    lsr.enabled = true;
+                }
+                else
+                {
+                    //move targetLockIcon from center screen to targetIcon position
+                    var startingPos = camera.transform.position;
+                    var endingPos = startingPos + startingPos.magnitude / 2 * (target.transform.position - camera.transform.position).normalized;
+                    var t = Mathf.Min(1, (Time.time - BeginTargetLockTime) / TimeToLock);
+                    lockedIcon.transform.position = Vector3.Lerp(startingPos, endingPos, t);
+                    if (t == 1)
+                    {
+                        TargetLocked = true;
+                        lsr.enabled = TargetLocked;
+                        audio.clip = lockedAudio;
+                        audio.loop = false;
+                        audio.Play();
+                    }
+                    else
+                    {
+                        if (audio.clip != lockingAudio)
+                        {
+                            audio.loop = true;
+                            audio.clip = lockingAudio;
+                            audio.Play();
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (audio.clip == lockingAudio)
+            {
+                audio.clip = unlockedAudio;
+                audio.loop = false;
+                audio.Play();
+            }
+            TargetLocked = false;
+            BeginTargetLock = false;
+            stsr.enabled = false;
+            lsr.enabled = false;
+        }
+    }
+
     bool IsInFOV(GameObject target)
     {
         float minAngle = 20;

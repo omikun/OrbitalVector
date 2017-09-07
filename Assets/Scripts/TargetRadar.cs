@@ -51,6 +51,8 @@ public class TargetRadar : MonoBehaviour {
         var minDist = float.PositiveInfinity;
         foreach (var target in targets)
         {
+            if (target == null)
+                continue;
             var dist = target.transform.position.magnitude;
             if (dist < minDist && prevMinDist < dist && IsInFOV(target))
             {
