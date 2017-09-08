@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class TargetIndicatorLogic : MonoBehaviour {
@@ -44,7 +45,93 @@ public class TargetIndicatorLogic : MonoBehaviour {
         stiLR = sphericalTargetIcon.GetComponent<LineRenderer>();
         ssr = sphericalTargetIcon.GetComponent<SpriteRenderer>();
         sbsr = stiBase.GetComponent<SpriteRenderer>();
+        NextState = UnselectedState;
 	}
+
+    /// <summary>
+    /// unselected -> selected
+    /// selected -> locking
+    /// locking -> selected OR unselected OR locked
+    /// locked -> selected OR unselected
+    /// </summary>
+    //state delegates in FSM
+    Action NextState = null;
+    void InitialState()
+    {
+
+    }
+    void GoneState()
+    {
+        NextState = EndState;
+    }
+    void EndState()
+    {
+        return;
+    }
+    void UnselectedState()
+    {
+        if (target == UXStateManager.GetTarget())
+        {
+            NextState = SelectedState;
+            Debug.Log("state: selected");
+        } else
+        {
+        }
+    }
+    float BeginLocking = 0;
+    void SelectedState()
+    {
+        if (IsInFOV(target))
+        {
+            if (target != UXStateManager.GetTarget())
+            {
+                NextState = UnselectedState;
+                Debug.Log("state: UNselected");
+            }
+            else
+            {
+                //locking
+                BeginLocking = Time.time;
+                NextState = LockingState;
+                Debug.Log(name + "state: locking!");
+            }
+        } else
+        {
+            //regular selected state animation
+        }
+    }
+    void LockingState()
+    {
+        if (Time.time > BeginLocking + 2f)
+        {
+            NextState = LockedState;
+            Debug.Log(name + "state: locked");
+        }
+        if (!IsInFOV(target))
+        {
+            NextState = SelectedState;
+            Debug.Log("state: selected");
+        }
+        if (target != UXStateManager.GetTarget()) {
+            NextState = UnselectedState;
+            Debug.Log("state: UNselected");
+        }
+    }
+    void LockedState()
+    {
+        if (!IsInFOV(target))
+        {
+            NextState = SelectedState;
+            Debug.Log("state: selected");
+        }
+        if (target != UXStateManager.GetTarget()) {
+            NextState = UnselectedState;
+            Debug.Log("state: UNselected");
+        }      
+    }
+
+    /// //////////////////////////////////////////////////////////////////////
+
     void SetSphericalTargetIcon()
     {
         var basePos = target.transform.position.normalized * 2;
@@ -67,6 +154,7 @@ public class TargetIndicatorLogic : MonoBehaviour {
 
 	void FixedUpdate ()
     {
+        NextState();
         //target = UXStateManager.GetTarget();
         if (target == null)
         {

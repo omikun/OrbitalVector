@@ -23,6 +23,7 @@ public class TargetRadar : MonoBehaviour {
             Debug.Log("found target: " + target.name + " dist: " + target.transform.position.magnitude);
             UXStateManager.AddTarget(target);
             var temp = Instantiate(targetIndicatorPrefab);
+            temp.SetActive(true);
             temp.transform.parent = transform; //camera.transform
             temp.GetComponent<TargetIndicatorLogic>().target = target;
             stis.Add(temp);
