@@ -57,7 +57,6 @@ public partial class TargetIndicatorLogic : MonoBehaviour {
         sphericalIconLR.SetPosition(1, basePos);
         stiBase.transform.position = basePos;
         stiBase.transform.forward = pos;
-
     }
     // Update is called once per frame
     float oldAngle = 0;
@@ -70,7 +69,6 @@ public partial class TargetIndicatorLogic : MonoBehaviour {
         SetSphericalTargetIcon();
         SetSquareAndArrowIcon();
 
-        FSM();
     }
 
     private void SetSquareAndArrowIcon()
@@ -85,9 +83,11 @@ public partial class TargetIndicatorLogic : MonoBehaviour {
             var distToCamera = canvas.transform.position - camera.transform.position;
             var targetIconPos = distToCamera.magnitude * (target.transform.position - camera.transform.position).normalized;
             squareIcon.transform.position = camera.transform.position + targetIconPos;
+            TargetLockFSM();
         }
         else
         {
+            selectedIconSR.enabled = false;
             squareIconSR.enabled = false;
             arrowIcon.SetActive(true);
             FindInterSection(projectedPoint);

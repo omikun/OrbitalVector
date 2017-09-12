@@ -48,7 +48,7 @@ public partial class TargetIndicatorLogic
         return;
     }
 
-    void FSM()
+    void TargetLockFSM()
     {
         if (NextState == EndState) return;
         if (target == null) NextState = GoneState;
