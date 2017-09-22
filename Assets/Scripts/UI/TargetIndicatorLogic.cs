@@ -35,6 +35,8 @@ public partial class TargetIndicatorLogic : MonoBehaviour {
     public AudioClip lockingAudio;
     public AudioClip selectedAudio;
     public AudioClip inFOVAudio;
+    public AudioClip TargetDestroyedAudio;
+
     AudioSource audio;
     void Start () {
         audio = GetComponent<AudioSource>();
@@ -66,6 +68,11 @@ public partial class TargetIndicatorLogic : MonoBehaviour {
 
     void FixedUpdate ()
     {
+        if (target == null)//TODO consolidate everything into FSM
+        {
+            TargetLockFSM();
+            return;
+        }
         SetSphericalTargetIcon();
         SetSquareAndArrowIcon();
 

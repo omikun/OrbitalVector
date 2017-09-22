@@ -42,6 +42,9 @@ public partial class TargetIndicatorLogic
         sphericalIconSR.enabled = false;
         sphericalIconLR.enabled = false;
         sphericalIconBaseSR.enabled = false;
+        audio.clip = TargetDestroyedAudio;
+        audio.loop = false;
+        audio.Play();
     }
     void EndState()
     {
