@@ -43,7 +43,7 @@ public class OR_Controller : MonoBehaviour
             var thisodata = UXStateManager.GetSource().GetComponent<OrbitData>();
             Vector3d r1 = thisodata.getR();
 
-            var oe2 = UXStateManager.GetTarget().GetComponent<OrbitData>().getOE();
+            var oe2 = UXStateManager.GetTarget().GetComponent<OrbitData>().GetOE();
             var tra2 = OrbitalTools.Program.anomalyAfterTime(OrbitData.parentGM, oe2, time);
             oe2.tra = tra2;
             Vector3d r2 = OrbitalTools.Util.oe2rd(OrbitData.parentGM, oe2);

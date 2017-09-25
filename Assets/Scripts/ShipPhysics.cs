@@ -2,108 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using XboxCtrlrInput;		// Be sure to include this if you want an object to have Xbox input
-//public class Controller
 
 public class ShipPhysics : MonoBehaviour 
 {
-	public XboxController controller;
-    public void QueryControllers()
-    {
-        int queriedNumberOfCtrlrs = XCI.GetNumPluggedCtrlrs();
-
-        if (queriedNumberOfCtrlrs == 1)
-        {
-            Debug.Log("Only " + queriedNumberOfCtrlrs + " Xbox controller plugged in.");
-        }
-        else if (queriedNumberOfCtrlrs == 0)
-        {
-            Debug.Log("No Xbox controllers plugged in!");
-        }
-        else
-        {
-            Debug.Log(queriedNumberOfCtrlrs + " Xbox controllers plugged in.");
-        }
-
-        XCI.DEBUG_LogControllerNames();
-
-        // This code only works on Windows
-        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
-        {
-            Debug.Log("Windows Only:: Any Controller Plugged in: " + XCI.IsPluggedIn(XboxController.Any).ToString());
-
-            Debug.Log("Windows Only:: Controller 1 Plugged in: " + XCI.IsPluggedIn(XboxController.First).ToString());
-            Debug.Log("Windows Only:: Controller 2 Plugged in: " + XCI.IsPluggedIn(XboxController.Second).ToString());
-            Debug.Log("Windows Only:: Controller 3 Plugged in: " + XCI.IsPluggedIn(XboxController.Third).ToString());
-            Debug.Log("Windows Only:: Controller 4 Plugged in: " + XCI.IsPluggedIn(XboxController.Fourth).ToString());
-        }
-    }
-    bool lastPrint = false;
-    public void GetController()
-    {
-        //RightStick
-        if (XCI.GetButtonDown(XboxButton.RightStick, controller))
-        {
-            //TODO call rightstick delegate, which can be remapped to func
-            nullSpin = true;
-            NullSpin();
-        }
-        if (XCI.GetButtonDown(XboxButton.A, controller))
-        {
-            cameraRadar.SelectNextTarget();
-        }
-        if (XCI.GetButtonDown(XboxButton.B, controller))
-        {
-            Fire();
-        }
-        if (XCI.GetButtonDown(XboxButton.X, controller))
-        {
-            FireMissileFlag = true;
-        }
-        if (XCI.GetButtonDown(XboxButton.Y, controller))
-        {
-        }
-
-        {
-            // Left stick movement
-            float axisY = XCI.GetAxis(XboxAxis.LeftStickY, controller);
-            //if (axisY != 0) Debug.Log("axisY: " + axisY);
-            float axisX = -XCI.GetAxis(XboxAxis.LeftStickX, controller);
-            //if (axisX != 0) Debug.Log("axisX: " + axisX);
-            float rotScalar = Torque;
-            float pitchAmt = Mathf.Sign(axisY) * Mathf.Sqrt(Mathf.Abs(axisY)) * rotScalar;
-            float rollAmt = Mathf.Sign(axisX) * Mathf.Sqrt(Mathf.Abs(axisX)) * rotScalar;
-            //actual camera+ship rotation
-            PitchUp(pitchAmt, false);
-            RollLeft(rollAmt, false);
-            float neg = 1;
-            //just ship rotation, for show
-            var rot = Quaternion.Euler(pitchAmt * 20, 0, 0) * Quaternion.Euler(0, 0, rollAmt * 20);
-            _ship.transform.localRotation = rot;
-        }
-        {
-            // Right stick movement
-            float axisY = XCI.GetAxis(XboxAxis.RightStickY, controller);
-            //if (axisY != 0) Debug.Log("axisY: " + axisY);
-            float axisX = -XCI.GetAxis(XboxAxis.RightStickX, controller);
-            //if (axisX != 0) Debug.Log("axisX: " + axisX);
-            //rotate from default pos by up to 180 degrees on each axis
-            float maxRotDegrees = 160;
-            float pitch = 0;
-            if (axisY > 0)
-            {
-                pitch = Mathf.Lerp(0, 80f - localCameraAngleX, axisY);
-            } else if (axisY < 0)
-            {
-                pitch = Mathf.Lerp(0, -80 - localCameraAngleX, -axisY);
-            }
-            //var pitch = Mathf.Min(90f * axisY, 90f - localCameraAngleX);
-            if (axisY != 0) Debug.Log("pitch: " + pitch);
-            _camera.transform.localPosition = Quaternion.Euler(pitch, maxRotDegrees * axisX, 0) * localCameraPosition;
-            _camera.transform.localRotation = Quaternion.LookRotation(-_camera.transform.localPosition + new Vector3(0, 1, 0));
-        }
-
-    }
+    InputManager Input_Manager;
+	
     Vector3 localCameraPosition; //at start of game; default local pos
     float localCameraAngleX;
     //}
@@ -135,6 +38,7 @@ public class ShipPhysics : MonoBehaviour
     Text missileText;
     // Use this for initialization
     void Start() {
+        Input_Manager = GetComponent<InputManager>();
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = Vector3.zero;
         leftEngine = transform.Find("engine_left");
@@ -146,7 +50,7 @@ public class ShipPhysics : MonoBehaviour
             CheckNull();
         }
         _debugCameraLine = _debugCameraLineObj.GetComponent<LineRenderer>();
-        QueryControllers();
+        Input_Manager.QueryControllers();
         missileFFSM = new WeaponFiringFSM(FireMissile);
         missileText = _missileCount.GetComponent<Text>();
 
@@ -155,9 +59,54 @@ public class ShipPhysics : MonoBehaviour
         Debug.Log("initial angle: " + localCameraAngleX);
 
         cameraRadar = _camera.GetComponent<TargetRadar>();
+
+        Input_Manager.PressA = cameraRadar.SelectNextTarget;
+        Input_Manager.PressB = Fire;
+        Input_Manager.PressX = TriggerFireMissile;
+        Input_Manager.PressRightStick = NullSpin;
+        Input_Manager.MoveLeftStick = PitchAndRoll;
+        Input_Manager.MoveRightStick = RotateCamera;
+        Input_Manager.PressLeftTrigger = Thrust;
+    }
+    void TriggerFireMissile()
+    {
+        FireMissileFlag = true;
+    }
+    void RotateCamera(float axisY, float axisX)
+    {
+        float maxRotDegrees = 160;
+        float pitch = 0;
+        if (axisY > 0)
+        {
+            pitch = Mathf.Lerp(0, 80f - localCameraAngleX, axisY);
+        }
+        else if (axisY < 0)
+        {
+            pitch = Mathf.Lerp(0, -80 - localCameraAngleX, -axisY);
+        }
+        //var pitch = Mathf.Min(90f * axisY, 90f - localCameraAngleX);
+        if (axisY != 0) Debug.Log("pitch: " + pitch);
+        _camera.transform.localPosition = Quaternion.Euler(pitch, maxRotDegrees * axisX, 0) * localCameraPosition;
+        _camera.transform.localRotation = Quaternion.LookRotation(-_camera.transform.localPosition + new Vector3(0, 1, 0));
     }
     GameObject CameraFollowMissile;
     float b;
+    void Thrust(float amount)
+    {
+        //amount [0,1]
+        //add velocity to forward vector
+        //update OE
+        var playerShip = UXStateManager.GetSource();
+        if (playerShip == null) return;
+        var acceleration = amount * 6f;
+        var addedVel = acceleration * Time.deltaTime * _ship.transform.forward; //TODO use simulation delta time instead, or fixed time?
+        playerShip.GetComponent<OrbitData>().AdjustOrbit(addedVel);
+        localVel += addedVel;
+
+        var shipSpeed = playerShip.GetComponent<OrbitData>().getVel().magnitude;
+        Debug.Log("player ship speed: " + shipSpeed);
+    }
+    static public Vector3 localVel = Vector3.zero;
     void CameraFollow(GameObject missile)
     {
         return;
@@ -370,10 +319,10 @@ public class ShipPhysics : MonoBehaviour
         }
         return true;
 	}
-    void PitchUp(float torque, bool up = true)
+    void PitchUp(float input, bool up = true)
     {
         float neg = (up) ? -1 : 1;
-        var amt = neg * torque;
+        var amt = neg * input;
         rb.AddTorque(transform.right * amt);
 
         //var rot = Quaternion.Euler(-transform.right * neg * torque*200);
@@ -391,10 +340,20 @@ public class ShipPhysics : MonoBehaviour
         transform.Rotate(transform.right, -amt);
         rb.angularVelocity = Vector3.zero;
     }
-    void RollLeft( float torque, bool left = true)
+    // Controller interface
+    void PitchAndRoll(float axisY, float axisX)
+    {
+        float pitchAmt = Mathf.Sign(axisY) * Mathf.Sqrt(Mathf.Abs(axisY)) * Torque;
+        float rollAmt = Mathf.Sign(axisX) * Mathf.Sqrt(Mathf.Abs(axisX)) * Torque;
+        var rot = Quaternion.Euler(pitchAmt * 20, 0, 0) * Quaternion.Euler(0, 0, rollAmt * 20);
+        PitchUp(pitchAmt, false);
+        RollLeft(rollAmt, false);
+        _ship.transform.localRotation = rot; //fake roll
+    }
+    void RollLeft( float input, bool left = true)
     {
         float neg = (left) ? -1 : 1;
-        var amt = neg * torque;
+        var amt = neg * input;
         rb.AddTorque(transform.forward * amt);
         //var rot = Quaternion.Euler(-transform.right * neg * torque*200);
         //if (amt != 0) Debug.Log("rolling " + amt);
@@ -426,6 +385,7 @@ public class ShipPhysics : MonoBehaviour
     }
     void NullSpin()
     {
+        nullSpin = true; //this can be set by editor too; so don't remove it
         if (nullSpin)
         {
             if (rb.angularVelocity.magnitude > SlowDown * Time.deltaTime)
@@ -442,7 +402,7 @@ public class ShipPhysics : MonoBehaviour
 	// Update is called once per frame
 	void FixedUpdate () {
         GetKeyboard();
-        GetController();
+        Input_Manager.GetController();
         NullSpin();
         //CameraFollow();//HACK put me back in somehow; conflicts with camera rotate part
         missileFFSM.Tick(ref FireMissileFlag);

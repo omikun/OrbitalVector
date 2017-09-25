@@ -93,8 +93,8 @@ public class PorkChopPlot : MonoBehaviour
             Debug.Log("Something's not right, can't run prokchop: src: " + src + " tgt: " + tgt);
             return false;
         }
-        oe1 = src.GetComponent<OrbitData>().getOE();
-        oe2 = tgt.GetComponent<OrbitData>().getOE();
+        oe1 = src.GetComponent<OrbitData>().GetOE();
+        oe2 = tgt.GetComponent<OrbitData>().GetOE();
         return true;
     }
     // Update is called once per frame

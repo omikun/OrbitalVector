@@ -83,8 +83,7 @@ public class Orbit : MonoBehaviour
         AdjustOrbit(e);
         
     }
-    //specifies dv at this time
-    //IEnumerator AdjustOrbit(ManeuverEvent e)
+
     void AdjustOrbit(ManeuverEvent e)
     {
         /*
@@ -266,11 +265,11 @@ public class Orbit : MonoBehaviour
             } else {
                 Vector3d r1, v1;
                 //var newOE = Util.rv2oe(OrbitData.parentGM, odata.rv);
-                FindRV(odata.getOE(), eventManager.GetSimTime() - odata.GetOETime(), out r1, out v1);
+                FindRV(odata.GetOE(), eventManager.GetSimTime() - odata.GetOETime(), out r1, out v1);
                 odata.rv = Util.convertToRv(ref r1, ref v1);
             }
 
-            var oe = odata.getOE();
+            var oe = odata.GetOE();
             DrawOrbit(lines[count], ref oe);
 
             if (first)

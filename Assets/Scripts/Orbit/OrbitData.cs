@@ -47,7 +47,14 @@ public class OrbitData : MonoBehaviour {
     static double m = 5.972e24; //testing much larger mass so time scale is just 1
     static double G = 6.67408e-11;
     public static double parentGM = m * G;
-
+    //specifies dv at this time
+    public void AdjustOrbit(Vector3 addedVel)
+    {
+        rv[3] = addedVel.x;
+        rv[4] = addedVel.y;
+        rv[5] = addedVel.z;
+        oe = Util.rv2oe(OrbitData.parentGM, rv);
+    }
 
     public Vector3 getVel()
     {
@@ -67,7 +74,7 @@ public class OrbitData : MonoBehaviour {
         return new Vector3d(rv[3], rv[4], rv[5]);
     }
 
-    public OrbitalElements getOE()
+    public OrbitalElements GetOE()
     {
         //TODO move this into OrbitalElements class as an overload assignment operator
         return oe.CopyOE();

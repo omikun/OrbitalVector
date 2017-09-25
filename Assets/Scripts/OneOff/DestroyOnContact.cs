@@ -18,7 +18,7 @@ public class DestroyOnContact : MonoBehaviour {
         Destroy(collision.gameObject);
     }
 	// Update is called once per frame
-	void Update () {
-		
+	void FixedUpdate () {
+        transform.position -= ShipPhysics.localVel * Time.fixedDeltaTime;
 	}
 }
