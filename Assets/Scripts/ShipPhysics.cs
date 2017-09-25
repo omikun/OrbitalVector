@@ -9,9 +9,6 @@ public class ShipPhysics : MonoBehaviour
 	
     Vector3 localCameraPosition; //at start of game; default local pos
     float localCameraAngleX;
-    //}
-    //public class ShipPhysics : MonoBehaviour 
-    //{
     Rigidbody rb;
     public GameObject _camera;
     TargetRadar cameraRadar;
@@ -38,7 +35,6 @@ public class ShipPhysics : MonoBehaviour
     Text missileText;
     // Use this for initialization
     void Start() {
-        Input_Manager = GetComponent<InputManager>();
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = Vector3.zero;
         leftEngine = transform.Find("engine_left");
@@ -50,7 +46,6 @@ public class ShipPhysics : MonoBehaviour
             CheckNull();
         }
         _debugCameraLine = _debugCameraLineObj.GetComponent<LineRenderer>();
-        Input_Manager.QueryControllers();
         missileFFSM = new WeaponFiringFSM(FireMissile);
         missileText = _missileCount.GetComponent<Text>();
 
@@ -59,6 +54,9 @@ public class ShipPhysics : MonoBehaviour
         Debug.Log("initial angle: " + localCameraAngleX);
 
         cameraRadar = _camera.GetComponent<TargetRadar>();
+
+        Input_Manager = GetComponent<InputManager>();
+        Input_Manager.QueryControllers();
 
         Input_Manager.PressA = cameraRadar.SelectNextTarget;
         Input_Manager.PressB = Fire;
@@ -117,6 +115,8 @@ public class ShipPhysics : MonoBehaviour
         b = (missile.transform.position - _camera.transform.position).magnitude;
         CameraFollow();
     }
+
+
     float QuadraticSolver(float A, float B, float C)
     {
         float a = float.NaN;
@@ -224,47 +224,10 @@ public class ShipPhysics : MonoBehaviour
     {
         return angle * (point - pivot) + pivot;
     }
+
     public WeaponFiringFSM missileFFSM;
-    int numMissilesAtOnce = 6;
-    int numMissilesFiredThisVolley = 0;
-    float delayBetweenMissileFire = .2f;
-    float delayBetweenVolley = 5f;
-    float timeSinceLastVolley = 0f;
-    float timeSinceLastMissileFire = 0f;
-    [ContextMenu("Fire Missile!")]
     public GameObject FireMissile()
     {
-#if false
-        if (FireMissileFlag)
-        {
-            if (numMissilesFiredThisVolley < numMissilesAtOnce)
-            {
-                if (numMissilesFiredThisVolley == 0 )
-                {
-                    if (Time.time < timeSinceLastVolley + delayBetweenVolley)
-                        return null;
-                    timeSinceLastVolley = Time.time;
-                }
-                if (Time.time > timeSinceLastMissileFire + delayBetweenMissileFire)
-                {
-                    timeSinceLastMissileFire = Time.time;
-                    numMissilesFiredThisVolley++;
-                }
-                else
-                {
-                    return null;
-                }
-            } else
-            {
-                FireMissileFlag = false;
-                numMissilesFiredThisVolley = 0;
-                return null;
-            }
-        } else
-        {
-            return null;
-        }
-#endif
         Debug.Log("Fire missile");
         var newMissile = Instantiate(_missile);
         //set rot and pos to gun
