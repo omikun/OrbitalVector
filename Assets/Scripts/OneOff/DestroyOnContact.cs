@@ -19,6 +19,8 @@ public class DestroyOnContact : MonoBehaviour {
     }
 	// Update is called once per frame
 	void FixedUpdate () {
-        transform.position -= ShipPhysics.localVel * Time.fixedDeltaTime;
+        //HACK need to get a real object to do this
+        //and only use ShipPhysics.localVel when within 5km of player
+        transform.position -= PlayerManager.localVel * Time.fixedDeltaTime;
 	}
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using UnityEditor;
-[CustomEditor(typeof(ShipPhysics))]
+[CustomEditor(typeof(PlayerManager))]
 public class ShipPhysicsEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
         DrawDefaultInspector();
-        ShipPhysics script = (ShipPhysics)target;
+        PlayerManager script = (PlayerManager)target;
         if (GUILayout.Button("Fire Missile"))
         {
             script.FireMissile();

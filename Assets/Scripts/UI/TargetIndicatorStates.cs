@@ -55,6 +55,7 @@ public partial class TargetIndicatorLogic
     {
         if (NextState == EndState) return;
         if (target == null) NextState = GoneState;
+        else if (target != UXStateManager.GetTarget()) NextState = UnselectedState;
         NextState();
     }
 
@@ -68,6 +69,8 @@ public partial class TargetIndicatorLogic
         } else
         {
             //steady state for unselected
+            lockedIconSR.enabled = false;
+            selectedIconSR.enabled = false;
         }
     }
     void SelectedState()
